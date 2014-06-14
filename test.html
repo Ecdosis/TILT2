@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+<h1>TILT Upload test</h1>
+<form action="http://localhost:8080/" enctype="multipart/form-data" method="POST">
+<p>Enter/edit GeoJSON:</p>
+<textarea name="geojson" rows=12 cols=80>{
+  "type": "Feature",
+  "geometry": {
+      "type": "Polygon",
+    "coordinates": [
+      [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
+      ]
+  },
+  "properties": {
+    "url": "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
+  }
+}</textarea>
+<p><input type="submit" value="upload"></input></p>
+</form></body></html>
+

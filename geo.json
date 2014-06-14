@@ -1,0 +1,13 @@
+{
+  "type": "Feature",
+  "geometry": {
+      "type": "Polygon",
+    "coordinates": [
+      [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
+      ]
+  },
+  "properties": {
+    "url": "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
+  }
+}
+
