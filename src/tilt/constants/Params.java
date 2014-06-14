@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package tilt;
+package tilt.constants;
 
 /**
  * Parameters passed to and from the webapp

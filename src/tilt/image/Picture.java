@@ -14,6 +14,7 @@ import java.io.File;
 import tilt.exception.TiltException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
+import java.awt.Graphics;
 
 import java.util.Iterator;
 import javax.imageio.ImageIO;
@@ -23,7 +24,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 
 /**
- *
+ * Handle everything related to the abstract image in all its forms
  * @author desmond
  */
 public class Picture {
@@ -31,6 +32,7 @@ public class Picture {
     String id;
     File orig;
     File greyscale;
+    File twotone;
     public Picture( String urlStr, JSONArray coords ) throws TiltException
     {
         try
@@ -131,6 +133,36 @@ public class Picture {
         }
     }
     /**
+     * Convert from the original png file to greyscale png. Save original.
+     * @throws ImageException 
+     */
+    void convertToGreyscale() throws ImageException 
+    {
+        try
+        {
+            BufferedImage png = ImageIO.read(orig);
+            BufferedImage grey = new BufferedImage(png.getWidth(), png.getHeight(),  
+                BufferedImage.TYPE_BYTE_GRAY);  
+            Graphics g = grey.getGraphics();  
+            g.drawImage( png, 0, 0, null );  
+            g.dispose();
+            greyscale = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( grey, "png", greyscale );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
+     * Convert 
+     * @throws Exception 
+     */
+    void convertToTwoTone() throws ImageException 
+    {
+    }
+    /**
      * Retrieve the data of a picture file
      * @return a byte array
      * @throws ImageException 
@@ -157,5 +189,29 @@ public class Picture {
     public byte[] getOrigData( String url ) throws ImageException
     {
         return getPicData( orig );
+    }
+    /**
+     * Get the greyscale version of the data
+     * @param url the docid
+     * @return a byte array being the greyscale rendition of it
+     * @throws ImageException 
+     */
+    public byte[] getGreyscaleData( String url ) throws ImageException
+    {
+        if ( greyscale == null )
+            convertToGreyscale();
+        return getPicData( greyscale );
+    }
+    /**
+     * Get a twotone representation of the original
+     * @param url the docid
+     * @return a byte array (at 256 bpp)
+     * @throws ImageException 
+     */
+    public byte[] getTwoToneData( String url ) throws ImageException
+    {
+        if ( twotone == null )
+            convertToTwoTone();
+        return getPicData( twotone );
     }
 }

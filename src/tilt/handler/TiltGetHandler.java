@@ -18,7 +18,8 @@ import java.io.ByteArrayInputStream;
 import java.net.URLConnection;
 import javax.servlet.ServletOutputStream;
 import tilt.exception.*;
-import tilt.Params;
+import tilt.constants.Params;
+import tilt.constants.ImageType;
 import tilt.image.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,16 +31,30 @@ import javax.servlet.http.HttpServletResponse;
 public class TiltGetHandler extends TiltHandler
 {
     String docid;
+    ImageType imageType;
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {
         try
         {
+            imageType = ImageType.read(request.getParameter(Params.PICTYPE));
             docid = request.getParameter(Params.DOCID);
             if ( docid != null )
             {
                 Picture p = PictureRegistry.get(docid);
-                byte[] pic = p.getOrigData(docid);
+                byte[]pic = null;
+                switch (imageType) 
+                {
+                    case original:
+                        pic = p.getOrigData(docid);
+                        break;
+                    case greyscale:
+                        pic = p.getGreyscaleData(docid);
+                        break;
+                    case twotone:
+                        pic = p.getTwoToneData(docid);
+                        break;
+                }  
                 if ( pic != null )
                 {
                     ByteArrayInputStream bis = new ByteArrayInputStream(pic);
@@ -51,9 +66,13 @@ public class TiltGetHandler extends TiltHandler
                 }
                 else
                 {
-                    response.getOutputStream().println("image "+docid+" not found");
+                    response.getOutputStream().println("<p>image "+
+                        docid+" not found</p>");
                 }
             }
+            else
+                response.getOutputStream().println(
+                    "<p>please specify a docid</p>");
         }
         catch ( Exception e )
         {

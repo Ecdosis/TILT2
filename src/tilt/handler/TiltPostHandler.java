@@ -19,7 +19,7 @@ import java.util.List;
 import tilt.exception.*;
 import tilt.image.*;
 import tilt.Utils;
-import tilt.Params;
+import tilt.constants.Params;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
@@ -33,7 +33,7 @@ import org.json.simple.*;
  */
 public class TiltPostHandler extends TiltHandler
 {
-    File geoJSON;
+    String geoJSON;
     public TiltPostHandler()
     {
         encoding = "UTF-8";
@@ -62,7 +62,7 @@ public class TiltPostHandler extends TiltHandler
                     {
                         if ( fieldName.equals(Params.GEOJSON) )
                         {
-                            geoJSON = new File( fieldName, item.getString() );
+                            geoJSON = item.getString();
                         }
                         else if ( fieldName.equals(Params.ENCODING) )
                         {
@@ -81,8 +81,7 @@ public class TiltPostHandler extends TiltHandler
                         {
                             byte[] rawData = item.get();
                             //System.out.println(encoding);
-                            geoJSON = new File( item.getName(), 
-                                new String(rawData, encoding) );
+                            geoJSON = new String(rawData, encoding);
                         }
                     }
                     catch ( Exception e )
