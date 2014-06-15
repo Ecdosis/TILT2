@@ -22,6 +22,7 @@ import tilt.exception.*;
 import tilt.image.*;
 import tilt.Utils;
 import tilt.constants.Params;
+import tilt.constants.ImageType;
 import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,10 +38,12 @@ import org.json.simple.*;
 public class TiltPostHandler extends TiltHandler
 {
     String geoJSON;
+    ImageType picType;
     InetAddress poster;
     public TiltPostHandler()
     {
         encoding = "UTF-8";
+        picType = ImageType.original;
     }
     /**
      * Parse the import params from the request
@@ -71,6 +74,10 @@ public class TiltPostHandler extends TiltHandler
                         else if ( fieldName.equals(Params.ENCODING) )
                         {
                             encoding = item.getString();
+                        }
+                        else if ( fieldName.equals(Params.PICTYPE) )
+                        {
+                            picType = ImageType.read(item.getString());
                         }
                     }
                 }
@@ -109,12 +116,56 @@ public class TiltPostHandler extends TiltHandler
         throws Exception
     {
         String ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
-
         if (ipAddress == null) {
             ipAddress = request.getRemoteAddr();
         }
         InetAddress addr = InetAddress.getByName(ipAddress);
         return addr;
+    }
+    /**
+     * Create a HTML IMG element referring to the image we need
+     * @param request
+     * @param json
+     * @return
+     * @throws TiltException 
+     */
+    private String composeResponse( HttpServletRequest request, String json, 
+        ImageType picType ) throws TiltException
+    {
+        StringBuilder sb = new StringBuilder();
+        Object obj=JSONValue.parse(json);
+        if ( obj instanceof JSONObject )
+        {
+            JSONObject g = (JSONObject)obj;
+            JSONObject props = (JSONObject)g.get("properties");
+            JSONObject geometry = (JSONObject)g.get("geometry");
+            if ( geometry != null && geometry.get("coordinates") 
+                instanceof JSONArray )
+            {
+                JSONArray cc = (JSONArray)geometry.get("coordinates");
+                Picture p = new Picture( (String)props.get("url"), 
+                    cc, poster );
+            }
+            sb.append("<img src=\"");
+            sb.append("http://");
+            sb.append(request.getServerName());
+            if ( request.getServerPort()!= 80 )
+            {
+                sb.append(":");
+                sb.append(request.getServerPort());
+            }
+            sb.append(request.getRequestURI());
+            sb.append("?");
+            sb.append(Params.DOCID);
+            sb.append("=");
+            sb.append(Utils.escape((String)props.get("url")));
+            sb.append("&pictype=");
+            sb.append(picType.toString());
+            sb.append("\">");
+        }
+        else
+            sb.append("<p>JSON file not geoJSON</p>");
+        return sb.toString();
     }
     /**
      * Handle a POST request
@@ -130,56 +181,35 @@ public class TiltPostHandler extends TiltHandler
         {
             poster = getIPAddress(request);
             if (ServletFileUpload.isMultipartContent(request) )
+                parseImportParams( request );
+            else
+            {
+                picType = ImageType.read(request.getParameter(Params.PICTYPE));
+                geoJSON = request.getParameter(Params.GEOJSON );
+            }
+            if ( geoJSON != null )
             {
                 PictureRegistry.prune();
-                parseImportParams( request );
-                if ( geoJSON != null )
-                {
-                    String json = geoJSON.toString();
-                    Object obj=JSONValue.parse(json);
-                    response.setContentType("text/html;charset=UTF-8");
-                    if ( obj instanceof JSONObject )
-                    {
-                        JSONObject g = (JSONObject)obj;
-                        JSONObject props = (JSONObject)g.get("properties");
-                        JSONObject geometry = (JSONObject)g.get("geometry");
-                        if ( geometry != null && geometry.get("coordinates") 
-                            instanceof JSONArray )
-                        {
-                            JSONArray cc = (JSONArray)geometry.get("coordinates");
-                            response.getWriter().print("Coords:");
-                            Picture p = new Picture( (String)props.get("url"), 
-                                cc, poster );
-                        }
-                        else
-                            response.getWriter().println("missing coordinates");
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("<img src=\"");
-                        sb.append("http://");
-                        sb.append(request.getServerName());
-                        if ( request.getServerPort()!= 80 )
-                        {
-                            sb.append(":");
-                            sb.append(request.getServerPort());
-                        }
-                        sb.append(request.getRequestURI());
-                        sb.append("?");
-                        sb.append(Params.DOCID);
-                        sb.append("=");
-                        sb.append(Utils.escape((String)props.get("url")));
-                        sb.append("\">");
-                        response.getWriter().println(sb.toString());
-                    }
-                    else
-                        response.getWriter().println("<p>JSON file not geoJSON</p>");
-                }
-                else
-                    response.getWriter().println("POST");
-            } 
+                String resp = composeResponse( request, geoJSON, picType );
+                response.setContentType("text/html;charset=UTF-8");
+                response.getWriter().println(resp);
+            }
+            else
+                response.getWriter().println("POST");
         }
         catch ( Exception e )
         {
-            throw new TiltException( e );
+            response.setContentType("text/html;charset=UTF-8");
+            try
+            {
+                response.getWriter().print("<p>");
+                response.getWriter().print(e.getMessage());
+                response.getWriter().println("</p>");
+            }
+            catch ( Exception e2 )
+            {
+                throw new TiltException(e2);
+            }
         }
     }
 }

@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.0.js"></script>
+<script type="text/javascript">
+function getUrl(geojson)
+{
+  var obj = JSON.parse(geojson);
+  if ( obj && obj.properties.url )
+     return obj.properties.url;
+  else
+    return "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg";
+}
+$(document).ready(function() {
+  $("#upload").click(function(){
+    $.post( $("#main").attr("action"), { geojson: $("#geojson").val() }, function( data ) {
+      alert(data);
+      $("#left").html(data);
+    });
+  });
+  $("#original").click(function(){
+    $.get( $("#main").attr("action"), 
+    { docid: getUrl($("#geojson").val()), pictype: "original" }, 
+    function( data ) {
+      $("#left").html(data);
+    });
+  });
+  $("#greyscale").click(function(){
+    $.get( $("#main").attr("action"), 
+    { docid: getUrl($("#geojson").val()), pictype: "greyscale" }, 
+    function( data ) {
+      $("#left").html(data);
+    });
+  });
+  $("#twotone").click(function(){
+    $.get( $("#main").attr("action"), 
+    { docid: getUrl($("#geojson").val()), pictype: "twotone" }, 
+    function( data ) {
+      $("#left").html(data);
+    });
+  });
+}); // end doc ready
+</script>
+</head>
+<body>
+<h1>TILT Upload test</h1>
+<form id="main" action="http://localhost:8080/" enctype="multipart/form-data" method="POST">
+<p>Enter/edit GeoJSON:</p>
+<div id="left"></div>
+<div id="right">
+<textarea id="geojson" rows=12 cols=80>{
+  "type": "Feature",
+  "geometry": {
+      "type": "Polygon",
+    "coordinates": [
+      [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
+      ]
+  },
+  "properties": {
+    "url": "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
+  }
+}</textarea></div>
+<p><input id="upload" type="button" value="upload"></input>
+<input id="original" type="button" value="original"></input>
+<input id="greyscale" type="button" value="greyscale"></input>
+<input id="twotone" type="button" value="two tone"></input>
+</p>
+</form></body></html>
+

@@ -156,7 +156,8 @@ public class Picture {
         try
         {
             BufferedImage bufferedImage = ImageIO.read(orig);
-            File newFile = File.createTempFile("TMP","tmp");
+            File newFile = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
             ImageIO.write( bufferedImage, "png", newFile );
             orig.delete();
             orig = newFile;
