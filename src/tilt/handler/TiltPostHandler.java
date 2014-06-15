@@ -191,7 +191,7 @@ public class TiltPostHandler extends TiltHandler
             {
                 PictureRegistry.prune();
                 String resp = composeResponse( request, geoJSON, picType );
-                response.setContentType("text/html;charset=UTF-8");
+                response.setContentType("text/plain;charset=UTF-8");
                 response.getWriter().println(resp);
             }
             else
@@ -199,7 +199,7 @@ public class TiltPostHandler extends TiltHandler
         }
         catch ( Exception e )
         {
-            response.setContentType("text/html;charset=UTF-8");
+            response.setContentType("text/plain;charset=UTF-8");
             try
             {
                 response.getWriter().print("<p>");

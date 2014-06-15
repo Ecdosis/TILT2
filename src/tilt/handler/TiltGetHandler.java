@@ -16,65 +16,46 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 package tilt.handler;
-import java.io.ByteArrayInputStream;
-import java.net.URLConnection;
-import javax.servlet.ServletOutputStream;
-import tilt.exception.*;
-import tilt.constants.Params;
-import tilt.constants.ImageType;
-import tilt.image.*;
+
+import tilt.constants.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import tilt.exception.TiltException;
+import tilt.Utils;
+import tilt.test.Test;
 /**
- * Handle a GET requestfor various image types, text, GeoJSON
+ * Handle a GET request for various image types, text, GeoJSON
  * @author desmond
  */
 public class TiltGetHandler extends TiltHandler
 {
-    String docid;
-    ImageType imageType;
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {
         try
         {
-            imageType = ImageType.read(request.getParameter(Params.PICTYPE));
-            docid = request.getParameter(Params.DOCID);
-            if ( docid != null )
+            if ( Utils.first(urn).equals(Service.TEST.toString()) )
             {
-                Picture p = PictureRegistry.get(docid);
-                byte[]pic = null;
-                switch (imageType) 
+                try
                 {
-                    case original:
-                        pic = p.getOrigData(docid);
-                        break;
-                    case greyscale:
-                        pic = p.getGreyscaleData(docid);
-                        break;
-                    case twotone:
-                        pic = p.getTwoToneData(docid);
-                        break;
-                }  
-                if ( pic != null )
-                {
-                    ByteArrayInputStream bis = new ByteArrayInputStream(pic);
-                    String mimeType = URLConnection.guessContentTypeFromStream(bis);
-                    response.setContentType(mimeType);
-                    ServletOutputStream sos = response.getOutputStream();
-                    sos.write( pic );
-                    sos.close();
+                    String second = Utils.second( urn );
+                    if ( second == null || second.length()==0 )
+                        second = "Post";
+                    else if ( second.length()>0 )
+                        second = Character.toUpperCase(second.charAt(0))
+                            +second.substring(1);
+                    String className = "tilt.test."+second;
+                    Class tClass = Class.forName( className );
+                    Test t = (Test)tClass.newInstance();
+                    t.handle( request, response, Utils.pop(urn) );
                 }
-                else
+                catch ( Exception e )
                 {
-                    response.getOutputStream().println("<p>image "+
-                        docid+" not found</p>");
+                    throw new TiltException( e );
                 }
             }
             else
-                response.getOutputStream().println(
-                    "<p>please specify a docid</p>");
+                new TiltImageHandler().handle(request,response,urn);
         }
         catch ( Exception e )
         {

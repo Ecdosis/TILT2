@@ -13,11 +13,13 @@ function getUrl(geojson)
     return "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg";
 }
 $(document).ready(function() {
-  $("#upload").click(function(){
-    $.post( $("#main").attr("action"), { geojson: $("#geojson").val() }, function( data ) {
+  $("#upload").click(function(e){
+    $.post( $("#main").attr("action"), $("#main").serialize(), function( data ) {
       alert(data);
       $("#left").html(data);
-    });
+    },"text").fail(function(xhr, status, error){
+    alert(status)
+    })
   });
   $("#original").click(function(){
     $.get( $("#main").attr("action"), 
@@ -49,7 +51,7 @@ $(document).ready(function() {
 <p>Enter/edit GeoJSON:</p>
 <div id="left"></div>
 <div id="right">
-<textarea id="geojson" rows=12 cols=80>{
+<textarea name="geojson" id="geojson" rows=12 cols=80>{
   "type": "Feature",
   "geometry": {
       "type": "Polygon",
