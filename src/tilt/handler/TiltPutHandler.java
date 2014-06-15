@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Handle a POST request
+ * Handle a PUT request (used for update)
  * @author desmond
  */
 public class TiltPutHandler extends TiltHandler

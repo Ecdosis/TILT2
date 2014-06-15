@@ -27,12 +27,17 @@ public enum ImageType
     original,
     greyscale,
     twotone;
+    /**
+     * Convert a string into
+     * @param str a string representation perhaps in upper or mixed case
+     * @return the enum version of str
+     */
     public static ImageType read( String str )
     {
         ImageType it;
         try
         {
-            it = valueOf(str);
+            it = valueOf(str.toLowerCase());
         }
         catch ( Exception e )
         {

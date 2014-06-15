@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Grand-daddy class for all handlers
+ * Abstract super-class for all handlers: PUT, POST, DELETE, GET
  * @author ddos
  */
 abstract public class TiltHandler 

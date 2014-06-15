@@ -46,6 +46,12 @@ public class Picture {
     File orig;
     File greyscale;
     File twotone;
+    /**
+     * Create a picture. Pictures stores links to the various image files.
+     * @param urlStr the remote picture url as a string
+     * @param coords coordinates for the picture from the geoJSON file
+     * @throws TiltException 
+     */
     public Picture( String urlStr, JSONArray coords ) throws TiltException
     {
         try
@@ -70,12 +76,20 @@ public class Picture {
             throw new TiltException( e );
         }
     }
+    /**
+     * Ensure that all files are deleted when we go
+     * @throws ImageException 
+     */
     public void dispose() throws ImageException
     {
         try
         {
             if ( orig != null )
                 orig.delete();
+            if ( greyscale != null )
+                greyscale.delete();
+            if ( twotone != null )
+                twotone.delete();
             // dispose of other temporary files here
         }
         catch ( Exception e )

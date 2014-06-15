@@ -98,6 +98,13 @@ public class TiltPostHandler extends TiltHandler
             throw new TiltException( e );
         }
     }
+    /**
+     * Handle a POST request
+     * @param request the raw request
+     * @param response the response we will write to
+     * @param urn the rest of the URL after stripping off the context
+     * @throws TiltException 
+     */
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {

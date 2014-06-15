@@ -92,6 +92,12 @@ public class PictureRegistry
                 break;
         }
     }
+    /**
+     * Get an individual picture object, using its url as an id
+     * @param url the url
+     * @return the correspnding Picture object
+     * @throws ImageException 
+     */
     public static Picture get( String url ) throws ImageException
     {
         Long key = urls.get( url );

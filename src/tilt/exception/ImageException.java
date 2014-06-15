@@ -18,15 +18,23 @@
 package tilt.exception;
 
 /**
- *  Something wrong with an image
+ *  Something went wrong with an image
  *  @author desmond
  */
 public class ImageException extends TiltException
 {
+    /**
+     * Create a new ImageExeption from scratch
+     * @param message the message it is to contain
+     */
     public ImageException( String message )
     {
         super( message );
     }
+    /**
+     * For wrapping another exception
+     * @param e the other exception
+     */
     public ImageException( Exception e )
     {
         super( e );

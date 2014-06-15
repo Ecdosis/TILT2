@@ -18,15 +18,23 @@
 package tilt.exception;
 
 /**
- *
+ * Specific exception classes for various parts of TILT
  * @author desmond
  */
 public class TiltException extends Exception
 {
+    /**
+     * Create a general TiltException from scratch
+     * @param message the message it is to bear
+     */
     public TiltException( String message )
     {
         super( message );
     }
+    /**
+     * Wrapper for another exception
+     * @param e the other exception
+     */
     public TiltException( Exception e )
     {
         super( e );

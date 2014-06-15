@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Handle a GET request
+ * Handle a GET requestfor various image types, text, GeoJSON
  * @author desmond
  */
 public class TiltGetHandler extends TiltHandler

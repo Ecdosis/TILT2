@@ -23,6 +23,11 @@ package tilt;
  */
 public class Utils 
 {
+    /**
+     * Convert a URL into a form suitable as a parameter
+     * @param value the raw, unescapedURL
+     * @return an escaped URL with / and  space escaped
+     */
     public static String escape( String value )
     {
         StringBuilder sb = new StringBuilder();

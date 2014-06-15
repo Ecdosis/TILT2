@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Handle a POST request
+ * Handle a DELETE request
  * @author desmond
  */
 public class TiltDeleteHandler extends TiltHandler

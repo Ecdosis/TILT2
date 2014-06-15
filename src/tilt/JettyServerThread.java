@@ -19,11 +19,14 @@ package tilt;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Connector;
 /**
- *
+ * This launches an instance of the Jetty service
  * @author desmond
  */
 public class JettyServerThread extends Thread 
 {
+    /**
+     * Run the server
+     */
     public void run()
     {
         try
