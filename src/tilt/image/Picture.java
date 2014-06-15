@@ -1,7 +1,19 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of TILT.
+ *
+ *  TILT is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  TILT is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
+ *  (c) copyright Desmond Schmidt 2014
  */
 
 package tilt.image;
@@ -22,6 +34,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -156,11 +169,58 @@ public class Picture {
         }
     }
     /**
-     * Convert 
+     * Convert from greyscale to twotone (black and white)
      * @throws Exception 
      */
     void convertToTwoTone() throws ImageException 
     {
+        try
+        {
+            if ( greyscale == null )
+                convertToGreyscale();
+            BufferedImage grey = ImageIO.read(greyscale);
+            WritableRaster wr = grey.getRaster();
+            int square = (int)Math.floor(wr.getWidth()*0.025);
+            for ( int y=0;y<wr.getHeight();y+=Math.min(square,wr.getHeight()-y) )
+            {
+                int h = Math.min(square,wr.getHeight()-y);
+                for ( int x=0;x<wr.getWidth();x+=Math.min(square,wr.getWidth()-x) )
+                {
+                    // compute average pixel value
+                    int w = Math.min(square,wr.getWidth()-x);
+                    int[] dArray = new int[h*w];
+                    int[] res = wr.getPixels(x,y,w,h,dArray);
+                    int total = 0;
+                    for ( int i=0;i<dArray.length;i++ )
+                        total += dArray[i];
+                    int average = total/dArray.length;
+                    // set pixels that are darker to black and the rest to white
+                    for ( int j=y;j<y+h;j++ )
+                    {
+                        int[] iArray = new int[1];
+                        for ( int k=x;k<x+w;k++ )
+                        {
+                            res = wr.getPixel( k, j, iArray );
+                            // +25 darker filters out noise
+                            if ( res[0]+25 < average )
+                                iArray[0] = 0;
+                            else
+                            {
+                                iArray[0] = 255;
+                            }
+                            wr.setPixel( k, j, iArray );
+                        }
+                    }
+                }
+            }
+            twotone = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( grey, "png", twotone );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException( e );
+        }
     }
     /**
      * Retrieve the data of a picture file
