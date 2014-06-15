@@ -22,6 +22,7 @@ import tilt.exception.*;
 import tilt.image.*;
 import tilt.Utils;
 import tilt.constants.Params;
+import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
@@ -36,6 +37,7 @@ import org.json.simple.*;
 public class TiltPostHandler extends TiltHandler
 {
     String geoJSON;
+    InetAddress poster;
     public TiltPostHandler()
     {
         encoding = "UTF-8";
@@ -99,6 +101,22 @@ public class TiltPostHandler extends TiltHandler
         }
     }
     /**
+     * Get the sender's IP-address (prevent DoS via too many uploads)
+     * @param request raw request
+     * @return the server'sIP as a string
+     */
+    private InetAddress getIPAddress( HttpServletRequest request ) 
+        throws Exception
+    {
+        String ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
+
+        if (ipAddress == null) {
+            ipAddress = request.getRemoteAddr();
+        }
+        InetAddress addr = InetAddress.getByName(ipAddress);
+        return addr;
+    }
+    /**
      * Handle a POST request
      * @param request the raw request
      * @param response the response we will write to
@@ -110,6 +128,7 @@ public class TiltPostHandler extends TiltHandler
     {
         try
         {
+            poster = getIPAddress(request);
             if (ServletFileUpload.isMultipartContent(request) )
             {
                 PictureRegistry.prune();
@@ -129,13 +148,12 @@ public class TiltPostHandler extends TiltHandler
                         {
                             JSONArray cc = (JSONArray)geometry.get("coordinates");
                             response.getWriter().print("Coords:");
-                            Picture p = new Picture( (String)props.get("url"), cc );
+                            Picture p = new Picture( (String)props.get("url"), 
+                                cc, poster );
                         }
                         else
                             response.getWriter().println("missing coordinates");
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<!doctype html><html>");
-                        sb.append("<head></head><body>");
                         sb.append("<img src=\"");
                         sb.append("http://");
                         sb.append(request.getServerName());
@@ -149,7 +167,7 @@ public class TiltPostHandler extends TiltHandler
                         sb.append(Params.DOCID);
                         sb.append("=");
                         sb.append(Utils.escape((String)props.get("url")));
-                        sb.append("\"></body></</html>");
+                        sb.append("\">");
                         response.getWriter().println(sb.toString());
                     }
                     else

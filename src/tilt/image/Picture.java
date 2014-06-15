@@ -18,6 +18,7 @@
 
 package tilt.image;
 import java.net.URL;
+import java.net.InetAddress;
 import tilt.exception.ImageException;
 import org.json.simple.*;
 import java.io.FileOutputStream;
@@ -42,7 +43,9 @@ import java.awt.image.WritableRaster;
  */
 public class Picture {
     private static String PNG_TYPE = "PNG";
+    
     String id;
+    InetAddress poster;
     File orig;
     File greyscale;
     File twotone;
@@ -50,20 +53,24 @@ public class Picture {
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
      * @param coords coordinates for the picture from the geoJSON file
+     * @param poster the ipaddress of the poster of the image
      * @throws TiltException 
      */
-    public Picture( String urlStr, JSONArray coords ) throws TiltException
+    public Picture( String urlStr, JSONArray coords, InetAddress poster ) 
+        throws TiltException
     {
         try
         {
             URL url = new URL( urlStr );
             // use url as id for now
             id = urlStr;
+            this.poster = poster;
+            // try to register the picture
+            PictureRegistry.register( this, urlStr );
             // fetch picture from url
             ReadableByteChannel rbc = Channels.newChannel(url.openStream());
             orig = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
-            PictureRegistry.register( this, urlStr );
             FileOutputStream fos = new FileOutputStream(orig);
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             fos.close();

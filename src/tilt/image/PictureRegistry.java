@@ -18,11 +18,13 @@
 
 package tilt.image;
 import java.io.File;
+import java.net.InetAddress;
 import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
 import tilt.exception.ImageException;
+import tilt.exception.DoSException;
 
 /**
  * Keep a track of temporary files and delete them after a set time
@@ -35,6 +37,7 @@ public class PictureRegistry
     static String SUFFIX = ".tmp";
     static TreeMap<Long,Picture> map;
     static HashMap<String,Long> urls;
+    static HashMap<InetAddress,String> posters;
     /**
      * We only need one instance of this class
      */
@@ -42,6 +45,7 @@ public class PictureRegistry
     {
         map = new TreeMap<Long,Picture>();
         urls = new HashMap<String,Long>();
+        posters = new HashMap<InetAddress,String>();
         // clean out temp directory
         String tmpDir = System.getProperty("java.io.tmpdir");
         File dir = new File( tmpDir );
@@ -53,11 +57,21 @@ public class PictureRegistry
                 contents[i].delete();
         }
     }
-    public static void register( Picture pic, String url ) throws ImageException
+    /**
+     * Add a picture to the registry (cache)
+     * @param pic the picture object
+     * @param url its url or id
+     * @throws DoSException 
+     */
+    public static void register( Picture pic, String url ) throws DoSException
     {
+        String id = posters.get(pic.poster);
+        if ( id != null )
+            throw new DoSException("Please wait before uploading a new image");
         Long key = new Long(System.currentTimeMillis());
         map.put( key, pic );
         urls.put( url, key );
+        posters.put(pic.poster,url);
     }
     /**
      * Weed out files that haven't been accessed for some time
@@ -84,6 +98,17 @@ public class PictureRegistry
                     if ( value.longValue()==key.longValue() )
                     {
                         urls.remove( url );
+                        Set<InetAddress> iKeys = posters.keySet();
+                        Iterator<InetAddress> iiter = iKeys.iterator();
+                        while ( iiter.hasNext() )
+                        {
+                            InetAddress iKey = iiter.next();
+                            if ( posters.get(iKey).equals(url) )
+                            {
+                                posters.remove( iKey );
+                                break;
+                            }
+                        }
                         break;
                     }
                 }

@@ -69,7 +69,11 @@ public class JettyServer extends AbstractHandler
         }
         catch ( TiltException te )
         {
-            System.out.println(te.getMessage());
+            StringBuilder sb = new StringBuilder();
+            sb.append("<p>");
+            sb.append(te.getMessage());
+            sb.append("</p>");
+            response.getOutputStream().println(sb.toString());
             te.printStackTrace(System.out);
         }
     }
