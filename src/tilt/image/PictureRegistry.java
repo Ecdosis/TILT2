@@ -67,7 +67,10 @@ public class PictureRegistry
     {
         String id = posters.get(pic.poster);
         if ( id != null )
-            throw new DoSException("Please wait before uploading a new image");
+        {
+            if ( !url.equals(urls.get(id)) )
+                throw new DoSException("Please wait before uploading a new image");
+        }
         Long key = new Long(System.currentTimeMillis());
         map.put( key, pic );
         urls.put( url, key );
