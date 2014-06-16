@@ -31,6 +31,8 @@ public class HTML
      */
     public HTML()
     {
+        head = new Head();
+        body = new StringBuilder();
     }
     /**
      * Get the head.

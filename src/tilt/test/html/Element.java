@@ -59,9 +59,9 @@ public class Element
         sb.append( name );
         for ( int i=0;i<attrs.size();i++ )
             sb.append( attrs.get(i).toString() );
-        sb.append(">\n");
+        sb.append(">");
         sb.append( contents );
-        sb.append("\n</");
+        sb.append("</");
         sb.append(name);
         sb.append(">\n");
         return sb.toString();

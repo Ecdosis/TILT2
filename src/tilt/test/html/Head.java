@@ -61,4 +61,19 @@ public class Head
         elem.addAttribute("content",enc);
         metas.add( elem );
     }
+    /**
+     * Convert the head to a string
+     * @return a HTML string being the entire header
+     */
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<head>\n");
+        for ( int i=0;i<metas.size();i++ )
+            sb.append( metas.get(i) );
+        for ( int i=0;i<scripts.size();i++ )
+            sb.append( scripts.get(i) );
+        sb.append("</head>\n");
+        return sb.toString();
+    }
 }

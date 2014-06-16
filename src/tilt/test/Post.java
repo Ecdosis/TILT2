@@ -65,37 +65,47 @@ public class Post extends Test
     public void handle( HttpServletRequest request,
         HttpServletResponse response, String urn ) throws TiltException
     {
-        // create the doc and install the scripts etc
-        doc = new HTML();
-        doc.getHead().addEncoding("text/html; charset=UTF-8");
-        doc.getHead().addJQuery("1.9.0");
-        doc.getHead().addScript( POST_JS );
-        Element h1 = new Element("h1");
-        h1.addText("TILT Upload test");
-        doc.addElement( h1 );
-        Form f = new Form( "POST", "http://localhost:8080/", 
-            "multipart/form-data" );
-        Element p = new Element("p");
-        p.addText("Enter/edit GeoJSON:");
-        f.addElement( p );
-        Element div1 = new Element("div");
-        div1.addAttribute("id","left");
-        doc.addElement( div1 );
-        Element div2 = new Element("div");
-        div2.addAttribute("id","right");
-        Element textarea = new Element("textarea");
-        textarea.addAttribute("name","geojson");
-        textarea.addAttribute("id","geojson");
-        textarea.addAttribute("rows","12");
-        textarea.addAttribute("cols","80");
-        textarea.addText(DEFAULT_JSON);
-        f.addElement( textarea );
-        p = new Element("p");
-        p.addElement( new Input("upload","button","upload") );
-        p.addElement( new Input("original","button","original") );
-        p.addElement( new Input("greyscale","button","greyscale") );
-        p.addElement( new Input("twotone","button","two tone") );
-        f.addElement( p );
-        doc.addElement( f );
+        try
+        {
+            // create the doc and install the scripts etc
+            doc = new HTML();
+            doc.getHead().addEncoding("text/html; charset=UTF-8");
+            doc.getHead().addJQuery("1.9.0");
+            doc.getHead().addScript( POST_JS );
+            Element h1 = new Element("h1");
+            h1.addText("TILT Upload test");
+            doc.addElement( h1 );
+            Form f = new Form( "POST", "http://localhost:8080/", 
+                "multipart/form-data" );
+            f.addAttribute("id","main");
+            Element p = new Element("p");
+            p.addText("Enter/edit GeoJSON:");
+            f.addElement( p );
+            Element div1 = new Element("div");
+            div1.addAttribute("id","left");
+            doc.addElement( div1 );
+            Element div2 = new Element("div");
+            div2.addAttribute("id","right");
+            Element textarea = new Element("textarea");
+            textarea.addAttribute("name","geojson");
+            textarea.addAttribute("id","geojson");
+            textarea.addAttribute("rows","12");
+            textarea.addAttribute("cols","80");
+            textarea.addText(DEFAULT_JSON);
+            f.addElement( textarea );
+            p = new Element("p");
+            p.addElement( new Input("upload","button","upload") );
+            p.addElement( new Input("original","button","original") );
+            p.addElement( new Input("greyscale","button","greyscale") );
+            p.addElement( new Input("twotone","button","two tone") );
+            f.addElement( p );
+            doc.addElement( f );
+            response.setContentType("text/html;charset=UTF-8");
+            response.getWriter().println(doc);
+        }
+        catch ( Exception e )
+        {
+            throw new TiltException(e);
+        }
     }
 }
