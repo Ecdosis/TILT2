@@ -44,12 +44,17 @@ $(document).ready(function() {
   });
 }); // end doc ready
 </script>
+<style>
+#left {float:left;margin:10px}
+#right {float:left;margin:10px}
+#toolbar {clear:both}
+</style>
 </head>
 <body>
 <h1>TILT Upload test</h1>
 <form id="main" action="http://localhost:8080/" enctype="multipart/form-data" method="POST">
 <p>Enter/edit GeoJSON:</p>
-<div id="left"></div>
+<div id="left">On the left</div>
 <div id="right">
 <textarea name="geojson" id="geojson" rows=12 cols=80>{
   "type": "Feature",
@@ -63,7 +68,7 @@ $(document).ready(function() {
     "url": "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
   }
 }</textarea></div>
-<p><input id="upload" type="button" value="upload"></input>
+<p id="toolbar"><input id="upload" type="button" value="upload"></input>
 <input id="original" type="button" value="original"></input>
 <input id="greyscale" type="button" value="greyscale"></input>
 <input id="twotone" type="button" value="two tone"></input>

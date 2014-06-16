@@ -26,6 +26,7 @@ public class Head
 {
     ArrayList<Script> scripts;
     ArrayList<Element> metas;
+    Element css;
     /**
      * Create a head
      */
@@ -33,6 +34,8 @@ public class Head
     {
         scripts = new ArrayList<Script>();
         metas = new ArrayList<Element>();
+        css = new Element("style");
+        css.addAttribute("type","text/css");
     }
     /**
      * Add a JQuery reference to an external script
@@ -49,6 +52,14 @@ public class Head
     public void addScript( String script )
     {
         scripts.add( new Script(script) );
+    }
+    /**
+     * Add somecss
+     * @param text the css to add
+     */
+    public void addCss( String text )
+    {
+        css.addText( text );
     }
     /**
      * Add a header encoding like UTF-8
@@ -73,6 +84,8 @@ public class Head
             sb.append( metas.get(i) );
         for ( int i=0;i<scripts.size();i++ )
             sb.append( scripts.get(i) );
+        if ( css.contents.length()>0 )
+            sb.append(css);
         sb.append("</head>\n");
         return sb.toString();
     }

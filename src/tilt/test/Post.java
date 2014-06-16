@@ -36,25 +36,29 @@ public class Post extends Test
     +"s/harpur/A87-1/00000005.jpg\";\n}\n$(document).ready(functio"
     +"n() {\n$(\"#upload\").click(function(e){\n\t$.post( $(\"#mai"
     +"n\").attr(\"action\"), $(\"#main\").serialize(), function( d"
-    +"ata ) {\n\talert(data);\n\t$(\"#left\").html(data);\n\t},\"t"
-    +"ext\").fail(function(xhr, status, error){\n\talert(status)\n"
-    +"\t})\n});\n$(\"#original\").click(function(){\n\t$.get( $(\""
-    +"#main\").attr(\"action\"), \n\t{ docid: getUrl($(\"#geojson\""
-    +").val()), pictype: \"original\" }, \n\tfunction( data ) {\n"
-    +"\t$(\"#left\").html(data);\n\t});\n});\n$(\"#greyscale\").cl"
-    +"ick(function(){\n\t$.get( $(\"#main\").attr(\"action\"), \n\t"
-    +"{ docid: getUrl($(\"#geojson\").val()), pictype: \"greyscal"
-    +"e\" }, \n\tfunction( data ) {\n\t$(\"#left\").html(data);\n\t"
-    +"});\n});\n$(\"#twotone\").click(function(){\n\t$.get( $(\"#"
-    +"main\").attr(\"action\"), \n\t{ docid: getUrl($(\"#geojson\""
-    +").val()), pictype: \"twotone\" }, \n\tfunction( data ) {\n\t"
-    +"$(\"#left\").html(data);\n\t});\n});\n}); // end doc ready\n";
+    +"ata ) {\n\t$(\"#left\").html(data);\n\t},\"text\").fail(func"
+    +"tion(xhr, status, error){\n\talert(status)\n\t})\n});\n$(\"#"
+    +"original\").click(function(){\n\t$.get( $(\"#main\").attr(\""
+    +"action\"), \n\t{ docid: getUrl($(\"#geojson\").val()), picty"
+    +"pe: \"original\" }, \n\tfunction( data ) {\n\t$(\"#left\").h"
+    +"tml(data);\n\t});\n});\n$(\"#greyscale\").click(function(){\n"
+    +"\t$.get( $(\"#main\").attr(\"action\"), \n\t{ docid: getUrl"
+    +"($(\"#geojson\").val()), pictype: \"greyscale\" }, \n\tfunct"
+    +"ion( data ) {\n\t$(\"#left\").html(data);\n\t});\n});\n$(\"#"
+    +"twotone\").click(function(){\n\t$.get( $(\"#main\").attr(\"a"
+    +"ction\"), \n\t{ docid: getUrl($(\"#geojson\").val()), pictyp"
+    +"e: \"twotone\" }, \n\tfunction( data ) {\n\t$(\"#left\").htm"
+    +"l(data);\n\t});\n});\n}); // end doc ready\n";
     static String DEFAULT_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://setis.library.usyd.edu.au/ozedits/harpu"
     +"r/A87-1/00000005.jpg\"\n}\n}\n";
+    static String POST_CSS =
+    "#left {float:left;margin:10px}\n" +
+    "#right {float:left;margin:10px}\n" +
+    "#toolbar {clear:both}";
     /**
      * Display the test GUI
      * @param request the request to read from
@@ -72,6 +76,7 @@ public class Post extends Test
             doc.getHead().addEncoding("text/html; charset=UTF-8");
             doc.getHead().addJQuery("1.9.0");
             doc.getHead().addScript( POST_JS );
+            doc.getHead().addCss(POST_CSS);
             Element h1 = new Element("h1");
             h1.addText("TILT Upload test");
             doc.addElement( h1 );

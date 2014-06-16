@@ -146,7 +146,7 @@ public class TiltPostHandler extends TiltHandler
                 Picture p = new Picture( (String)props.get("url"), 
                     cc, poster );
             }
-            sb.append("<img src=\"");
+            sb.append("<img width=\"500\" src=\"");
             sb.append("http://");
             sb.append(request.getServerName());
             if ( request.getServerPort()!= 80 )
