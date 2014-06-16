@@ -34,7 +34,8 @@ public class TiltGetHandler extends TiltHandler
     {
         try
         {
-            if ( Utils.first(urn).equals(Service.TEST.toString()) )
+            String service = Utils.first(urn);
+            if ( service.equals(Service.TEST.toString()) )
             {
                 try
                 {
@@ -54,8 +55,8 @@ public class TiltGetHandler extends TiltHandler
                     throw new TiltException( e );
                 }
             }
-            else
-                new TiltImageHandler().handle(request,response,urn);
+            else if ( service.equals(Service.TILT) )
+                new TiltImageHandler().handle(request,response,Utils.pop(urn));
         }
         catch ( Exception e )
         {

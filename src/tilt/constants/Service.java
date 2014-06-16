@@ -25,4 +25,5 @@ package tilt.constants;
 public class Service 
 {
     public static String TEST = "test";
+    public static String TILT = "tilt";
 }

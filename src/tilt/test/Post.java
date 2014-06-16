@@ -22,6 +22,7 @@ import tilt.test.html.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
+import tilt.JettyServer;
 
 /**
  * Test the POST command
@@ -41,23 +42,22 @@ public class Post extends Test
     +"'%3A';\n\t\tbreak;\n\tdefault:\n\t\tnewUrl += url.charAt(i);"
     +"\n\t\tbreak;\n\t}\n}\nreturn newUrl;\n}\nfunction getUrlFrom"
     +"Loc( pictype )\n{\n\tvar gjurl = getUrl($(\"#geojson\").val("
-    +"));\n\t\tvar url = \"../?docid=\"+escapeUrl(gjurl)+\"&pictyp"
-    +"e=\"+pictype;\n\talert(url);\n\treturn url;\n}\n$(document)."
-    +"ready(function() {\n$(\"#upload\").click(function(e){\n\t$.p"
-    +"ost( $(\"#main\").attr(\"action\"), $(\"#main\").serialize()"
-    +", function( data ) {\n\t$(\"#left\").empty();\n\t$(\"#left\""
-    +").html(data);\n\t},\"text\").fail(function(xhr, status, erro"
-    +"r){\n\talert(status);\n\t});\n});\n$(\"#original\").click(fu"
-    +"nction(){\n\tvar url = escapeUrl(getUrlFromLoc(\"original\")"
-    +");\n\t$(\"#left\").empty();\n\t$(\"#left\").html('<img width"
-    +"=\"500\" src=\"'+url+'\">');\n});\n$(\"#greyscale\").click(f"
-    +"unction(){\n\tvar url = escapeUrl(getUrlFromLoc(\"greyscale\""
-    +"));\n\t$(\"#left\").empty();\n\t$(\"#left\").html('<img wid"
-    +"th=\"500\" src=\"'+getUrlFromLoc(\"greyscale\")+'\">');\n});"
-    +"\n$(\"#twotone\").click(function(){\n\tvar url = escapeUrl(g"
-    +"etUrlFromLoc(\"twotone\"));\n\t$(\"#left\").empty();\n\t$(\""
-    +"#left\").html('<img width=\"500\" src=\"'+getUrlFromLoc(\"tw"
-    +"otone\")+'\">');\n});\n}); // end doc ready\n";
+    +"));\n\tvar url = \"../tilt/?docid=\"+escapeUrl(gjurl)+\"&pic"
+    +"type=\"+pictype;\n\treturn url;\n}\n$(document).ready(functi"
+    +"on() {\n$(\"#upload\").click(function(e){\n\tvar localurl = "
+    +"\"http://\"+location.hostname+\"/tilt/\";\n\t$.post( localur"
+    +"l, $(\"#main\").serialize(), function( data ) {\n\t$(\"#left"
+    +"\").empty();\n\t$(\"#left\").html(data);\n\t},\"text\").fail"
+    +"(function(xhr, status, error){\n\talert(status);\n\t});\n});"
+    +"\n$(\"#original\").click(function(){\n\t$(\"#left\").empty()"
+    +";\n\t$(\"#left\").html('<img width=\"500\" src=\"'+getUrlFro"
+    +"mLoc(\"original\")+'\">');\n});\n$(\"#greyscale\").click(fu"
+    +"nction(){\n\t$(\"#left\").empty();\n\t$(\"#left\").html('<im"
+    +"g width=\"500\" src=\"'+getUrlFromLoc(\"greyscale\")+'\">');"
+    +"\n});\n$(\"#twotone\").click(function(){\n\tvar url = escape"
+    +"Url(getUrlFromLoc(\"twotone\"));\n\t$(\"#left\").empty();\n\t"
+    +"$(\"#left\").html('<img width=\"500\" src=\"'+getUrlFromLoc"
+    +"(\"twotone\")+'\">');\n});\n});\n";
     static String DEFAULT_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
@@ -89,8 +89,8 @@ public class Post extends Test
             Element h1 = new Element("h1");
             h1.addText("TILT Upload test");
             doc.addElement( h1 );
-            Form f = new Form( "POST", "http://localhost:8080/", 
-                "multipart/form-data" );
+            Form f = new Form( "POST", "http://"+request.getServerName()
+                +"/tilt","multipart/form-data" );
             f.addAttribute("id","main");
             Element p = new Element("p");
             p.addText("Enter/edit GeoJSON:");

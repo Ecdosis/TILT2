@@ -31,6 +31,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.simple.*;
+import tilt.constants.Service;
 /**
  * Handle a POST request
  * @author desmond
@@ -179,23 +180,27 @@ public class TiltPostHandler extends TiltHandler
     {
         try
         {
-            poster = getIPAddress(request);
-            if (ServletFileUpload.isMultipartContent(request) )
-                parseImportParams( request );
-            else
+            String service = Utils.first(urn);
+            if ( service.equals(Service.TILT.toString()) )
             {
-                picType = ImageType.read(request.getParameter(Params.PICTYPE));
-                geoJSON = request.getParameter(Params.GEOJSON );
+                poster = getIPAddress(request);
+                if (ServletFileUpload.isMultipartContent(request) )
+                    parseImportParams( request );
+                else
+                {
+                    picType = ImageType.read(request.getParameter(Params.PICTYPE));
+                    geoJSON = request.getParameter(Params.GEOJSON );
+                }
+                if ( geoJSON != null )
+                {
+                    PictureRegistry.prune();
+                    String resp = composeResponse( request, geoJSON, picType );
+                    response.setContentType("text/plain;charset=UTF-8");
+                    response.getWriter().println(resp);
+                }
+                else
+                    response.getWriter().println("POST");
             }
-            if ( geoJSON != null )
-            {
-                PictureRegistry.prune();
-                String resp = composeResponse( request, geoJSON, picType );
-                response.setContentType("text/plain;charset=UTF-8");
-                response.getWriter().println(resp);
-            }
-            else
-                response.getWriter().println("POST");
         }
         catch ( Exception e )
         {

@@ -34,7 +34,7 @@ import tilt.exception.*;
 public class JettyServer extends AbstractHandler
 {
     static String host;
-    static int wsPort;
+    public static int wsPort;
     /**
      * Main entry point
      * @param target the URN part of the URI
@@ -85,7 +85,7 @@ public class JettyServer extends AbstractHandler
     static boolean readArgs(String[] args)
     {
         boolean sane = true;
-        wsPort = 8080;
+        wsPort = 8082;
         host = "localhost";
         for ( int i=0;i<args.length;i++ )
         {
