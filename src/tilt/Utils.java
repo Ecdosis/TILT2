@@ -123,4 +123,28 @@ public class Utils
             path = path.substring( pos+1 );
         return path;
     }
+    /**
+     * Just escape quotes for a string to be jsonified
+     * @param input the string to escape
+     * @param replaceWith replace double quotes with this
+     * @return 
+     */
+    public static String escapeQuotes( String input, String replaceWith )
+    {
+        StringBuilder sb = new StringBuilder();
+        for ( int i=0;i<input.length();i++ )
+        {
+            char token = input.charAt(i);
+            switch ( token )
+            {
+                case '"':
+                    sb.append(replaceWith);
+                    break;
+                default:
+                    sb.append(token);
+                    break;
+            }
+        }
+        return sb.toString();
+    }
 }

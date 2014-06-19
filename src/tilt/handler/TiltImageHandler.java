@@ -53,13 +53,16 @@ public class TiltImageHandler  extends TiltHandler
                 switch (imageType) 
                 {
                     case original:
-                        pic = p.getOrigData(docid);
+                        pic = p.getOrigData();
                         break;
                     case greyscale:
-                        pic = p.getGreyscaleData(docid);
+                        pic = p.getGreyscaleData();
                         break;
                     case twotone:
-                        pic = p.getTwoToneData(docid);
+                        pic = p.getTwoToneData();
+                        break;
+                    case cleaned:
+                        pic = p.getCleanedData();
                         break;
                 }  
                 if ( pic != null )

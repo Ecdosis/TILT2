@@ -37,6 +37,9 @@ public class Attribute
      */
     public String toString()
     {
-        return " "+name+"=\""+value+"\"";
+        String attr = " "+name;
+        if ( value.length()>0 )
+            attr += "=\""+value+"\"";
+        return attr;
     }
 }

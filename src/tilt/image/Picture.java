@@ -192,51 +192,140 @@ public class Picture {
     }
     /**
      * Convert from greyscale to twotone (black and white)
+     * Adapted from OCRopus
+     * Copyright 2006-2008 Deutsches Forschungszentrum fuer Kuenstliche 
+     * Intelligenz or its licensors, as applicable.
+     * http://ocropus.googlecode.com/svn/trunk/ocr-binarize/ocr-binarize-sauvola.cc
      * @throws Exception 
      */
     void convertToTwoTone() throws ImageException 
     {
         try
         {
+            int MAXVAL = 256;
+            double k = 0.34;
             if ( greyscale == null )
                 convertToGreyscale();
             BufferedImage grey = ImageIO.read(greyscale);
-            WritableRaster wr = grey.getRaster();
-            int square = (int)Math.floor(wr.getWidth()*0.025);
-            for ( int y=0;y<wr.getHeight();y+=Math.min(square,wr.getHeight()-y) )
+            WritableRaster grey_image = grey.getRaster();
+            WritableRaster bin_image = grey.copyData(null);
+            int square = (int)Math.floor(grey_image.getWidth()*0.025);
+            if ( square == 0 )
+                square = Math.min(20,grey_image.getWidth());
+            if ( square > grey_image.getHeight() )
+                square = grey_image.getHeight();
+            int whalf = square>>1;
+            if ( whalf == 0 )
+                throw new Exception("whalf==0!");
+            int image_width  = grey_image.getWidth();
+            int image_height = grey_image.getHeight();
+            // Calculate the integral image, and integral of the squared image
+            // original algorithm ate up too much memory, use floats for longs
+            float[][] integral_image = new float[image_width][image_height];
+            float[][] rowsum_image = new float[image_width][image_height];
+            float[][] integral_sqimg = new float[image_width][image_height];
+            float[][] rowsum_sqimg = new float[image_width][image_height];
+            int xmin,ymin,xmax,ymax;
+            double diagsum,idiagsum,diff,sqdiagsum,sqidiagsum,sqdiff,area;
+            double mean,std,threshold;
+            // for get/setPixel
+            int[] iArray = new int[1];
+            int[] oArray = new int[1];
+            for ( int j=0;j<image_height;j++ )
             {
-                int h = Math.min(square,wr.getHeight()-y);
-                for ( int x=0;x<wr.getWidth();x+=Math.min(square,wr.getWidth()-x) )
+                grey_image.getPixel(0,j,iArray);
+                rowsum_image[0][j] = iArray[0];
+                rowsum_sqimg[0][j] = iArray[0]*iArray[0];
+            }
+            for ( int i=1;i<image_width;i++ )
+            {
+                for ( int j=0;j<image_height;j++)
                 {
-                    // compute average pixel value
-                    int w = Math.min(square,wr.getWidth()-x);
-                    int[] dArray = new int[h*w];
-                    int[] res = wr.getPixels(x,y,w,h,dArray);
-                    int total = 0;
-                    for ( int i=0;i<dArray.length;i++ )
-                        total += dArray[i];
-                    int average = total/dArray.length;
-                    // set pixels that are darker to black and the rest to white
-                    for ( int j=y;j<y+h;j++ )
-                    {
-                        int[] iArray = new int[1];
-                        for ( int k=x;k<x+w;k++ )
-                        {
-                            res = wr.getPixel( k, j, iArray );
-                            // +25 darker filters out noise
-                            if ( res[0]+25 < average )
-                                iArray[0] = 0;
-                            else
-                            {
-                                iArray[0] = 255;
-                            }
-                            wr.setPixel( k, j, iArray );
-                        }
+                    grey_image.getPixel(i,j,iArray);
+                    rowsum_image[i][j] = rowsum_image[i-1][j] 
+                        + iArray[0];
+                    rowsum_sqimg[i][j] = rowsum_sqimg[i-1][j] 
+                        + iArray[0]*iArray[0];
+                }
+            }
+            for ( int i=0;i<image_width;i++ )
+            {
+                integral_image[i][0] = rowsum_image[i][0];
+                integral_sqimg[i][0] = rowsum_sqimg[i][0];
+            }
+            for (int i=0; i<image_width; i++)
+            {
+                for ( int j=1; j<image_height; j++ )
+                {
+                    integral_image[i][j] = integral_image[i][j-1] 
+                        + rowsum_image[i][j];
+                    integral_sqimg[i][j] = integral_sqimg[i][j-1] 
+                        + rowsum_sqimg[i][j];
+                }
+            }
+            // compute mean and std.dev. using the integral image
+            for ( int i=0; i<image_width; i++ )
+            {
+                for ( int j=0;j<image_height;j++ )
+                {
+                    xmin = Math.max(0,i-whalf);
+                    ymin = Math.max(0,j-whalf);
+                    xmax = Math.min(image_width-1,i+whalf);
+                    ymax = Math.min(image_height-1,j+whalf);
+                    area = (xmax-xmin+1)*(ymax-ymin+1);
+                    grey_image.getPixel(i,j,iArray);
+                    // area can't be 0 here
+                    if ( area == 0 )
+                        throw new Exception("area can't be 0 here!");
+                    if ( xmin==0 && ymin==0 )
+                    { 
+                        // Point at origin
+                        diff   = integral_image[xmax][ymax];
+                        sqdiff = integral_sqimg[xmax][ymax];
                     }
+                    else if ( xmin==0 && ymin !=0 )
+                    { 
+                        // first column
+                        diff   = integral_image[xmax][ymax] 
+                            - integral_image[xmax][ymin-1];
+                        sqdiff = integral_sqimg[xmax][ymax] 
+                            - integral_sqimg[xmax][ymin-1];
+                    }
+                    else if ( xmin!=0 && ymin==0 )
+                    { 
+                        // first row
+                        diff   = integral_image[xmax][ymax] 
+                            - integral_image[xmin-1][ymax];
+                        sqdiff = integral_sqimg[xmax][ymax] 
+                            - integral_sqimg[xmin-1][ymax];
+                    }
+                    else
+                    { 
+                        // rest of the image
+                        diagsum    = integral_image[xmax][ymax] 
+                            + integral_image[xmin-1][ymin-1];
+                        idiagsum   = integral_image[xmax][ymin-1] 
+                            + integral_image[xmin-1][ymax];
+                        diff       = diagsum - idiagsum;
+                        sqdiagsum  = integral_sqimg[xmax][ymax] 
+                            + integral_sqimg[xmin-1][ymin-1];
+                        sqidiagsum = integral_sqimg[xmax][ymin-1] 
+                            + integral_sqimg[xmin-1][ymax];
+                        sqdiff     = sqdiagsum - sqidiagsum;
+                    }
+                    mean = diff/area;
+                    std  = Math.sqrt((sqdiff - diff*diff/area)/(area-1));
+                    threshold = mean*(1+k*((std/128)-1));
+                    if (iArray[0] < threshold) 
+                        oArray[0] = 0;
+                    else
+                        oArray[0] = MAXVAL-1;
+                    bin_image.setPixel(i,j,oArray);
                 }
             }
             twotone = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
+            grey.setData( bin_image );
             ImageIO.write( grey, "png", twotone );
         }
         catch ( Exception e )
@@ -265,20 +354,30 @@ public class Picture {
     }
     /**
      * Read the original image 
-     * @param url the original url 
      * @return the image as a byte array
      */
-    public byte[] getOrigData( String url ) throws ImageException
+    public byte[] getOrigData() throws ImageException
     {
         return getPicData( orig );
     }
     /**
+     * Read the original image 
+     * @param url the original url 
+     * @return the image as a byte array
+     */
+    public byte[] getCleanedData() throws ImageException
+    {
+        if ( twotone == null )
+            convertToTwoTone();
+        removeLines();
+        return getPicData( twotone );
+    }
+    /**
      * Get the greyscale version of the data
-     * @param url the docid
      * @return a byte array being the greyscale rendition of it
      * @throws ImageException 
      */
-    public byte[] getGreyscaleData( String url ) throws ImageException
+    public byte[] getGreyscaleData( ) throws ImageException
     {
         if ( greyscale == null )
             convertToGreyscale();
@@ -286,14 +385,31 @@ public class Picture {
     }
     /**
      * Get a twotone representation of the original
-     * @param url the docid
      * @return a byte array (at 256 bpp)
      * @throws ImageException 
      */
-    public byte[] getTwoToneData( String url ) throws ImageException
+    public byte[] getTwoToneData() throws ImageException
     {
         if ( twotone == null )
             convertToTwoTone();
         return getPicData( twotone );
+    }
+    /**
+     * Remove lines such as borders and internal lines
+     */
+    public void removeLines() throws ImageException
+    {
+        try
+        {
+            if ( twotone == null )
+                convertToTwoTone();
+            RemoveLines rl = new RemoveLines( ImageIO.read(twotone) );
+            rl.removeAll();
+            // write to file
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
     }
 }

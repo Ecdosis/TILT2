@@ -22,7 +22,7 @@ import tilt.test.html.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
-import tilt.JettyServer;
+import java.util.HashMap;
 
 /**
  * Test the POST command
@@ -40,30 +40,57 @@ public class Post extends Test
     +"ase '/':\n\t\tnewUrl += \"%2F\";\n\t\tbreak;\n\tcase ' ':\n\t"
     +"\tnewUrl += '%20';\n\t\tbreak;\n\tcase ':':\n\t\tnewUrl += "
     +"'%3A';\n\t\tbreak;\n\tdefault:\n\t\tnewUrl += url.charAt(i);"
-    +"\n\t\tbreak;\n\t}\n}\nreturn newUrl;\n}\nfunction getUrlFrom"
-    +"Loc( pictype )\n{\n\tvar gjurl = getUrl($(\"#geojson\").val("
-    +"));\n\tvar url = \"../tilt/?docid=\"+escapeUrl(gjurl)+\"&pic"
-    +"type=\"+pictype;\n\treturn url;\n}\n$(document).ready(functi"
-    +"on() {\n$(\"#upload\").click(function(e){\n\tvar localurl = "
-    +"\"http://\"+location.hostname+\"/tilt/\";\n\t$.post( localur"
-    +"l, $(\"#main\").serialize(), function( data ) {\n\t$(\"#left"
-    +"\").empty();\n\t$(\"#left\").html(data);\n\t},\"text\").fail"
-    +"(function(xhr, status, error){\n\talert(status);\n\t});\n});"
-    +"\n$(\"#original\").click(function(){\n\t$(\"#left\").empty()"
-    +";\n\t$(\"#left\").html('<img width=\"500\" src=\"'+getUrlFro"
-    +"mLoc(\"original\")+'\">');\n});\n$(\"#greyscale\").click(fu"
-    +"nction(){\n\t$(\"#left\").empty();\n\t$(\"#left\").html('<im"
-    +"g width=\"500\" src=\"'+getUrlFromLoc(\"greyscale\")+'\">');"
-    +"\n});\n$(\"#twotone\").click(function(){\n\tvar url = escape"
-    +"Url(getUrlFromLoc(\"twotone\"));\n\t$(\"#left\").empty();\n\t"
-    +"$(\"#left\").html('<img width=\"500\" src=\"'+getUrlFromLoc"
-    +"(\"twotone\")+'\">');\n});\n});\n";
+    +"\n\t\tbreak;\n\t}\n}\nreturn newUrl;\n}\nfunction unescapeQu"
+    +"otes( input )\n{\n\tvar sb = \"\";\n\tfor ( var i=0;i<input."
+    +"length;i++ )\n\t{\n\t\tvar token = input.charAt(i);\n\t\tif "
+    +"( token=='*' )\n\t\t\tsb += '\"';\n\t\telse\n\t\t\tsb += tok"
+    +"en;\n\t}\n\treturn sb;\n}\nfunction getUrlFromLoc( pictype )"
+    +"\n{\n\tvar gjurl = getUrl($(\"#geojson\").val());\n\tvar url"
+    +" = \"../tilt/?docid=\"+escapeUrl(gjurl)+\"&pictype=\"+pictyp"
+    +"e;\n\treturn url;\n}\nfunction enableAll()\n{\n\t$(\"#origin"
+    +"al\").prop('disabled', false);\n\t$(\"#greyscale\").prop('di"
+    +"sabled', false);\n\t$(\"#twotone\").prop('disabled', false);"
+    +"\n\t$(\"#cleaned\").prop('disabled', false);\n}\nfunction di"
+    +"sableAll()\n{\n\t$(\"#original\").prop('disabled', true);\n\t"
+    +"$(\"#greyscale\").prop('disabled', true);\n\t$(\"#twotone\""
+    +").prop('disabled', true);\n\t$(\"#cleaned\").prop('disabled'"
+    +", true);\n}\n$(document).ready(function() {\ndisableAll();\n"
+    +"$(\"#upload\").click(function(e){\n\tvar localurl = \"http:/"
+    +"/\"+location.hostname+\"/tilt/\";\n\t$.post( localurl, $(\"#"
+    +"main\").serialize(), function( data ) {\n\t$(\"#left\").empt"
+    +"y();\n\t$(\"#left\").html(data);\n\tenableAll();\n\t},\"text"
+    +"\").fail(function(xhr, status, error){\n\talert(status);\n\t"
+    +"disableAll();\n\t});\n});\n$(\"#original\").click(function()"
+    +"{\n\t$(\"#left\").empty();\n\t$(\"#left\").html('<img width="
+    +"\"500\" src=\"'+getUrlFromLoc(\"original\")+'\">');\n});\n$("
+    +"\"#greyscale\").click(function(){\n\t$(\"#left\").empty();\n"
+    +"\t$(\"#left\").html('<img width=\"500\" src=\"'+getUrlFromLo"
+    +"c(\"greyscale\")+'\">');\n});\n$(\"#twotone\").click(functio"
+    +"n(){\n\tvar url = escapeUrl(getUrlFromLoc(\"twotone\"));\n\t"
+    +"$(\"#left\").empty();\n\t$(\"#left\").html('<img width=\"500"
+    +"\" src=\"'+getUrlFromLoc(\"twotone\")+'\">');\n});\n$(\"#cle"
+    +"aned\").click(function(){\n\tvar url = escapeUrl(getUrlFromL"
+    +"oc(\"cleaned\"));\n\t$(\"#left\").empty();\n\t$(\"#left\").h"
+    +"tml('<img width=\"500\" src=\"'+getUrlFromLoc(\"cleaned\")+'"
+    +"\">');\n});\n$(\"#selections\").change(function(e){\n\tvar v"
+    +"al = $(\"#selections\").val();\n\t$(\"#geojson\").val(unesca"
+    +"peQuotes(val));\n\tdisableAll();\n});\n});\n";
     static String DEFAULT_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://setis.library.usyd.edu.au/ozedits/harpu"
-    +"r/A87-1/00000005.jpg\"\n}\n}\n";
+    +"\t\"url\": \"http://ecdosis.net/images//00000005.jpg\"\n}\n}\n";
+    static String CAPUANA_JSON = 
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n}"
+    +"\n}\n";
+    static String DEROBERTO_JSON = 
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/pg_0052.jpg\"\n}\n}\n";
     static String POST_CSS =
     "#left {float:left;margin:10px}\n" +
     "#right {float:left;margin:10px}\n" +
@@ -92,8 +119,13 @@ public class Post extends Test
             Form f = new Form( "POST", "http://"+request.getServerName()
                 +"/tilt","multipart/form-data" );
             f.addAttribute("id","main");
+            HashMap<String,String> selections = new HashMap<String,String>();
+            selections.put("Harpur example",DEFAULT_JSON);
+            selections.put("Capuana example",CAPUANA_JSON);
+            selections.put("De Roberto example",DEROBERTO_JSON);
+            Select s = new Select( selections, "selections", "Harpur example" );
             Element p = new Element("p");
-            p.addText("Enter/edit GeoJSON:");
+            p.addElement(s);
             f.addElement( p );
             Element div1 = new Element("div");
             div1.addAttribute("id","left");
@@ -108,10 +140,11 @@ public class Post extends Test
             textarea.addText(DEFAULT_JSON);
             f.addElement( textarea );
             p = new Element("p");
-            p.addElement( new Input("upload","button","upload") );
-            p.addElement( new Input("original","button","original") );
-            p.addElement( new Input("greyscale","button","greyscale") );
-            p.addElement( new Input("twotone","button","two tone") );
+            p.addElement( new Input("upload","button","upload",true) );
+            p.addElement( new Input("original","button","original",false) );
+            p.addElement( new Input("greyscale","button","greyscale",false) );
+            p.addElement( new Input("twotone","button","two tone",false) );
+            p.addElement( new Input("cleaned","button","cleaned",false) );
             f.addElement( p );
             doc.addElement( f );
             response.setContentType("text/html;charset=UTF-8");
