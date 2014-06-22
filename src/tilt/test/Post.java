@@ -90,7 +90,7 @@ public class Post extends Test
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/pg_0052.jpg\"\n}\n}\n";
+    +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n}\n}\n";
     static String POST_CSS =
     "#left {float:left;margin:10px}\n" +
     "#right {float:left;margin:10px}\n" +

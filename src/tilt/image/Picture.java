@@ -28,6 +28,7 @@ import tilt.exception.TiltException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
 import java.awt.Graphics;
+import java.awt.Point;
 
 import java.util.Iterator;
 import javax.imageio.ImageIO;
@@ -35,6 +36,12 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
@@ -49,6 +56,7 @@ public class Picture {
     File orig;
     File greyscale;
     File twotone;
+    File cleaned;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -334,6 +342,28 @@ public class Picture {
         }
     }
     /**
+     * Convert from cleaned from twotone
+     * @throws Exception 
+     */
+    void convertToCleaned() throws ImageException 
+    {
+        try
+        {
+            if ( twotone == null )
+                convertToTwoTone();
+            BufferedImage tt = ImageIO.read(twotone);
+            RemoveNoise rn = new RemoveNoise( tt );
+            rn.clean();
+            cleaned = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( tt, "png", cleaned );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
      * Retrieve the data of a picture file
      * @return a byte array
      * @throws ImageException 
@@ -361,16 +391,14 @@ public class Picture {
         return getPicData( orig );
     }
     /**
-     * Read the original image 
-     * @param url the original url 
+     * Read the cleaned image 
      * @return the image as a byte array
      */
     public byte[] getCleanedData() throws ImageException
     {
-        if ( twotone == null )
-            convertToTwoTone();
-        removeLines();
-        return getPicData( twotone );
+        if ( cleaned == null )
+            convertToCleaned();
+        return getPicData( cleaned );
     }
     /**
      * Get the greyscale version of the data
@@ -393,23 +421,5 @@ public class Picture {
         if ( twotone == null )
             convertToTwoTone();
         return getPicData( twotone );
-    }
-    /**
-     * Remove lines such as borders and internal lines
-     */
-    public void removeLines() throws ImageException
-    {
-        try
-        {
-            if ( twotone == null )
-                convertToTwoTone();
-            RemoveLines rl = new RemoveLines( ImageIO.read(twotone) );
-            rl.removeAll();
-            // write to file
-        }
-        catch ( Exception e )
-        {
-            throw new ImageException(e);
-        }
     }
 }
