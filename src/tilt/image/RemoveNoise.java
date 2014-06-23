@@ -170,7 +170,7 @@ public class RemoveNoise
             Point r = rhs.get(i);
             whiteRegion.addPoint( r.x,r.y );
         }
-        // no test the rejects for overlap with the polygon
+        // now test the rejects for overlap with the polygon
         for ( int i=0;i<rejects.size();i++ )
         {
             Blob b = rejects.get(i);
