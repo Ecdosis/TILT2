@@ -26,6 +26,12 @@ import java.util.Iterator;
  */
 public class Select extends Element
 {
+    /**
+     * Create a HTML select list
+     * @param map a map of name-value pairs
+     * @param id the id of the select list
+     * @param selected name of option to preselect
+     */
     public Select( HashMap<String,String> map, String id, String selected )
     {
         super("select");

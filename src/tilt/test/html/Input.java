@@ -23,6 +23,13 @@ package tilt.test.html;
  */
 public class Input extends Element
 {
+    /**
+     * Create an input element in a form
+     * @param id its id
+     * @param type its type
+     * @param value its initial value
+     * @param enabled true if it is be created enabled
+     */
     public Input( String id, String type,String value,boolean enabled )
     {
         super("input");

@@ -24,6 +24,11 @@ import tilt.Utils;
  */
 public class Option extends Element
 {
+    /**
+     * Create an option in a select list
+     * @param name the name of the option
+     * @param value the value to submit/display
+     */
     public Option( String name, String value )
     {
         super("option");

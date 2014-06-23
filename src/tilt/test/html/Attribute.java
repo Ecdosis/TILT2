@@ -24,8 +24,15 @@ package tilt.test.html;
  */
 public class Attribute 
 {
+    /** the attribute name */
     String name;
+    /** the attribute value */
     String value;
+    /**
+     * Create an attribute
+     * @param name its name
+     * @param value its value
+     */
     public Attribute( String name, String value )
     {
         this.name = name;

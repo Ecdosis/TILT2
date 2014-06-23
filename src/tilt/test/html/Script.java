@@ -23,6 +23,10 @@ package tilt.test.html;
  */
 public class Script extends Element
 {
+    /**
+     * Create a javascript script for the header
+     * @param text the text of the javascript
+     */
     public Script( String text )
     {
         super( "script" );

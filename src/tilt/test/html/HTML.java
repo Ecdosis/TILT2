@@ -24,7 +24,9 @@ package tilt.test.html;
  */
 public class HTML 
 {
+    /** the HTML head element */
     Head head;
+    /** the body as a string (gets built as we go) */
     StringBuilder body;
     /**
      * Create an instance of a HTML document

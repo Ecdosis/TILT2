@@ -21,14 +21,21 @@ package tilt.test.html;
 import java.util.ArrayList;
 
 /**
- * Represent a HTML5 element
+ * Represent a generic HTML5 element
  * @author desmond
  */
 public class Element
 {
+    /** The contents turned into text as we go */
     StringBuilder contents;
+    /** a list of the element's attributes */
     ArrayList<Attribute> attrs;
+    /** the tag name */
     String name;
+    /**
+     * Create an element
+     * @param name the tag name
+     */
     public Element( String name )
     {
         this.name = name;

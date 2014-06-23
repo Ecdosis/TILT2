@@ -24,6 +24,10 @@ package tilt.test.html;
  */
 public class JQueryRef extends Script
 {
+    /**
+     * Create a reference for the header to an external jquery version
+     * @param version the version of jQuery to use
+     */
     public JQueryRef( String version )
     {
         super("");

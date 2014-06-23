@@ -26,6 +26,9 @@ public class Form extends Element
 {
     /**
      * Create a form instance
+     * @param method the method attribute of the form
+     * @param url the url to post/get to
+     * @param encType the enctype attribute for the form
      */
     public Form( String method, String url, String encType )
     {
