@@ -356,6 +356,7 @@ public class Picture {
             cleaned = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( tt, "png", cleaned );
+            FindLines fl = new FindLines(tt.getRaster());
         }
         catch ( Exception e )
         {

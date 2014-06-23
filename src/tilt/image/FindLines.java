@@ -17,6 +17,7 @@
  */
 
 package tilt.image;
+import java.util.ArrayList;
 
 import java.awt.image.WritableRaster;
 
@@ -26,41 +27,71 @@ import java.awt.image.WritableRaster;
  */
 public class FindLines 
 {
-    float averagePixelDensity;
-    float[] hAverages;
     float[] vAverages;
+    float average;
+    int[][] compacted;
     float[][] cusum;
+    int[][] peaks;
     int height;
     int width;
+    static float SCALE_RATIO = 0.005f;
+    /** number of vertical or horizontal pixels to combine */
+    int scale;
     public FindLines( WritableRaster wr )
     {
-        height = wr.getHeight();
-        width = wr.getWidth();
-        hAverages = new float[height];
-        vAverages = new float[height];
-        for ( int i=0;i<height;i++ )
-            hAverages[i] = averageRow(wr,i);
-        cusum = new float[width][height];
-        for ( int y=0;y<height;y++ )
-        {
-            cusum[0][y] = 0.0f;
-            for ( int x=1;x<width;x++ )
-                cusum[x][y] = cusum[x-1][y]-hAverages[y];
-        }
+        scale = Math.round(wr.getWidth()/SCALE_RATIO);
+        height = wr.getHeight()/scale;
+        width = wr.getWidth()/scale;
+        compacted = new int[height][width];
+        vAverages = new float[width];
+        peaks = new int[width][];
+        cusum = new float[height][width];
+        // average the columns
         for ( int x=0;x<width;x++ )
+        {
             vAverages[x] = averageCol(x);
+            average += vAverages[x];
+        }
+        // calculate the cusum
+        average /= width;
         for ( int x=0;x<width;x++ )
         {
-            cusum[x][0] = 0.0f;
+            cusum[0][x] = 0.0f;
             for ( int y=1;y<height;y++ )
             {
-                cusum[x][y] = cusum[x][y-1]-vAverages[x];
+                cusum[y][x] = cusum[y-1][x]+(cusum[y][x]-vAverages[x]);
             }
         }
+        // find peaks
+        ArrayList<Integer> peaks = new ArrayList<Integer>();
+        int totalPeaks = 0;
+        for ( int x=0;x<width;x++ )
+        {
+            float current = 0.0f;
+            for ( int y=0;y<height;y++ )
+            {
+                if ( cusum[y][x] > average )
+                {
+                    if ( cusum[y][x] > current )
+                        current = cusum[y][x];
+                    else if ( current != 0.0f && cusum[y][x] < current )
+                    {
+                        peaks.add(new Integer(y) );
+                        current = 0.0f;
+                    }
+                }
+            }
+            totalPeaks += peaks.size();
+            peaks.clear();
+        }
+        System.out.println("Average number of peaks per column="+(totalPeaks/width));
         // now for each column find the peaks, record them
-        // as they for each coloumn, trace them with the 
+        // as they are for each coloumn, trace them with the 
         // closest matching values, allowing some to peter out 
         // or new ones to start
+    }
+    void compact( WritableRaster wr )
+    {
     }
     /**
      * Compute the average of a row
@@ -72,12 +103,19 @@ public class FindLines
     {
         int total = 0;
         int[] iArray = new int[1];
-        for ( int i=0;i<wr.getWidth();i++ )
+        int rowWidth = wr.getWidth()/SCALE;
+        for ( int i=0;i<rowWidth;i++ )
         {
-            wr.getPixel(i,row,iArray );
-            total += iArray[0];
+            for ( int y=0;y<SCALE;y++ )
+            {
+                for ( int x=0;x<SCALE;x++ )
+                {
+                    wr.getPixel(i*SCALE+x,row*SCALE+y,iArray );
+                    total += (iArray[0]==0)?1:0;
+                }
+            }
         }
-        return (float)total/(float)wr.getWidth();
+        return (float)total/(float)rowWidth;
     }
     /**
      * Compute the average of a row
@@ -88,7 +126,7 @@ public class FindLines
     {
         float total = 0.0f;
         for ( int i=0;i<height;i++ )
-            total += cusum[col][i];
+            total += cusum[i][col];
         return total/(float)height;
     }
 }

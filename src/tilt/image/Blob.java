@@ -1,8 +1,21 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of TILT.
+ *
+ *  TILT is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  TILT is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
+ *  (c) copyright Desmond Schmidt 2014
  */
+
 
 package tilt.image;
 import java.awt.Point;
@@ -73,6 +86,13 @@ public class Blob
         int[] iArray = new int[1];
         wr.setPixel(loc.x,loc.y,iArray);
     }
+    /**
+     * Is this blob entirely with the narrow edge around the margin?
+     * @param edge width of the edge
+     * @param width width of the blob
+     * @param height height of the blob
+     * @return true if it is
+     */
     private boolean nearEdge( int edge, float width, float height )
     {
         return ( ((width/height)>2.0f && (minY<=edge||maxY>=parent.getHeight()-edge))
@@ -100,10 +120,12 @@ public class Blob
             else if ( height/(float)iHeight>=MIN_V_PROPORTION)
                 return true;
             //else
-            //    System.out.println("rejecting blob at "+minX+","+minY+" width="+width+" height="+height+" edge="+edge);
+            //    System.out.println("rejecting blob at "+minX+","+minY
+            //    +" width="+width+" height="+height+" edge="+edge);
         }
         //else
-        //    System.out.println("rejecting blob at "+minX+","+minY+" width="+width+" height="+height+" edge="+edge);
+        //    System.out.println("rejecting blob at "+minX+","+minY+" width="
+        //    +width+" height="+height+" edge="+edge);
         return false;
     }
     /**
