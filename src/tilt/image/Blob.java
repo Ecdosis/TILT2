@@ -49,23 +49,46 @@ public class Blob
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
     }
+    /**
+     * Actually commit the blob to the dirty raster
+     * @param dirt the raster to store the pixels to be removed
+     * @param wr the original image raster
+     * @param loc the start-position of the blob
+     */
     public void save( WritableRaster dirt, WritableRaster wr, Point loc )
     {
         this.dirt = parent;
+        // recompute the blob - a bit inefficient but storing it is far worse
         expandArea( wr, loc );
     }
+    /**
+     * How many black pixels we have
+     * @return 
+     */
     public int size()
     {
         return numBlackPixels;
     }
+    /**
+     * Top left coordinate of blob
+     * @return a Point
+     */
     Point topLeft()
     {
         return new Point( minX,minY );
     }
+    /**
+     * Bottom right coordinate of blob
+     * @return a Point
+     */
     Point botRight()
     {
         return new Point( maxX,maxY );
     }
+    /**
+     * Set a raster to white (now only called by Picture)
+     * @param wr the raster to white out
+     */
     public static void setToWhite( WritableRaster wr )
     {
         // set all to white
@@ -81,6 +104,11 @@ public class Blob
             }
         }
     }
+    /**
+     * Actually set a black in the given raster
+     * @param wr the raster to set a black pixel in
+     * @param loc the location of the pixel
+     */
     public static void addBlackPixel( WritableRaster wr, Point loc )
     {
         int[] iArray = new int[1];
@@ -265,12 +293,20 @@ public class Blob
             }
         }
     }
+    /**
+     * Get this blob'swidth
+     * @return an int > 0
+     */
     int getWidth()
     {
-        return maxX-minX;
+        return (maxX-minX)+1;
     }
+    /**
+     * Get this blob's height
+     * @return an int > 0
+     */
     int getHeight()
     {
-        return maxY-minY;
+        return (maxY-minY)+1;
     }
 }
