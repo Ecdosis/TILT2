@@ -28,7 +28,6 @@ import tilt.exception.TiltException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
 import java.awt.Graphics;
-import java.awt.Point;
 
 import java.util.Iterator;
 import javax.imageio.ImageIO;

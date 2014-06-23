@@ -24,25 +24,34 @@ public class Blob
     static float MIN_H_PROPORTION = 0.1f;
     static float MIN_V_PROPORTION = 0.05f;
     /** accumulate black pixels here */
-    WritableRaster dirt;
+    WritableRaster dirt; 
     /** unless they are already in here */
     WritableRaster parent;
     /** limits of pixel area */
     int minX,maxX,minY,maxY;
-    Blob( WritableRaster parent)
+    /** First black pixel*/
+    Point firstBlackPixel;
+    Blob( WritableRaster parent )
     {
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
     }
     public void save( WritableRaster dirt, WritableRaster wr, Point loc )
     {
-        setToWhite( dirt );
-        this.dirt = dirt;
+        this.dirt = parent;
         expandArea( wr, loc );
     }
     public int size()
     {
         return numBlackPixels;
+    }
+    Point topLeft()
+    {
+        return new Point( minX,minY );
+    }
+    Point botRight()
+    {
+        return new Point( maxX,maxY );
     }
     public static void setToWhite( WritableRaster wr )
     {
@@ -64,6 +73,11 @@ public class Blob
         int[] iArray = new int[1];
         wr.setPixel(loc.x,loc.y,iArray);
     }
+    private boolean nearEdge( int edge, float width, float height )
+    {
+        return ( ((width/height)>2.0f && (minY<=edge||maxY>=parent.getHeight()-edge))
+            || ((height/width)>2.0f && (minX<=edge||maxX>=parent.getWidth()-edge)) );
+    }
     /**
      * Does this blob constitute a big enough area?
      * @param iWidth the overall image width
@@ -74,21 +88,22 @@ public class Blob
     {
         int totalPixels = numWhitePixels+numBlackPixels;
         float ratio= (float)numBlackPixels/(float)totalPixels;
-        float width = (float)(maxX-minX);
-        float height = (float)(maxY-minY);
-        if ( ratio > MIN_BLACK_PC )
+        float width = (float)(maxX+1-minX);
+        float height = (float)(maxY+1-minY);
+        int edge = Math.round(iWidth/100.0f);
+        if ( nearEdge(edge,width,height) )
+            return true;
+        else if ( ratio > MIN_BLACK_PC )
         {
             if ( width/(float)iWidth>=MIN_H_PROPORTION)
                 return true;
             else if ( height/(float)iHeight>=MIN_V_PROPORTION)
                 return true;
+            //else
+            //    System.out.println("rejecting blob at "+minX+","+minY+" width="+width+" height="+height+" edge="+edge);
         }
-        else
-        {
-            if ( ((width/height)>2.0f && (minY<=5||maxY==parent.getHeight()-6))
-                || ((height/width)>2.0f && (minX<=5||maxX==parent.getWidth()-6)) )
-                return true;
-        }
+        //else
+        //    System.out.println("rejecting blob at "+minX+","+minY+" width="+width+" height="+height+" edge="+edge);
         return false;
     }
     /**
@@ -144,6 +159,7 @@ public class Blob
         int l = start.x;
         int r = start.x;
         boolean done = false;
+        firstBlackPixel = start;
         setBlackPixel(start.x,start.y,iArray);
         // find r in first row
         for ( int x=start.x+1;x<wr.getWidth();x++ )

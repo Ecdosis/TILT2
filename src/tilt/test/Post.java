@@ -91,6 +91,11 @@ public class Post extends Test
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n}\n}\n";
+    static String DEROBERTO2_JSON = 
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n}\n}\n";
     static String POST_CSS =
     "#left {float:left;margin:10px}\n" +
     "#right {float:left;margin:10px}\n" +
@@ -122,7 +127,8 @@ public class Post extends Test
             HashMap<String,String> selections = new HashMap<String,String>();
             selections.put("Harpur example",DEFAULT_JSON);
             selections.put("Capuana example",CAPUANA_JSON);
-            selections.put("De Roberto example",DEROBERTO_JSON);
+            selections.put("De Roberto V2",DEROBERTO_JSON);
+            selections.put("De Roberto 1920 edition",DEROBERTO2_JSON);
             Select s = new Select( selections, "selections", "Harpur example" );
             Element p = new Element("p");
             p.addElement(s);
