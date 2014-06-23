@@ -66,12 +66,21 @@ public class RemoveNoise
             }
         }
     }
+    /**
+     * Is there a matching black pixel at these coordinates in darkRegions?
+     * @param loc the point to test
+     * @return true if it is already dark there
+     */
     private boolean isDirty( Point loc )
     {
         int[] iArray =new int[1];
         darkRegions.getPixel(loc.x,loc.y,iArray);
         return iArray[0]==0;
     }
+    /**
+     * Add the pixels of a blob to the darkRegions
+     * @param b the blob to add
+     */
     private void mergeIntoDarkness( Blob b )
     {
         WritableRaster other = b.dirt;
@@ -87,7 +96,7 @@ public class RemoveNoise
         }
     }
     /**
-     * Add any formerly rejected blobs to the are enclosed by accepted blobs
+     * Add any formerly rejected blobs that are surrounded by accepted blobs
      * @param wr the raster of the image
      */
     private void calcWhiteArea( WritableRaster wr )
@@ -164,7 +173,8 @@ public class RemoveNoise
         for ( int i=0;i<rejects.size();i++ )
         {
             Blob b = rejects.get(i);
-            if ( whiteRegion.contains(b.topLeft()) || whiteRegion.contains(b.botRight()) )
+            if ( whiteRegion.contains(b.topLeft()) 
+                || whiteRegion.contains(b.botRight()) )
             {
                 //System.out.println("Adding back rejected blob "+b.minX+","+b.minY);
                 b.save(darkRegions,wr,b.firstBlackPixel);
