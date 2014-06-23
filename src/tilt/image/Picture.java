@@ -35,12 +35,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
-import java.awt.image.DataBufferShort;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**

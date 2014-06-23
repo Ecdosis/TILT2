@@ -43,34 +43,34 @@ public class Utils
         return sb.toString();
     }
     /**
-	 * Chop off the first component of a urn
-	 * @param urn the urn to chop
-	 * @return the first urn component
-	 */
-	public static String first( String urn )
-	{ 
-		int slashPos1 = -1;
-		if ( urn.startsWith("/") )
-		    slashPos1 = urn.indexOf( "/" );
-		int slashPos2 = urn.indexOf( "/", slashPos1+1 );
-		if ( slashPos1 != -1 && slashPos2 != -1 )
-		    return urn.substring(slashPos1+1, slashPos2 );
-		else if ( slashPos1 != -1 && slashPos2 == -1 )
-		    return urn.substring( slashPos1+1 );
-		else if ( slashPos1 == -1 && slashPos2 != -1 )
-		    return urn.substring( 0,slashPos2 );
-		else
-		    return urn;
-	}
+     * Chop off the first component of a urn
+     * @param urn the urn to chop
+     * @return the first urn component
+     */
+    public static String first( String urn )
+    { 
+        int slashPos1 = -1;
+        if ( urn.startsWith("/") )
+            slashPos1 = urn.indexOf( "/" );
+        int slashPos2 = urn.indexOf( "/", slashPos1+1 );
+        if ( slashPos1 != -1 && slashPos2 != -1 )
+            return urn.substring(slashPos1+1, slashPos2 );
+        else if ( slashPos1 != -1 && slashPos2 == -1 )
+            return urn.substring( slashPos1+1 );
+        else if ( slashPos1 == -1 && slashPos2 != -1 )
+            return urn.substring( 0,slashPos2 );
+        else
+            return urn;
+    }
     /**
-	 * Extract the second component of a urn
-	 * @param urn the urn to extract from
-	 * @return the second urn component
-	 */
-	public static String second( String urn )
-	{ 
+     * Extract the second component of a urn
+     * @param urn the urn to extract from
+     * @return the second urn component
+     */
+    public static String second( String urn )
+    { 
         int start=-1,end=-1;
-		for ( int state=0,i=0;i<urn.length();i++ )
+        for ( int state=0,i=0;i<urn.length();i++ )
         {
             char token = urn.charAt(i);
             switch ( state )
@@ -94,10 +94,10 @@ public class Utils
                     break;
                 case 3:
                     if ( token == '/' )
-					{
+                    {
                         end = i;
-						state = -1;
-					}
+                        state = -1;
+                    }
                     break;
             }
             if ( state == -1 )
@@ -105,10 +105,10 @@ public class Utils
         }
         if ( end == -1 )
             end = urn.length();
-		if ( start == -1 )
-			start = urn.length();
+        if ( start == -1 )
+            start = urn.length();
         return urn.substring( start, end );
-	}
+    }
     /**
      * Pop off the frontmost part of the path
      * @param path the path to pop

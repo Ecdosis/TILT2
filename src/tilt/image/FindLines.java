@@ -35,14 +35,17 @@ public class FindLines
     int[][] peaks;
     int height;
     int width;
-    static float SCALE_RATIO = 0.006f;
+    static float V_SCALE_RATIO = 0.005f;
+    static float H_SCALE_RATIO = 0.02f;
     /** number of vertical or horizontal pixels to combine */
-    int scale;
+    int hScale;
+    int vScale;
     public FindLines( WritableRaster wr )
     {
-        scale = Math.round(wr.getWidth()*SCALE_RATIO);
-        height = (wr.getHeight()+scale-1)/scale;
-        width = (wr.getWidth()+scale-1)/scale;
+        hScale = Math.round(wr.getWidth()*H_SCALE_RATIO);
+        vScale = Math.round(wr.getHeight()*V_SCALE_RATIO);
+        height = (wr.getHeight()+vScale-1)/vScale;
+        width = (wr.getWidth()+hScale-1)/hScale;
         compacted = new int[width][height];
         hAverages = new float[height];
         vAverages = new float[width];
@@ -133,7 +136,7 @@ public class FindLines
             {
                 wr.getPixel( x, y, iArray );
                 if ( iArray[0] == 0 )
-                    compacted[x/scale][y/scale]++;
+                    compacted[x/hScale][y/vScale]++;
             }
         }
     }
