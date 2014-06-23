@@ -170,13 +170,15 @@ public class RemoveNoise
             Point r = rhs.get(i);
             whiteRegion.addPoint( r.x,r.y );
         }
+        // no test the rejects for overlap with the polygon
         for ( int i=0;i<rejects.size();i++ )
         {
             Blob b = rejects.get(i);
             if ( whiteRegion.contains(b.topLeft()) 
                 || whiteRegion.contains(b.botRight()) )
             {
-                //System.out.println("Adding back rejected blob "+b.minX+","+b.minY);
+                //System.out.println("Adding back rejected blob "
+                //+b.minX+","+b.minY);
                 b.save(darkRegions,wr,b.firstBlackPixel);
             }
         }
