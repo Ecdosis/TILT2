@@ -18,9 +18,9 @@
 
 package tilt.image;
 import java.util.ArrayList;
-
+import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-
+import java.awt.Graphics2D;
 /**
  * Find lines in manuscripts/printed text when tilted/warped etc.
  * @author desmond
@@ -40,8 +40,11 @@ public class FindLines
     /** number of vertical or horizontal pixels to combine */
     int hScale;
     int vScale;
-    public FindLines( WritableRaster wr )
+    BufferedImage src;
+    public FindLines( BufferedImage src )
     {
+        WritableRaster wr = src.getRaster();
+        this.src = src;
         hScale = Math.round(wr.getWidth()*H_SCALE_RATIO);
         vScale = Math.round(wr.getHeight()*V_SCALE_RATIO);
         height = (wr.getHeight()+vScale-1)/vScale;
@@ -84,14 +87,14 @@ public class FindLines
             }
         }
         // find peaks
-        ArrayList<Integer> peaks = new ArrayList<Integer>();
-        int totalPeaks = 0;
-        for ( int y=0;y<height;y++ )
+        ArrayList[] cols = new ArrayList[width];
+        for ( int x=0;x<width;x++ )
         {
-            float current = 0.0f;
-            int index = -1;
-            for ( int x=0;x<width;x++ )
+            cols[x] = new ArrayList<Integer>();
+            for ( int y=0;y<height;y++ )
             {
+                float current = 0.0f;
+                int index = -1;
                 if ( cusum[x][y] > average )
                 {
                     if ( cusum[x][y] > current )
@@ -101,25 +104,83 @@ public class FindLines
                     }
                     else if ( cusum[x][y] != current )
                     {
-                        peaks.add(new Integer(index) );
+                        cols[x].add(new Integer(index) );
                         current = 0.0f;
                         index = -1;
                     }
                 }
                 else if ( current > 0.0f )
                 {
-                    peaks.add(new Integer(index) );
-                    current = 0.0f;index = -1;
+                    cols[x].add(new Integer(index) );
+                    current = 0.0f;
+                    index = -1;
                 }
             }
-            totalPeaks += peaks.size();
-            peaks.clear();
         }
-        System.out.println("Average number of peaks per column="+(totalPeaks/width));
+        // now draw the lines
+        Graphics2D g2 = src.createGraphics();
+        for ( int i=0;i<cols.length-1;i++ )
+        {
+            ArrayList col1 = cols[i];
+            ArrayList col2 = cols[i+1];
+            int j = 0;
+            int k = 0;
+            while ( j<col1.size() && k<col2.size() )
+            {
+                int kBest = findBestMatch(col2,j,k);
+                int jBest = findBestMatch(col1,k,j);
+                int cRes1 = compareRow(j,kBest);
+                int cRes2 = compareRow(k,jBest);
+                if ( cRes1 > cRes2 )
+                {
+                    drawLine( col1.get(jBest), col2.get(k) );
+                    j = jBest+1;
+                    k++;
+                }
+                else
+                {
+                    drawLine( col1.get(j), col2.get(kBest) );
+                    j++;
+                    k = kBest+1;
+                }
+            }
+        }
         // now for each column find the peaks, record them
         // as they are for each coloumn, trace them with the 
         // closest matching values, allowing some to peter out 
         // or new ones to start
+    }
+//    
+//                if ( row1 == row2 )
+//                {
+//                    g2.drawLine( 
+//                        (hScale/2)+hScale*i,
+//                        (vScale/2)+vScale*j,
+//                        (hScale/2)+hScale*(i+1),
+//                        (vScale/2)+vScale*row2
+//                    );
+//                    j++;
+//                    k++;
+//                }
+//                else
+    /**
+     * Given a value in one list, find the closest match in another list
+     * @param list the list to search
+     * @param value the value in the other list, fixed
+     * @param from start from this index in list
+     * @return 
+     */
+    private int findBestMatch( ArrayList list, int value, int from )
+    {
+        int m = from+1;
+        int best = ((Integer)list.get(from)).intValue();
+        int row;
+        do
+        {
+            row = ((Integer)list.get(m)).intValue();
+            m++;
+        } while ( Math.abs(row-value) < Math.abs(best-value));
+        return row;
     }
     /**
      * Collapse the whole image by merging squares of pixels

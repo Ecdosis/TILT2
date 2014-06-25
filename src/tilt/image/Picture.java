@@ -50,6 +50,7 @@ public class Picture {
     File greyscale;
     File twotone;
     File cleaned;
+    File lined;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -335,7 +336,7 @@ public class Picture {
         }
     }
     /**
-     * Convert from cleaned from twotone
+     * Convert to cleaned from twotone
      * @throws Exception 
      */
     void convertToCleaned() throws ImageException 
@@ -350,7 +351,27 @@ public class Picture {
             cleaned = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( tt, "png", cleaned );
-            FindLines fl = new FindLines(tt.getRaster());
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
+     * Convert to show lines from cleaned
+     * @throws ImageException 
+     */
+    void convertToLined() throws ImageException
+    {
+        try
+        {
+            if ( cleaned == null )
+                convertToCleaned();
+            BufferedImage withLines = ImageIO.read(cleaned);
+            FindLines fl = new FindLines( withLines.getRaster() );
+            lined = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( withLines, "png", lined );
         }
         catch ( Exception e )
         {
