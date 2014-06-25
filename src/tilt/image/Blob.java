@@ -16,7 +16,6 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 
-
 package tilt.image;
 import java.awt.Point;
 import java.awt.image.WritableRaster;
