@@ -20,8 +20,10 @@ package tilt.image;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.Graphics;
 import java.util.ArrayList;
+import java.awt.geom.Area;
+import tilt.Utils;
 /**
  * Remove big black blobs from two-tone pictures.
  * @author desmond
@@ -30,13 +32,16 @@ public class RemoveNoise
 {
     BufferedImage src;
     WritableRaster darkRegions;
-    static float BORDER = 0.1f;
+    WritableRaster rejectedRegions;
+    Border border;
     ArrayList<Blob> rejects;
     public RemoveNoise( BufferedImage src )
     {
         this.src = src;
         darkRegions = src.copyData(null);
-        Blob.setToWhite( darkRegions );
+        float average = Blob.setToWhite( darkRegions );
+        border = new Border( src.getRaster(), average );
+        rejectedRegions = Utils.copyRaster( darkRegions, 0, 0 );
         this.rejects = new ArrayList<Blob>();
     }
     /**
@@ -71,6 +76,17 @@ public class RemoveNoise
      * @param loc the point to test
      * @return true if it is already dark there
      */
+    private boolean isRejected( Point loc )
+    {
+        int[] iArray =new int[1];
+        rejectedRegions.getPixel(loc.x,loc.y,iArray);
+        return iArray[0]==0;
+    }
+    /**
+     * Is there a matching black pixel at these coordinates in darkRegions?
+     * @param loc the point to test
+     * @return true if it is already dark there
+     */
     private boolean isDirty( Point loc )
     {
         int[] iArray =new int[1];
@@ -78,109 +94,18 @@ public class RemoveNoise
         return iArray[0]==0;
     }
     /**
-     * Add the pixels of a blob to the darkRegions
-     * @param b the blob to add
-     */
-    private void mergeIntoDarkness( Blob b )
-    {
-        WritableRaster other = b.dirt;
-        int[] iArray = new int[1];
-        for ( int y=0;y<other.getHeight();y++ )
-        {
-            for ( int x=0;x<other.getWidth();x++ )
-            {
-                other.getPixel(x,y,iArray);
-                if ( iArray[0] == 0 )
-                    darkRegions.setPixel(x,y,iArray);
-            }
-        }
-    }
-    /**
-     * Add any formerly rejected blobs that are surrounded by accepted blobs
+     * Add any formerly rejected blobs that are within the outer border
      * @param wr the raster of the image
      */
     private void calcWhiteArea( WritableRaster wr )
     {
-        Point lastLeft=null,lastRight=null;
-        Point currentLeft = new Point(0,0);
-        Point currentRight = new Point(0,0);
-        int width = darkRegions.getWidth();
-        int height = darkRegions.getHeight();
-        ArrayList<Point> rhs = new ArrayList<Point>();
-        int[] iArray = new int[1];
-        // build enclosing polygon
-        Polygon whiteRegion = new Polygon();
-        for ( int y=0;y<height;y++ )
-        {
-            int leftMost = -1;
-            int rightMost = width;
-            for ( int x=0;x<width;x++ )
-            {
-                darkRegions.getPixel(x,y,iArray);
-                if ( iArray[0] == 0 )
-                {
-                    rightMost = leftMost = x;
-                    break;
-                }
-            }
-            if ( leftMost > 0 )
-            {
-                for ( int x=width-1;x>leftMost;x-- )
-                {
-                    darkRegions.getPixel(x,y,iArray);
-                    if ( iArray[0] == 0 )
-                    {
-                        rightMost = x;
-                        break;
-                    }
-                }
-            }
-            if ( leftMost > 0 )
-            {
-                if ( lastLeft==null || lastLeft.x != leftMost )
-                {
-                    if ( lastLeft != null )
-                        whiteRegion.addPoint(lastLeft.x,lastLeft.y);
-                    lastLeft = new Point( (leftMost==0)?0:leftMost-1, y );
-                }
-                currentLeft.x = leftMost;
-                currentLeft.y = y;
-            }
-            if ( rightMost < width )
-            {
-                if ( lastRight==null || lastRight.x != rightMost )
-                {
-                    if ( lastRight != null )
-                        rhs.add(lastRight);
-                    lastRight = new Point( (rightMost==width-1)?width-1
-                        :rightMost+1, y );
-                }
-                currentRight.x = rightMost;
-                currentRight.y = y;
-            }
-        }
-        // join up the bottom
-        if ( currentLeft.y != lastLeft.y )
-            whiteRegion.addPoint(currentLeft.x,currentLeft.y);
-        if ( currentRight.y != lastRight.y )
-            whiteRegion.addPoint(currentRight.x,currentRight.y);
-        // add the rhs
-        for ( int i=rhs.size()-1;i>=0;i-- )
-        {
-            Point r = rhs.get(i);
-            whiteRegion.addPoint( r.x,r.y );
-        }
-        // now test the rejects for overlap with the polygon
+        Area whiteArea = border.area;
         for ( int i=0;i<rejects.size();i++ )
         {
             Blob b = rejects.get(i);
-            if ( whiteRegion.contains(b.topLeft()) 
-                || whiteRegion.contains(b.botRight()) )
-            {
-                //System.out.println("Adding back rejected blob "
-                //+b.minX+","+b.minY);
-                b.save(darkRegions,wr,b.firstBlackPixel);
-            }
+            if ( whiteArea.contains(b.topLeft()) 
+                || whiteArea.contains(b.botRight()) )
+                b.save( darkRegions, wr, b.firstBlackPixel );
         }
     }
     /**
@@ -191,35 +116,32 @@ public class RemoveNoise
         WritableRaster wr = src.getRaster();
         Point loc= new Point(0,0);
         int[] iArray = new int[1];
-        int topYLimit = Math.round(BORDER*wr.getHeight());
-        int botYLimit = wr.getHeight()-topYLimit;
-        int leftXLimit = Math.round(BORDER*wr.getWidth());
-        int rightXLimit = wr.getWidth()-leftXLimit;
         for ( int y=0;y<wr.getHeight();y++ )
         {
             loc.y = y;
             for ( int x=0;x<wr.getWidth();x++ )
             {
-                if ( y <= topYLimit || y >= botYLimit 
-                    || x <= leftXLimit || x >= rightXLimit )
+                loc.x = x;
+                if ( border.area.contains(loc) )
                 {
-                    loc.x = x;
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
                     {
-                        if ( !isDirty(loc) )
+                        loc.y = y;
+                        loc.x = x;
+                        if ( !isDirty(loc) && !isRejected(loc) )
                         {
                             Blob b = new Blob(darkRegions);
                             b.expandArea( wr, loc );
                             if ( b.isValid(wr.getWidth(),wr.getHeight()) )
                             {
                                 b.save(darkRegions,wr,loc);
-                                mergeIntoDarkness( b );
-                                //System.out.println("Added blob x="+x+" y="+y
-                                //    +" width="+b.getWidth()+" height="+b.getHeight());
                             }
                             else
+                            {
+                                b.save(rejectedRegions,wr,loc);
                                 rejects.add( b );
+                            }
                         }
                     }
                 }

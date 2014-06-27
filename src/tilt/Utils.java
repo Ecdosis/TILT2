@@ -16,6 +16,14 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 package tilt;
+import java.awt.image.WritableRaster;
+import java.awt.Point;
+import java.awt.image.Raster;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
 
 /**
  * Some routines that need sharing by all
@@ -146,5 +154,80 @@ public class Utils
             }
         }
         return sb.toString();
+    }
+    /**
+     * Creates a new raster that has a <b>copy</b> of the data in
+     * <tt>ras</tt>.  This is highly optimized for speed.  There is
+     * no provision for changing any aspect of the SampleModel.
+     * However you can specify a new location for the returned raster.
+     *
+     * This method should be used when you need to change the contents
+     * of a Raster that you do not "own" (ie the result of a
+     * <tt>getData</tt> call).
+     *
+     * @param ras The Raster to copy.
+     *
+     * @param minX The x location for the upper left corner of the
+     *             returned WritableRaster.
+     *
+     * @param minY The y location for the upper left corner of the
+     *             returned WritableRaster.
+     *
+     * @return    A writable copy of <tt>ras</tt>
+     */
+    public static WritableRaster copyRaster(Raster ras, int minX, int minY) {
+        WritableRaster ret = Raster.createWritableRaster
+            (ras.getSampleModel(),
+             new Point(0,0));
+        ret = ret.createWritableChild
+            (ras.getMinX()-ras.getSampleModelTranslateX(),
+             ras.getMinY()-ras.getSampleModelTranslateY(),
+             ras.getWidth(), ras.getHeight(),
+             minX, minY, null);
+
+        // Use System.arraycopy to copy the data between the two...
+        DataBuffer srcDB = ras.getDataBuffer();
+        DataBuffer retDB = ret.getDataBuffer();
+        if (srcDB.getDataType() != retDB.getDataType()) {
+            throw new IllegalArgumentException
+                ("New DataBuffer doesn't match original");
+        }
+        int len   = srcDB.getSize();
+        int banks = srcDB.getNumBanks();
+        int [] offsets = srcDB.getOffsets();
+        for (int b=0; b< banks; b++) {
+            switch (srcDB.getDataType()) {
+            case DataBuffer.TYPE_BYTE: {
+                DataBufferByte srcDBT = (DataBufferByte)srcDB;
+                DataBufferByte retDBT = (DataBufferByte)retDB;
+                System.arraycopy(srcDBT.getData(b), offsets[b],
+                                 retDBT.getData(b), offsets[b], len);
+                break;
+            }
+            case DataBuffer.TYPE_INT: {
+                DataBufferInt srcDBT = (DataBufferInt)srcDB;
+                DataBufferInt retDBT = (DataBufferInt)retDB;
+                System.arraycopy(srcDBT.getData(b), offsets[b],
+                                 retDBT.getData(b), offsets[b], len);
+                break;
+            }
+            case DataBuffer.TYPE_SHORT: {
+                DataBufferShort srcDBT = (DataBufferShort)srcDB;
+                DataBufferShort retDBT = (DataBufferShort)retDB;
+                System.arraycopy(srcDBT.getData(b), offsets[b],
+                                 retDBT.getData(b), offsets[b], len);
+                break;
+            }
+            case DataBuffer.TYPE_USHORT: {
+                DataBufferUShort srcDBT = (DataBufferUShort)srcDB;
+                DataBufferUShort retDBT = (DataBufferUShort)retDB;
+                System.arraycopy(srcDBT.getData(b), offsets[b],
+                                 retDBT.getData(b), offsets[b], len);
+                break;
+            }
+            }
+        }
+
+        return ret;
     }
 }

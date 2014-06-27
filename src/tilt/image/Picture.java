@@ -50,7 +50,7 @@ public class Picture {
     File greyscale;
     File twotone;
     File cleaned;
-    File lined;
+    File baselines;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -361,17 +361,17 @@ public class Picture {
      * Convert to show lines from cleaned
      * @throws ImageException 
      */
-    void convertToLined() throws ImageException
+    void convertToBaselines() throws ImageException
     {
         try
         {
             if ( cleaned == null )
                 convertToCleaned();
             BufferedImage withLines = ImageIO.read(cleaned);
-            FindLines fl = new FindLines( withLines.getRaster() );
-            lined = File.createTempFile(PictureRegistry.PREFIX,
+            FindLines fl = new FindLines( withLines );
+            baselines = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
-            ImageIO.write( withLines, "png", lined );
+            ImageIO.write( withLines, "png", baselines );
         }
         catch ( Exception e )
         {
@@ -436,5 +436,16 @@ public class Picture {
         if ( twotone == null )
             convertToTwoTone();
         return getPicData( twotone );
+    }
+    /**
+     * Get a baselines representation of the original
+     * @return a byte array (at 256 bpp)
+     * @throws ImageException 
+     */
+    public byte[] getBaselinesData() throws ImageException
+    {
+        if ( baselines == null )
+            convertToBaselines();
+        return getPicData( baselines );
     }
 }

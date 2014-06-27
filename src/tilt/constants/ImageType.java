@@ -27,7 +27,8 @@ public enum ImageType
     original,
     greyscale,
     twotone,
-    cleaned;
+    cleaned,
+    baselines;
     /**
      * Convert a string into
      * @param str a string representation perhaps in upper or mixed case

@@ -184,12 +184,12 @@ public class Matrix
         int x = N;
         int y = M;
         ArrayList<Move> path = new ArrayList<Move>();
-        while ( x > 0 && y > 0 )
+        while ( x > 0 || y > 0 )
         {
             int left = (x>0)?MAT[y][x-1]:Integer.MAX_VALUE;
             int top = (y>0)?MAT[y-1][x]:Integer.MAX_VALUE;
             int diag = (y>0&&x>0)?MAT[y-1][x-1]:Integer.MAX_VALUE;
-            if ( diag+Math.abs(list2[y-1]-list1[x-1])==MAT[y][x] )
+            if ( x>0 && y>0 && diag+Math.abs(list2[y-1]-list1[x-1])==MAT[y][x] )
             {
                 path.add(0,Move.exch);
                 x--;
@@ -230,7 +230,8 @@ public class Matrix
                     list2[i] = Integer.parseInt(arg2[i]);
                 Matrix m = new Matrix( list1, list2 );
                 System.out.println(m.toString());
-                m.traceBack();
+                ArrayList<Move> moves = m.traceBack();
+                m.printPath(moves);
             }
             catch ( Exception e )
             {
@@ -239,6 +240,5 @@ public class Matrix
         }
         else
             System.out.println("usage: java IntDiff <list1> <list2>");
-        
     }
 }

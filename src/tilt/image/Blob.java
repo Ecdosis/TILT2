@@ -87,21 +87,28 @@ public class Blob
     /**
      * Set a raster to white (now only called by Picture)
      * @param wr the raster to white out
+     * @return the average number of black pixels per pixel
      */
-    public static void setToWhite( WritableRaster wr )
+    public static float setToWhite( WritableRaster wr )
     {
+        int blackPixels = 0;
         // set all to white
         int[] iArray = new int[1];
         iArray[0] = 255;
+        int[] jArray = new int[1];
         int height = wr.getHeight();
         int width = wr.getWidth();
         for ( int y=0;y<height;y++ )
         {
             for ( int x=0;x<width;x++ )
             {
+                wr.getPixel(x,y,jArray);
+                if ( jArray[0] == 0 )
+                    blackPixels++;
                 wr.setPixel(x,y,iArray);
             }
         }
+        return (float)blackPixels/(float)(wr.getWidth()*wr.getHeight());
     }
     /**
      * Actually set a black in the given raster

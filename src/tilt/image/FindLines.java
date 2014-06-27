@@ -20,7 +20,9 @@ package tilt.image;
 import java.util.ArrayList;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
+import java.awt.Color;
+import tilt.image.matchup.*;
 /**
  * Find lines in manuscripts/printed text when tilted/warped etc.
  * @author desmond
@@ -31,17 +33,16 @@ public class FindLines
     float[] vAverages;
     float average;
     int[][] compacted;
-    float[][] cusum;
     int[][] peaks;
     int height;
     int width;
     static float V_SCALE_RATIO = 0.005f;
-    static float H_SCALE_RATIO = 0.02f;
+    static float H_SCALE_RATIO = 0.04f;
     /** number of vertical or horizontal pixels to combine */
     int hScale;
     int vScale;
     BufferedImage src;
-    public FindLines( BufferedImage src )
+    public FindLines( BufferedImage src ) throws Exception
     {
         WritableRaster wr = src.getRaster();
         this.src = src;
@@ -53,7 +54,6 @@ public class FindLines
         hAverages = new float[height];
         vAverages = new float[width];
         peaks = new int[width][];
-        cusum = new float[width][height];
         compact( wr );
         // average the rows
         average = 0.0f;
@@ -62,47 +62,24 @@ public class FindLines
             hAverages[y] = averageRow(y);
             average += hAverages[y];
         }
-        // calculate the cusums for each row
         average /= height;
-        for ( int y=0;y<height;y++ )
-        {
-            cusum[0][y] = 0.0f;
-            for ( int x=1;x<width;x++ )
-            {
-                cusum[x][y] = cusum[x-1][y]+(compacted[x][y]-hAverages[y]);
-            }
-        }
-        // average the columns
-        for ( int x=0;x<width;x++ )
-        {
-            vAverages[x] = averageCol(x);
-        }
-        // calculate the cusums for each column
-        for ( int x=0;x<width;x++ )
-        {
-            cusum[x][0] = 0.0f;
-            for ( int y=1;y<height;y++ )
-            {
-                cusum[x][y] = cusum[x][y-1]+(cusum[x][y]-vAverages[x]);
-            }
-        }
         // find peaks
         ArrayList[] cols = new ArrayList[width];
         for ( int x=0;x<width;x++ )
         {
+            float current = 0.0f;
+            int index = -1;
             cols[x] = new ArrayList<Integer>();
             for ( int y=0;y<height;y++ )
             {
-                float current = 0.0f;
-                int index = -1;
-                if ( cusum[x][y] > average )
+                if ( compacted[x][y] > average )
                 {
-                    if ( cusum[x][y] > current )
+                    if ( compacted[x][y] > current )
                     {
-                        current = cusum[x][y];
+                        current = compacted[x][y];
                         index = y;
                     }
-                    else if ( cusum[x][y] != current )
+                    else if ( compacted[x][y] != current )
                     {
                         cols[x].add(new Integer(index) );
                         current = 0.0f;
@@ -118,69 +95,63 @@ public class FindLines
             }
         }
         // now draw the lines
-        Graphics2D g2 = src.createGraphics();
+        Graphics g2 = src.getGraphics();
+        g2.setColor(Color.BLACK);
         for ( int i=0;i<cols.length-1;i++ )
         {
             ArrayList col1 = cols[i];
             ArrayList col2 = cols[i+1];
-            int j = 0;
-            int k = 0;
-            while ( j<col1.size() && k<col2.size() )
+            int[] list1 = new int[col1.size()];
+            int[] list2 = new int[col2.size()];
+            listToIntArray(col1,list1);
+            listToIntArray(col2,list2);
+            Matrix m = new Matrix( list1, list2 );
+            ArrayList moves = m.traceBack();
+            int x1,x2,z1,z2;
+            for ( int y1=0,y2=0,j=0;j<moves.size();j++ )
             {
-                int kBest = findBestMatch(col2,j,k);
-                int jBest = findBestMatch(col1,k,j);
-                int cRes1 = compareRow(j,kBest);
-                int cRes2 = compareRow(k,jBest);
-                if ( cRes1 > cRes2 )
+                Move move = (Move)moves.get(j);
+                switch ( move )
                 {
-                    drawLine( col1.get(jBest), col2.get(k) );
-                    j = jBest+1;
-                    k++;
-                }
-                else
-                {
-                    drawLine( col1.get(j), col2.get(kBest) );
-                    j++;
-                    k = kBest+1;
+                    case exch:
+                        x1=i*hScale;
+                        x2=(i+1)*hScale;
+                        z1=list1[y1]*vScale;
+                        z2=list2[y2]*vScale;
+                        g2.drawLine(x1,z1,x2,z2);
+                        //System.out.println("drew line from "+x1+","+z1+" to "+z1+","+z2);
+                        y1++;
+                        y2++;
+                        break;
+                    case ins:
+                        y2++;
+                        break;
+                    case del:
+                        y1++;
+                        break;
                 }
             }
         }
-        // now for each column find the peaks, record them
-        // as they are for each coloumn, trace them with the 
-        // closest matching values, allowing some to peter out 
-        // or new ones to start
     }
-//    
-//                if ( row1 == row2 )
-//                {
-//                    g2.drawLine( 
-//                        (hScale/2)+hScale*i,
-//                        (vScale/2)+vScale*j,
-//                        (hScale/2)+hScale*(i+1),
-//                        (vScale/2)+vScale*row2
-//                    );
-//                    j++;
-//                    k++;
-//                }
-//                else
     /**
-     * Given a value in one list, find the closest match in another list
-     * @param list the list to search
-     * @param value the value in the other list, fixed
-     * @param from start from this index in list
-     * @return 
+     * Convert an ArrayList of Integers to an int array
+     * @param col the ArrayList of Integers
+     * @param list the target int array
+     * @throws Exception 
      */
-    private int findBestMatch( ArrayList list, int value, int from )
+    private void listToIntArray( ArrayList col, int[] list ) throws Exception
     {
-        int m = from+1;
-        int best = ((Integer)list.get(from)).intValue();
-        int row;
-        do
+        if ( list.length != col.size() )
+            throw new ArrayIndexOutOfBoundsException(
+                "col not the same length as array");
+        for ( int j=0;j<col.size();j++ )
         {
-            row = ((Integer)list.get(m)).intValue();
-            m++;
-        } while ( Math.abs(row-value) < Math.abs(best-value));
-        return row;
+            Object obj = col.get(j);
+            if ( obj instanceof Integer )
+                list[j] = ((Integer)col.get(j)).intValue();
+            else
+                throw new ClassCastException("object is not an Integer");
+        }
     }
     /**
      * Collapse the whole image by merging squares of pixels
@@ -212,17 +183,5 @@ public class FindLines
         for ( int i=0;i<width;i++ )
             total += compacted[i][row];
         return total/(float)width;
-    }
-    /**
-     * Compute the average of a column
-     * @param row the col number
-     * @return the average cusum value for the col
-     */
-    float averageCol( int col )
-    {
-        float total = 0.0f;
-        for ( int i=0;i<height;i++ )
-            total += cusum[col][i];
-        return total/(float)height;
     }
 }
