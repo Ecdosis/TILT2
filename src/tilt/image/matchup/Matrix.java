@@ -20,7 +20,7 @@ package tilt.image.matchup;
 import java.util.ArrayList;
 /**
  * An MxN (x by y) matrix of ints through which to find the best alignment
- * (adapted from Needleman/Wunsch J. Mol. Biol. 48 (1970) 443-453)
+ * (adapted from Needleman & Wunsch J. Mol. Biol. 48 (1970) 443-453)
  * @author desmond
  */
 public class Matrix 
@@ -34,7 +34,7 @@ public class Matrix
     /** second list Y-axis */
     int[] list2;
     /**
-     * Compute the best alignment of two array of ints via dynamic programming
+     * Compute the best alignment of two arrays of ints via dynamic programming
      * @param list1 the first list arranged on the X-axis
      * @param list2 the second list on the Y-axis
      */
