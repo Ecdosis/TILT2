@@ -17,11 +17,13 @@
  */
 
 package tilt.image;
+import tilt.image.page.Page;
 import java.util.ArrayList;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Point;
 import tilt.image.matchup.*;
 /**
  * Find lines in manuscripts/printed text when tilted/warped etc.
@@ -42,6 +44,7 @@ public class FindLines
     int hScale;
     int vScale;
     BufferedImage src;
+    Page page;
     public FindLines( BufferedImage src ) throws Exception
     {
         WritableRaster wr = src.getRaster();
@@ -95,63 +98,8 @@ public class FindLines
             }
         }
         // now draw the lines
-        Graphics g2 = src.getGraphics();
-        g2.setColor(Color.BLACK);
-        for ( int i=0;i<cols.length-1;i++ )
-        {
-            ArrayList col1 = cols[i];
-            ArrayList col2 = cols[i+1];
-            int[] list1 = new int[col1.size()];
-            int[] list2 = new int[col2.size()];
-            listToIntArray(col1,list1);
-            listToIntArray(col2,list2);
-            Matrix m = new Matrix( list1, list2 );
-            ArrayList moves = m.traceBack();
-            int x1,x2,z1,z2;
-            for ( int y1=0,y2=0,j=0;j<moves.size();j++ )
-            {
-                Move move = (Move)moves.get(j);
-                switch ( move )
-                {
-                    case exch:
-                        x1=i*hScale;
-                        x2=(i+1)*hScale;
-                        z1=list1[y1]*vScale;
-                        z2=list2[y2]*vScale;
-                        g2.drawLine(x1,z1,x2,z2);
-                        //System.out.println("drew line from "+x1+","+z1+" to "+z1+","+z2);
-                        y1++;
-                        y2++;
-                        break;
-                    case ins:
-                        y2++;
-                        break;
-                    case del:
-                        y1++;
-                        break;
-                }
-            }
-        }
-    }
-    /**
-     * Convert an ArrayList of Integers to an int array
-     * @param col the ArrayList of Integers
-     * @param list the target int array
-     * @throws Exception 
-     */
-    private void listToIntArray( ArrayList col, int[] list ) throws Exception
-    {
-        if ( list.length != col.size() )
-            throw new ArrayIndexOutOfBoundsException(
-                "col not the same length as array");
-        for ( int j=0;j<col.size();j++ )
-        {
-            Object obj = col.get(j);
-            if ( obj instanceof Integer )
-                list[j] = ((Integer)col.get(j)).intValue();
-            else
-                throw new ClassCastException("object is not an Integer");
-        }
+        page = new Page( cols, hScale, vScale );
+        page.draw( src.getGraphics() );
     }
     /**
      * Collapse the whole image by merging squares of pixels
