@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.awt.Point;
 import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
+import java.awt.image.WritableRaster;
 
 /**
  * Represent a collection of lines already recognised on a page
@@ -60,7 +61,7 @@ public class Page
                         y2++;
                         break;
                     case del:
-                        close( list1[y1] );
+                        close( list1[y1],hScale );
                         y1++;
                         break;
                 }
@@ -122,15 +123,16 @@ public class Page
     /**
      * Stop a line from propagating further
      * @param end the scaled vertical point of the line
+     * @param hScale width of a rectangle
      */
-    private void close( int end )
+    private void close( int end, int hScale )
     {
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
             if ( l.end == end )
             {
-                l.close();
+                l.close(hScale);
                 break;
             }
         }
@@ -158,7 +160,41 @@ public class Page
         {
             Line line = new Line();
             line.addPoint( loc, end );
-            lines.add( i,line );
+            lines.add( line );
         }
+    }
+    /**
+     * Trim all the line starts right to the first black pixel on the image
+     * @param wr the raster
+     * @param hScale the size of a rectangular sample
+     * @param vScale the vertical scale
+     * @paramblack the value of a "black" pixel
+     */
+    public void refineLeft( WritableRaster wr, int hScale, int vScale, int black )
+    {
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            l.refineLeft( wr, hScale, vScale, black );
+        }
+    }
+    /**
+     * Trim all the line ends right to the last black pixel in the row
+     * @param wr the raster
+     * @param hScale the size of a rectangular sample
+     * @param vScale the vertical scale
+     * @paramblack the value of a "black" pixel
+     */
+    public void refineRight( WritableRaster wr, int hScale, int vScale, int black )
+    {
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            l.refineRight( wr, hScale, vScale, black );
+        }
+    }
+    public ArrayList<Line> getLines()
+    {
+        return lines;
     }
 }

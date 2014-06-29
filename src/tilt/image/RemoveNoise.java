@@ -20,7 +20,6 @@ package tilt.image;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.Point;
-import java.awt.Graphics;
 import java.util.ArrayList;
 import java.awt.geom.Area;
 import tilt.Utils;

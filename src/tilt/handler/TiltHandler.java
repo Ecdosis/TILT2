@@ -30,5 +30,4 @@ abstract public class TiltHandler
     
     public abstract void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException;
-    
 }

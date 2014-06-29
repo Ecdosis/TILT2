@@ -36,6 +36,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import tilt.image.page.Page;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -46,11 +47,14 @@ public class Picture {
     
     String id;
     InetAddress poster;
+    float ppAverage;
+    Page page;
     File orig;
     File greyscale;
     File twotone;
     File cleaned;
     File baselines;
+    File words;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -99,6 +103,10 @@ public class Picture {
                 greyscale.delete();
             if ( twotone != null )
                 twotone.delete();
+            if ( baselines != null )
+                baselines.delete();
+            if ( words != null )
+                words.delete();
             // dispose of other temporary files here
         }
         catch ( Exception e )
@@ -369,6 +377,8 @@ public class Picture {
                 convertToCleaned();
             BufferedImage withLines = ImageIO.read(cleaned);
             FindLines fl = new FindLines( withLines );
+            page = fl.getPage();
+            ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( withLines, "png", baselines );
@@ -378,6 +388,29 @@ public class Picture {
             throw new ImageException(e);
         }
     }
+    /**
+     * Convert to show identified words
+     * @throws ImageException 
+     */
+    void convertToWords() throws ImageException 
+    {
+        try
+        {
+            if ( baselines == null )
+                convertToBaselines();
+            BufferedImage bandw = ImageIO.read(twotone);
+            BufferedImage originalImage =  ImageIO.read(orig);
+            FindWords fw = new FindWords( bandw, page, ppAverage );
+            fw.print( originalImage.getRaster() );
+            words = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( originalImage, "png", words );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+     }
     /**
      * Retrieve the data of a picture file
      * @return a byte array

@@ -8,6 +8,7 @@ package tilt.image.page;
 import java.util.ArrayList;
 import java.awt.Point;
 import java.awt.Graphics;
+import java.awt.image.WritableRaster;
 /**
  * Represent a discovered line in an image
  * @author desmond
@@ -57,7 +58,7 @@ public class Line
      * Get the points of the line
      * @return an ordinary array of Points
      */
-    Point[] getPoints()
+    public Point[] getPoints()
     {
         Point[] line = new Point[points.size()];
         points.toArray(line);
@@ -80,9 +81,92 @@ public class Line
     }
     /**
      * This line is not matched in the next column. Terminate it!
+     * @param hScale width of a rectangle
      */
-    public void close()
+    public void close( int hScale )
     {
+        if ( points.size()>0 )
+        {
+            Point p = points.get(points.size()-1);
+            points.add( new Point(p.x+hScale,p.y) );
+        }
         this.open = false;
+    }
+    /**
+     * Move the leftmost x position up to the first pixel that is black
+     * @param wr the raster of the image
+     * @param hScale the width of a rectangle or slice
+     * @param vScale the height of a rectangle or slice
+     * @param black value of a black pixel
+     */
+    public void refineLeft( WritableRaster wr, int hScale, int vScale, int black )
+    {
+        if ( points.size()>0 )
+        {
+            int[] iArray = new int[1];
+            Point leftMost= points.get(0);
+            int top = leftMost.y;
+            int bottom = top+vScale;
+            int right = leftMost.x+hScale;
+            int left = (leftMost.x-hScale > 0)?leftMost.x-hScale:0;
+            int nPixels = 0;
+            for ( int x=left;x<right;x++ )
+            {
+                for ( int y=top;y<bottom;y++ )
+                {
+                    wr.getPixel( x,y, iArray );
+                    if ( iArray[0] == black )
+                    {
+                        nPixels++;
+                        if ( nPixels == 2 )
+                        {
+                            leftMost.x = x;
+                            break;
+                        }
+                    }
+                }
+                if ( nPixels == 2 )
+                    break;
+            }
+        }
+    }
+    /**
+     * Move the rightmost x position inwards to the first pixel that is black
+     * @param wr the raster of the image
+     * @param hScale the width of a rectangle or slice
+     * @param vScale the height of a rectangle or slice
+     * @param black value of a black pixel
+     */
+    public void refineRight( WritableRaster wr, int hScale, int vScale, int black )
+    {
+        if ( points.size()>0 )
+        {
+            int[] iArray = new int[1];
+            Point rightMost= points.get(points.size()-1);
+            int top = rightMost.y;
+            int bottom = top+vScale;
+            int right = rightMost.x;
+            int left = (rightMost.x-hScale>0)?rightMost.x-hScale:0;
+            int nPixels = 0;
+            for ( int x=right;x<=left;x-- )
+            {
+                int y;
+                for ( y=top;y<bottom;y++ )
+                {
+                    wr.getPixel( x,y, iArray );
+                    if ( iArray[0] == black )
+                    {
+                        nPixels++;
+                        if ( nPixels == 2 )
+                        {
+                            rightMost.x = x;
+                            break;
+                        }
+                    }
+                }
+                if ( nPixels == 2 )
+                    break;
+            }
+        }
     }
 }

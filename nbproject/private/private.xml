@@ -19,6 +19,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/XCompare.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/PictureRegistry.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltHandler.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/html/Select.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/html/JQueryRef.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>
@@ -30,6 +31,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/ImageException.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/ImageType.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/html/Input.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Border.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/Service.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/Params.java</file>
@@ -38,6 +40,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/html/Script.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltDeleteHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltImageHandler.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/Utils.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/Matrix.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltGetHandler.java</file>

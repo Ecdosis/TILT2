@@ -18,12 +18,13 @@
 
 /**
  * <h4>Matching up fragments of lines in adjacent columns</h4>
- * <p>When fragments of lines have been identified there is a residual problem:
- * how to best link up line-fragments in one column with those of the following
- * column. Lines can peter out or start anew, but the existing lines need to
- * be linked together even if they gradually tilt down the page or curve off
- * up or down.</p>
- * <img src="doc-files/grid.png" width="200">
+ * <p>Once fragments of lines have been identified, based on the peak values 
+ * of rectangles of summed pixels as you move down the page on a column by 
+ * column basis, there is a residual problem of how to best link up 
+ * the line-fragments in one column with those of the next column. Lines can 
+ * peter out or start anew, but the existing lines need to be linked together 
+ * even if they gradually tilt down the page or curve up or down.</p>
+ * <p align="center"><img src="doc-files/grid.png" width="350"></p>
  * <p>The way TILT resolves this problem is to use the dynamic 
  * programming method as used by biologists to optimally align sequences of 
  * amino acids. Although this is an O(N<sup>2</sup>) algorithm, on the scale 
@@ -33,26 +34,12 @@
  * the vertical positions of the lines given by the numbers of the rectangles
  * as you move down the page. (To obtain the true pixel-positions they just 
  * need to be multiplied by the vertical scale.) This works for any two 
- * sequences of integers:
- * <pre>
- *    |  1  2  4  5  6  8  9   
- *  ----------------------------
- *  2 |  0  1  2  3  4  5  6  7
- *  3 |  1  1  1  2  3  4  5  6
- *  5 |  2  2  2  2  3  4  5  6
- *  6 |  3  3  3  3  2  3  4  5
- *  7 |  4  4  4  4  3  2  3  4
- *  8 |  5  5  5  5  4  3  3  4
- * 10 |  6  6  6  6  5  4  3  <b>4</b>
- *    |  7  7  7  7  6  5  <b>4  4</b>
- * 
- *  1  2  4  5  6     8  9
- *  x  |  |  |  |  x  |  |
- *     2  3  5  6  7  8 10</pre>
+ * sequences of integers:</p>
+ * <p align="center"><img src="doc-files/matrix.png"></p>
  * <p>Each square in the {@link tilt.image.matchup.Matrix} is computed from 
- * the minimum of an insertion, deletion or exchange operation from the squares 
+ * the minimum cost of an insertion, deletion or exchange from the squares 
  * immediately above, to the left or diagonally left and up. In cases where 
- * there is no such row or column the score is made suitably large. In cases 
+ * there is no such row or column, the score is made suitably large. In cases 
  * of exchange the cost is 0 if the two numbers are the same, otherwise it is 
  * given by their absolute difference. The cost of an insertion or deletion is 
  * 1. Since the value in each square is computed from preceding ones the final 

@@ -89,16 +89,21 @@ public class Matrix
      */
     Point bestEndPoint()
     {
-        int topRight = MAT[M-1][N];
-        int botLeft = MAT[M][N-1];
-        int botRight = MAT[M][N];
-        int best = bestOfThree(topRight,botLeft,botRight);
-        if ( botRight == best )
+        if ( N == 0 || M == 0 )
             return new Point(N,M);
-        else if ( botLeft == best )
-            return new Point(N-1,M);
         else
-            return new Point(N,M-1);
+        {
+            int topRight = (M>0)?MAT[M-1][N]:Integer.MAX_VALUE;
+            int botLeft = (N>0)?MAT[M][N-1]:Integer.MAX_VALUE;
+            int botRight = MAT[M][N];
+            int best = bestOfThree(topRight,botLeft,botRight);
+            if ( botRight == best )
+                return new Point(N,M);
+            else if ( botLeft == best )
+                return new Point(N-1,M);
+            else
+                return new Point(N,M-1);
+        }
     }
     /**
      * Debug matrix to text

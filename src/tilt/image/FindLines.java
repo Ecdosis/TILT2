@@ -21,10 +21,6 @@ import tilt.image.page.Page;
 import java.util.ArrayList;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Point;
-import tilt.image.matchup.*;
 /**
  * Find lines in manuscripts/printed text when tilted/warped etc.
  * @author desmond
@@ -42,6 +38,7 @@ public class FindLines
     static int LIGHT_SHADE = 128;
     static float V_SCALE_RATIO = 0.005f;
     static float H_SCALE_RATIO = 0.04f;
+    static int SMOOTHING = 3;
     /** number of vertical or horizontal pixels to combine */
     int hScale;
     int vScale;
@@ -82,6 +79,14 @@ public class FindLines
                 }
             }
         }
+        // smooth cols
+        for ( int x=0;x<width;x++ )
+        {
+            for ( int y=0;y<height;y++ )
+            {
+                compacted[x][y] = smooth(x,y);
+            }
+        }
         // find peaks
         ArrayList[] cols = new ArrayList[width];
         for ( int x=0;x<width;x++ )
@@ -115,7 +120,29 @@ public class FindLines
         }
         // now draw the lines
         page = new Page( cols, hScale, vScale );
+        page.refineRight( wr, hScale, vScale, LIGHT_SHADE );
+        page.refineLeft( wr, hScale, vScale, LIGHT_SHADE );
         page.draw( src.getGraphics() );
+    }
+    /**
+     * Smooth the pixel densities in a column
+     * @param x the column index in compacted
+     * @param y the current row position
+     * @return the smoothed value for that cell in compacted
+     */
+    int smooth( int x, int y )
+    {
+        float den = 1.0f;
+        int half = (SMOOTHING-1)/2;
+        int top = (y-half<0)?0:y-half;
+        int bot = (y+half>=height)?height-1:half+y;
+        float total = compacted[x][y];
+        for ( int i=top;i<=bot;i++ )
+        {
+            total += compacted[x][i];
+            den += 1.0f;
+        }
+        return Math.round(total/den);
     }
     /**
      * Collapse the whole image by merging squares of pixels
@@ -147,5 +174,22 @@ public class FindLines
         for ( int i=0;i<width;i++ )
             total += compacted[i][row];
         return total/(float)width;
+    }
+    /**
+     * Get the completed page object
+     * @return 
+     */
+    Page getPage()
+    {
+        return page;
+    }
+    /**
+     * Get the per pixel average density of the twotone image
+     * @return a float
+     */
+    float getPPAverage()
+    {
+        float nPixels = hScale*vScale;
+        return average / nPixels;
     }
 }
