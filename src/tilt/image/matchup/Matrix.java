@@ -18,6 +18,7 @@
 
 package tilt.image.matchup;
 import java.util.ArrayList;
+import java.awt.Point;
 /**
  * An MxN (x by y) matrix of ints through which to find the best alignment
  * (adapted from Needleman & Wunsch J. Mol. Biol. 48 (1970) 443-453)
@@ -81,6 +82,23 @@ public class Matrix
             return (one<=three)?one:three;
         else
             return (two<=three)?two:three;
+    }
+    /**
+     * Find out which of the three endpoints is the best one
+     * @return a POint - use the x and y to set start for backtrace
+     */
+    Point bestEndPoint()
+    {
+        int topRight = MAT[M-1][N];
+        int botLeft = MAT[M][N-1];
+        int botRight = MAT[M][N];
+        int best = bestOfThree(topRight,botLeft,botRight);
+        if ( botRight == best )
+            return new Point(N,M);
+        else if ( botLeft == best )
+            return new Point(N-1,M);
+        else
+            return new Point(N,M-1);
     }
     /**
      * Debug matrix to text
@@ -181,8 +199,9 @@ public class Matrix
      */
     public ArrayList<Move> traceBack() throws Exception
     {
-        int x = N;
-        int y = M;
+        Point best = bestEndPoint();
+        int x = best.x;
+        int y = best.y;
         ArrayList<Move> path = new ArrayList<Move>();
         while ( x > 0 || y > 0 )
         {
