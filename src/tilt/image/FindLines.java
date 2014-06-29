@@ -38,6 +38,8 @@ public class FindLines
     int[][] peaks;
     int height;
     int width;
+    /** colour of shaded background pixels */
+    static int LIGHT_SHADE = 128;
     static float V_SCALE_RATIO = 0.005f;
     static float H_SCALE_RATIO = 0.04f;
     /** number of vertical or horizontal pixels to combine */
@@ -66,6 +68,20 @@ public class FindLines
             average += hAverages[y];
         }
         average /= height;
+        // lighten image
+        int[] iArray = new int[1];
+        for ( int y=0;y<wr.getHeight();y++ )
+        {
+            for ( int x=0;x<wr.getWidth();x++ )
+            {
+                wr.getPixel( x, y, iArray );
+                if ( iArray[0] == 0 )
+                {
+                    iArray[0] = LIGHT_SHADE;
+                    wr.setPixel( x, y, iArray );
+                }
+            }
+        }
         // find peaks
         ArrayList[] cols = new ArrayList[width];
         for ( int x=0;x<width;x++ )

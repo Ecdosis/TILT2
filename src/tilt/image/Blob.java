@@ -62,7 +62,7 @@ public class Blob
     }
     /**
      * How many black pixels we have
-     * @return 
+     * @return the sizeof the blob in overall black pixels
      */
     public int size()
     {

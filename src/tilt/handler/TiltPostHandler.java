@@ -125,9 +125,9 @@ public class TiltPostHandler extends TiltHandler
     }
     /**
      * Create a HTML IMG element referring to the image we need
-     * @param request
-     * @param json
-     * @return
+     * @param request the http request
+     * @param json the GeoJSON text
+     * @return a HTML IMG element
      * @throws TiltException 
      */
     private String composeResponse( HttpServletRequest request, String json, 

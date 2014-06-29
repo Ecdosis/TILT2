@@ -135,7 +135,7 @@ public class Utils
      * Just escape quotes for a string to be jsonified
      * @param input the string to escape
      * @param replaceWith replace double quotes with this
-     * @return 
+     * @return the escaped string
      */
     public static String escapeQuotes( String input, String replaceWith )
     {

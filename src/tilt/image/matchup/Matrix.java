@@ -84,7 +84,7 @@ public class Matrix
     }
     /**
      * Debug matrix to text
-     * @return 
+     * @return a string
      */
     public String toString()
     {

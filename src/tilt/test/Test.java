@@ -38,7 +38,6 @@ public abstract class Test extends TiltHandler
      * Display the test GUI, selecting the default Home tab
      * @param request the request to read from
      * @param urn the original URN - ignored
-     * @return a formatted html String
      */
     @Override
     public abstract void handle( HttpServletRequest request, 

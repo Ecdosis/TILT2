@@ -109,7 +109,6 @@ public class Post extends Test
      * Display the test GUI
      * @param request the request to read from
      * @param urn the original URN
-     * @return a formatted html String
      */
     @Override
     public void handle( HttpServletRequest request,
