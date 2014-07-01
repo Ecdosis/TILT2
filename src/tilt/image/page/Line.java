@@ -1,28 +1,61 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of TILT.
+ *
+ *  TILT is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  TILT is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
+ *  (c) copyright Desmond Schmidt 2014
  */
 
 package tilt.image.page;
 import java.util.ArrayList;
 import java.awt.Point;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 import java.awt.Graphics;
+import java.awt.Shape;
+import java.awt.Rectangle;
+import java.awt.Polygon;
+import java.awt.Color;
 import java.awt.image.WritableRaster;
+import java.util.Arrays;
+import java.util.HashSet;
 /**
  * Represent a discovered line in an image
  * @author desmond
  */
 public class Line 
 {
+    static int DEFAULT_WORD_GAP = 24;
     boolean open;
     /** array of actual image coordinates to draw the line between */
     ArrayList<Point> points;
+    /** array of shapes representing words */
+    ArrayList<Shape> shapes;
     /** scaled vertical endpoint */
     int end;
+    /** shapes shared with some other lines */
+    HashMap<Line,ArrayList<Shape>> shared;
+    /** total number of shapes, shared and non-shared */
+    int total;
+    /** median y-value */
+    int medianY;
+    static float SHARED_RATIO= 0.75f;
     public Line()
     {
-        points = new ArrayList<Point>();
+        points = new ArrayList<>();
+        shapes = new ArrayList<>();
+        shared = new HashMap<>();
         open = true;
     }
     /**
@@ -168,5 +201,180 @@ public class Line
                     break;
             }
         }
+    }
+    /**
+     * Add a shape (polygon or rectangle) to the line. Keep it sorted.
+     * @param s the shape to add
+     */
+    public void add( Shape s )
+    {
+        int i;
+        Rectangle sBounds = s.getBounds();
+        for ( i=0;i<shapes.size();i++ )
+        {
+            Shape t = shapes.get(i);
+            Rectangle bounds = t.getBounds();
+            if ( bounds.x >= sBounds.x )
+            {
+                shapes.add( i, s );
+                break;
+            }
+        }
+        if ( i==shapes.size() )
+            shapes.add( s );
+        total++;
+    }
+    /**
+     * Recall which lines shared shapes with us (for later merging)
+     * @param other the other line
+     * @param s the shape we share
+     */
+    public void addShared( Line other, Shape s )
+    {
+        ArrayList list = shared.get( other );
+        if ( list != null )
+        {
+            list.add( s );
+        }
+        else
+        {
+            list = new ArrayList<Shape>();
+            list.add( s );
+            shared.put( other, list );
+        }
+        total++;
+    }
+    /** 
+     * Do almost all the shapes of this line belong elsewhere?
+     * @return true if these shapes are made for walkin'
+     */
+    boolean wantsMerge()
+    {
+        float proportion = Math.round(SHARED_RATIO*total);
+        Set<Line> keys = shared.keySet();
+        Iterator<Line> iter = keys.iterator();
+        while ( iter.hasNext() )
+        {
+            Line l = iter.next();
+            ArrayList<Shape> list = shared.get( l );
+            if ( list.size() >= proportion )
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Merge this line with its most similar colleague
+     * @param map update this shape to line map for moved shapes
+     */
+    void merge( HashMap<Shape,Line> map )
+    {
+        float proportion = Math.round(SHARED_RATIO*total);
+        Set<Line> keys = shared.keySet();
+        Iterator<Line> iter = keys.iterator();
+        while ( iter.hasNext() )
+        {
+            Line l = iter.next();
+            ArrayList<Shape> list = shared.get( l );
+            if ( list.size() >= proportion )
+            {
+                // move all OUR shapes over to the dominant line
+                for ( int j=0;j<shapes.size();j++ )
+                {
+                    Shape s = shapes.get(j);
+                    map.put( s, l );
+                    l.add( s );
+                }
+                shapes.clear();
+                break;
+            }
+        }
+    }
+    /**
+     * Print the shapes onto the original image
+     * @param g the graphics environment
+     * @param wr the raster to write on
+     */
+    public void print( Graphics g, WritableRaster wr )
+    {
+        Color tRed = new Color(255, 0,0, 128 );
+        Color old = g.getColor();
+        g.setColor( tRed );
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Shape s = shapes.get(i);
+            if ( s instanceof Polygon )
+                g.fillPolygon( (Polygon)s );
+            else if ( s instanceof Rectangle )
+            {
+                Rectangle r = (Rectangle) s;
+                g.fillRect( r.x, r.y, r.width, r.height );
+            }
+        }
+        g.setColor( old );
+    }
+    /**
+     * Get the median Y value of the line
+     * @return an int,being the median yValue of the points in the line
+     */
+    public int getMedianY()
+    {
+        if ( medianY == 0 )
+        {
+            ArrayList<Integer> yValues = new ArrayList<Integer>();
+            for ( int i=0;i<points.size();i++ )
+            {
+                yValues.add( new Integer(points.get(i).y) );
+            }
+            if ( yValues.size() > 0 )
+            {
+                Integer[] array = new Integer[yValues.size()];
+                yValues.toArray( array );
+                Arrays.sort( array );
+                medianY = array[array.length/2];
+            }
+        }
+        return medianY;
+    }
+    /**
+     * Work out what the median gap between words is
+     * @param vGap the median gap between baselines
+     * @param wr the raster of image black and white pixels
+     * @return an int
+     */
+    public int getMedianHGap( int vGap, WritableRaster wr )
+    {
+        HashSet<Integer> gaps = new HashSet<Integer>();
+        int[] iArray = new int[vGap];
+        int hGap = 0;
+        for ( int i=0;i<points.size()-1;i++ )
+        {
+            Point p1 = points.get( i );
+            Point p2 = points.get( i+1 );
+            int y = (p1.y+p2.y)/2;
+            for ( int x=p1.x;x<p2.x;x++ )
+            {
+                int total = 0;
+                wr.getPixels(x,y,1,vGap,iArray);
+                for ( int j=0;j<vGap;j++ )
+                    if ( iArray[j]== 0 )
+                        total++;
+                if ( total == 0 )
+                    hGap++;
+                else if ( hGap > 0 )
+                {
+                    gaps.add( new Integer(hGap) );
+                    hGap = 0;
+                }
+            }
+        }
+        if ( gaps.size()> 0 )
+        {
+            Integer[] array = new Integer[gaps.size()];
+            gaps.toArray(array);
+            Arrays.sort(array);
+            return array[array.length/2];
+        }
+        else
+            return DEFAULT_WORD_GAP;
     }
 }

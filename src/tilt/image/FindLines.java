@@ -80,13 +80,13 @@ public class FindLines
             }
         }
         // smooth cols
-        for ( int x=0;x<width;x++ )
-        {
-            for ( int y=0;y<height;y++ )
-            {
-                compacted[x][y] = smooth(x,y);
-            }
-        }
+//        for ( int x=0;x<width;x++ )
+//        {
+//            for ( int y=0;y<height;y++ )
+//            {
+//                compacted[x][y] = smooth(x,y);
+//            }
+//        }
         // find peaks
         ArrayList[] cols = new ArrayList[width];
         for ( int x=0;x<width;x++ )
@@ -177,7 +177,7 @@ public class FindLines
     }
     /**
      * Get the completed page object
-     * @return 
+     * @return a {@link Page} object
      */
     Page getPage()
     {

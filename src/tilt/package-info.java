@@ -44,7 +44,7 @@
  * the image, looking for dark areas or 'blobs' ({@link tilt.image.Blob})
  * on the margins, followed by light regions deeper in. In these areas any 
  * connected black regions are reduced to white.</p>
- * <h4>Second Stage&ndash; Recognise lines</h4>
+ * <h4>Second Stage &ndash; Recognise lines</h4>
  * <p>In order to recognise words their approximate location on the page 
  * and their sequence on the page must first be worked out. For this TILT
  * assumes for the moment a top to bottom and left to right orientation
@@ -65,5 +65,14 @@
  * align adjacent line-fragments and assemble them into lines. The aligned 
  * line-fragments are then assembled into an entire page of lines by the 
  * {@link tilt.image.page} package.</p>
+ * <h4>Third Stage &ndash; Recognise Words</h4>
+ * <p>A narrow band around each line is scanned for black pixels. If the 
+ * average of this are is greater than the overall are of the image, it is 
+ * accepted as belonging to a word. Then, any black marks inside this
+ * rectangle are added to the word-shape so long as they are contiguous
+ * with it. This expansion happens above and below the line. FInally, the word
+ * is expanded left and right using the same process until a word gap is 
+ * encountered. The size of this is determined heuristically by the 
+ * {@link tilt.image.page.Line} class</p>
  */
 package tilt;

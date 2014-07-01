@@ -401,7 +401,7 @@ public class Picture {
             BufferedImage bandw = ImageIO.read(twotone);
             BufferedImage originalImage =  ImageIO.read(orig);
             FindWords fw = new FindWords( bandw, page, ppAverage );
-            fw.print( originalImage.getRaster() );
+            page.print( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( originalImage, "png", words );
@@ -480,5 +480,16 @@ public class Picture {
         if ( baselines == null )
             convertToBaselines();
         return getPicData( baselines );
+    }
+    /**
+     * Get a baselines representation of the original
+     * @return a byte array (at 256 bpp)
+     * @throws ImageException 
+     */
+    public byte[] getWordsData() throws ImageException
+    {
+        if ( words == null )
+            convertToWords();
+        return getPicData( words );
     }
 }

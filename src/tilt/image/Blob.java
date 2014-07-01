@@ -300,7 +300,7 @@ public class Blob
         }
     }
     /**
-     * Get this blob'swidth
+     * Get this blob's width
      * @return an int > 0
      */
     int getWidth()

@@ -1,17 +1,34 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * This file is part of TILT.
+ *
+ *  TILT is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  TILT is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
+ *  (c) copyright Desmond Schmidt 2014
  */
 
 package tilt.image.page;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Arrays;
 import java.awt.Point;
+import java.awt.Shape;
 import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
 import java.awt.image.WritableRaster;
+import java.awt.image.BufferedImage;
 
 /**
  * Represent a collection of lines already recognised on a page
@@ -20,6 +37,10 @@ import java.awt.image.WritableRaster;
 public class Page 
 {
     ArrayList<Line> lines;
+    HashMap<Shape,Line> map;
+    int medianLineDepth;
+    int medianWordGap;
+    
     /**
      * Convert an array of scaled column-peaks into lines
      * @param cols a 2-D array of scaled line-peaks going *down* the page
@@ -28,7 +49,8 @@ public class Page
      */
     public Page( ArrayList[] cols, int hScale,int vScale ) throws Exception
     {
-        lines = new ArrayList<Line>();
+        map = new HashMap<>();
+        lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
         {
             ArrayList col1 = cols[i];
@@ -168,7 +190,7 @@ public class Page
      * @param wr the raster
      * @param hScale the size of a rectangular sample
      * @param vScale the vertical scale
-     * @paramblack the value of a "black" pixel
+     * @param black the value of a "black" pixel
      */
     public void refineLeft( WritableRaster wr, int hScale, int vScale, int black )
     {
@@ -183,7 +205,7 @@ public class Page
      * @param wr the raster
      * @param hScale the size of a rectangular sample
      * @param vScale the vertical scale
-     * @paramblack the value of a "black" pixel
+     * @param black the value of a "black" pixel
      */
     public void refineRight( WritableRaster wr, int hScale, int vScale, int black )
     {
@@ -193,8 +215,105 @@ public class Page
             l.refineRight( wr, hScale, vScale, black );
         }
     }
+    /**
+     * Get the lines array of this page
+     * @return an array of line objects
+     */
     public ArrayList<Line> getLines()
     {
         return lines;
+    }
+    /**
+     * Does this page already contain that shape? On which line
+     * @param s the shape to look for
+     * @return the line it is already registered with
+     */
+    public Line contains( Shape s )
+    {
+        return map.get( s );
+    }
+    /**
+     * Add a shape to the registry
+     * @param s the shape to remember
+     * @param line the line it is associated with
+     */
+    public void addShape( Shape s, Line line )
+    {
+        map.put( s, line );
+    }
+    /**
+     * Merge lines that contain the same shapes
+     */
+    public void mergeLines()
+    {
+        ArrayList<Line> lines2 = new ArrayList<>();
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            if ( l.wantsMerge() )
+                l.merge( map );
+            else
+                lines2.add( l );
+        }
+        lines = lines2;
+    }
+     /**
+     * Print the word shapes over the top of the original image
+     * @param original the original raster to write to
+     */
+	public void print( BufferedImage original )
+    {
+        Graphics g = original.getGraphics();
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get( i );
+            l.print( g, original.getRaster() );
+        }
+    }
+    /**
+     * Work out the median word-gap and median line-depth
+     * @param wr the raster of the twotone or cleaned image
+     */
+    public void finalise( WritableRaster wr )
+    {
+         // compute median line depth
+        HashSet<Integer> vGaps = new HashSet<>();
+        for ( int i=0;i<lines.size()-1;i++ )
+        {
+            Line l1 = lines.get( i );
+            Line l2 = lines.get( i+1 );
+            vGaps.add( Math.abs(l2.getMedianY()-l1.getMedianY()) );
+        }
+        Integer[] vArray = new Integer[vGaps.size()];
+        vGaps.toArray( vArray );
+        Arrays.sort( vArray );
+        medianLineDepth = (vArray.length<=1)?0:vArray[vArray.length/2].intValue();
+        // compute median word-gap
+        HashSet<Integer> hGaps = new HashSet<>();
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            hGaps.add( l.getMedianHGap(medianLineDepth,wr) );
+        }
+        Integer[] hArray = new Integer[hGaps.size()];
+        hGaps.toArray( hArray );
+        Arrays.sort( hArray );
+        medianWordGap = hArray[hArray.length/2].intValue();
+    }
+    /**
+     * Retrieve the median gap between words in pixels
+     * @return an int
+     */
+    public int getWordGap()
+    {
+        return medianWordGap;
+    }
+    /**
+     * Retrieve the median line-height (distance between baselines) in pixels
+     * @return an int
+     */
+    public int getLineHeight()
+    {
+        return medianLineDepth;
     }
 }

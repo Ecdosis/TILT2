@@ -15,37 +15,12 @@
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2014
  */
-
-package tilt.constants;
-
 /**
- * Types of image requested
- * @author desmond
+ * The purpose of this package is to represent the visually identified 
+ * parts of the page: the lines and word-shapes. The layout is basically as follows:</p>
+ * <p align="center"><img src="doc-files/page.png" width="200"></p>
+ * <p>The {@link Page} class allows the calculation of useful parameters
+ * for later processing: the median line-depth (distance between baselines)
+ * and the median word-gap.</p>
  */
-public enum ImageType 
-{
-    original,
-    greyscale,
-    twotone,
-    cleaned,
-    baselines,
-    words;
-    /**
-     * Convert a string into
-     * @param str a string representation perhaps in upper or mixed case
-     * @return the enum version of str
-     */
-    public static ImageType read( String str )
-    {
-        ImageType it;
-        try
-        {
-            it = valueOf(str.toLowerCase());
-        }
-        catch ( Exception e )
-        {
-            it= original;
-        }
-        return it;
-    }
-}
+ package tilt.image.page;

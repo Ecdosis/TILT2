@@ -67,6 +67,9 @@ public class TiltImageHandler  extends TiltHandler
                     case baselines:
                         pic = p.getBaselinesData();
                         break;
+                    case words:
+                        pic = p.getWordsData();
+                        break;
                 }  
                 if ( pic != null )
                 {
