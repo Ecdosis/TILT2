@@ -99,22 +99,14 @@ public class Blob
     public static float setToWhite( WritableRaster wr )
     {
         int blackPixels = 0;
-        // set all to white
-        int[] iArray = new int[1];
-        iArray[0] = 255;
-        int[] jArray = new int[1];
-        int height = wr.getHeight();
         int width = wr.getWidth();
+        int height = wr.getHeight();
+        // set all to white
+        int[] iArray = new int[width];
+        for ( int x=0;x<width;x++ )
+            iArray[x] = 255;
         for ( int y=0;y<height;y++ )
-        {
-            for ( int x=0;x<width;x++ )
-            {
-                wr.getPixel(x,y,jArray);
-                if ( jArray[0] == 0 )
-                    blackPixels++;
-                wr.setPixel(x,y,iArray);
-            }
-        }
+            wr.setPixels(0,y,width,1,iArray);
         return (float)blackPixels/(float)(wr.getWidth()*wr.getHeight());
     }
     /**
@@ -210,6 +202,7 @@ public class Blob
      */
     void checkDirtyDot( WritableRaster wr, Point start, int[] iArray )
     {
+        // do it without recursion
         stack.push( start );
         while ( !stack.empty() )
         {
@@ -224,7 +217,7 @@ public class Blob
                 if ( iArray[0] != 0 )
                 {
                     iArray[0] = 0;
-                    // set one pixel known to be black and not already set in dirty
+                    // set one pixel known to be black 
                     setBlackPixel( p.x, p.y, iArray );
                     // top
                     if ( p.y > 0 )
@@ -284,7 +277,7 @@ public class Blob
         return (maxY-minY)+1;
     }
     /**
-     * Test
+     * Test with small image
      * @param args ignored
      */
     public static void main(String[] args )
@@ -315,7 +308,8 @@ public class Blob
                         b.expandArea(wr, new Point(x,y) );
                         if ( b.size()>max )
                         {
-                            System.out.println("Found new blob at "+x+","+y+" size="+b.size());
+                            System.out.println("Found new blob at "+x
+                                +","+y+" size="+b.size());
                             largest = b;
                             max = b.size();
                         }

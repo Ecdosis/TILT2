@@ -35,6 +35,7 @@ import java.awt.geom.PathIterator;
 public class FindWords 
 {
     BufferedImage src;
+    Page page;
     WritableRaster wr;
     WritableRaster dirty;
     static float WORDSQUARE_RATIO = 0.032f;
@@ -50,27 +51,22 @@ public class FindWords
     {
         wr = src.getRaster();
         dirty = src.copyData(null);
-        int[] data = new int[dirty.getWidth()];
-        for ( int i=0;i<data.length;i++ )
-            data[i] = 255;
-        for ( int i=0;i<dirty.getHeight();i++ )
-            dirty.setPixels( 0, i, data.length, 1, data );
+        Blob.setToWhite(dirty);
         average = ppAverage;
-        page.finalise(wr );
-        wordSquare = new Rectangle(0,0,page.getWordGap(),page.getLineHeight()/2);
+        this.page = page;
+        page.finalise( wr );
         this.src = src;
         ArrayList<Line> lines = page.getLines();
         for ( int i=0;i<lines.size();i++ )
         {
             Line line = lines.get(i);
             Point[] points = line.getPoints();
-            for ( int j=0;j<points.length;j++ )
+            for ( int j=0;j<points.length-1;j++ )
             {
-                Shape s = findWord( points[j].x, points[j].y, true, 
-                    page.getWordGap() );
-                Line inLine = page.contains(s);
+                Shape s = findPartWord( points[j], points[j+1] );
                 if ( s != null )
                 {
+                    Line inLine = page.contains(s);
                     if ( inLine == null )
                     {
                         line.add( s );
@@ -84,75 +80,65 @@ public class FindWords
         page.mergeLines();
     }
     /**
-     * Get the number of blank cols from the left
-     * @param r the rectangle in the image to test
+     * Find part of a word. All blobs near the line will be added.
+     * @param p1 the start of the baseline segment
+     * @param p2 the end of this baseline segment
+     * @return a polygon or null if not found
      */
-    private int getBlankColsL( Rectangle r )
+    private Shape findPartWord( Point p1, Point p2 )
     {
-        int numBlanks= 0;
-        int[] iArray = new int[r.height];
-        for ( int x=r.x;x<r.x+r.width;x++ )
+        int midY = (p1.y+p2.y)/2;
+        int top = midY-page.getLineHeight()/2;
+        if ( top < 0 )
+            top = 0;
+        // compute rectangle in which to look for blobs
+        Rectangle r = new Rectangle( p1.x, top, p2.x-p1.x, 
+            page.getLineHeight() );
+        int[] iArray = new int[1];
+        int endY = r.y+r.height;
+        int endX = r.x+r.width;
+        ArrayList<Blob> blobs = new ArrayList<>();
+        for ( int y=r.y;y<endY;y++ )
         {
-            wr.getPixels( x, r.y, 1, r.height, iArray );
-            for ( int i=0;i<iArray.length;i++ )
-                if ( iArray[i] == 0 )
-                    break;
-            numBlanks++;
+            for ( int x=r.x;x<endX;x++ )
+            {
+                wr.getPixel( x, y, iArray );
+                if ( iArray[0] == 0 )
+                {
+                    dirty.getPixel( x, y, iArray );
+                    if ( iArray[0]!= 0 )
+                    {
+                        Blob b = new Blob( dirty );
+                        b.save( dirty, wr, new Point(x,y) );
+                        blobs.add( b );
+                    }
+                }
+            }
         }
-        return numBlanks;
-    }/**
-     * Get the number of blank cols from the right
-     * @param r the rectangle in the image to test
-     */
-    private int getBlankColsR( Rectangle r )
-    {
-        int numBlanks= 0;
-        int[] iArray = new int[r.height];
-        for ( int x=r.x+r.width-1;x>=r.x;x-- )
+        // compose polygon out of blobs
+        if ( blobs.size()> 0 )
         {
-            wr.getPixels( x, r.y, 1, r.height, iArray );
-            for ( int i=0;i<iArray.length;i++ )
-                if ( iArray[i] == 0 )
-                    break;
-            numBlanks++;
+            ArrayList<Point> points = new ArrayList<>();
+            for ( int i=0;i<blobs.size();i++ )
+            {
+                Blob b = blobs.get(i);
+                // use limits as rough bounds of blob
+                points.add( new Point(b.minX,b.minY) );
+                points.add( new Point(b.minX,b.maxY) );
+                points.add( new Point(b.maxX,b.minY) );
+                points.add( new Point(b.maxX,b.maxY) );
+            }
+            ArrayList<Point> hull = FastConvexHull.execute( points );
+            Polygon pg = new Polygon();
+            for ( int i=0;i<hull.size();i++ )
+            {
+                Point p = hull.get(i);
+                pg.addPoint( p.x, p.y );
+            }
+            return pg;
         }
-        return numBlanks;
-    }
-    /**
-     * Find a word
-     * @param x the x-coordinate of the start in true dimensions
-     * @param y the y-coordinate of the start point in true coordinates
-     * @param polygon true if a polygon is desired, else a Rectangle 
-     * @param wordGap the median word-gap
-     * @return a shape (rectangle or polygon) or null if not found
-     */
-    private Shape findWord( int x,int y, boolean polygon, int wordGap )
-    {
-        Area a = new Area();
-        float mean =  averageArea( x, y, wordSquare.width, wordSquare.height );
-        Rectangle r = new Rectangle(x,y,wordSquare.width, 
-            wordSquare.height);
-        while ( mean > average )
-        {
-            a.add( new Area(r) );
-            if ( y > 0 )
-                extendAreaUp( a, x, y-1, wordSquare.width );
-            if ( y < wr.getHeight()-1 )
-                extendAreaDown( a, x, y+1, wordSquare.width );
-            int rBlanks = getBlankColsR(r);
-            x += wordSquare.width;
-            r = new Rectangle(x,y,wordSquare.width, wordSquare.height);
-            int lBlanks = getBlankColsL(r);
-            if ( lBlanks+rBlanks > wordGap )
-                break;
-            else if ( x > wr.getWidth() )
-                break;
-        }
-        Shape shape = areaToPolygon( a ); 
-        if ( !polygon )
-            return shape.getBounds();
         else
-            return shape;
+            return null;
     }
     /**
      * Average the pixel intensity in a rectangle
