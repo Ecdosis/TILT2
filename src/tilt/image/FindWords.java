@@ -17,7 +17,7 @@
  */
 
 package tilt.image;
-
+import tilt.Utils;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.awt.Shape;
@@ -63,17 +63,20 @@ public class FindWords
             Point[] points = line.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
-                Shape s = findPartWord( points[j], points[j+1] );
+                Shape[] s = findPartWord( points[j], points[j+1] );
                 if ( s != null )
                 {
-                    Line inLine = page.contains(s);
-                    if ( inLine == null )
+                    for ( int k=0;k<s.length;k++ )
                     {
-                        line.add( s );
-                        page.addShape( s, line );
+                        Line inLine = page.contains(s[k]);
+                        if ( inLine == null )
+                        {
+                            line.add( s[k] );
+                            page.addShape( s[k], line );
+                        }
+                        else if ( inLine != line )
+                            line.addShared( inLine, s[k] );
                     }
-                    else if ( inLine != line )
-                        line.addShared( inLine, s );
                 }
             }
         }
@@ -85,7 +88,7 @@ public class FindWords
      * @param p2 the end of this baseline segment
      * @return a polygon or null if not found
      */
-    private Shape findPartWord( Point p1, Point p2 )
+    private Shape[] findPartWord( Point p1, Point p2 )
     {
         int midY = (p1.y+p2.y)/2;
         int top = midY-page.getLineHeight()/2;
@@ -115,27 +118,35 @@ public class FindWords
                 }
             }
         }
-        // compose polygon out of blobs
+        // compose an array of polygons out of the blobs
         if ( blobs.size()> 0 )
         {
-            ArrayList<Point> points = new ArrayList<>();
+            ArrayList<Polygon> shapes = new ArrayList<>();
+            Polygon prevPg = null;
+            int wordGap =  page.getWordGap();
             for ( int i=0;i<blobs.size();i++ )
             {
                 Blob b = blobs.get(i);
-                // use limits as rough bounds of blob
-                points.add( new Point(b.minX,b.minY) );
-                points.add( new Point(b.minX,b.maxY) );
-                points.add( new Point(b.maxX,b.minY) );
-                points.add( new Point(b.maxX,b.maxY) );
+                Polygon pg = b.toPolygon();
+                if ( prevPg != null )
+                {
+                    if ( Utils.distanceBetween(prevPg,pg) < wordGap )
+                        prevPg = Utils.mergePolygons(prevPg,pg);
+                    else
+                    {
+                        shapes.add( prevPg );
+                        prevPg = pg;
+                    }
+                }
+                else
+                    prevPg = pg;
             }
-            ArrayList<Point> hull = FastConvexHull.execute( points );
-            Polygon pg = new Polygon();
-            for ( int i=0;i<hull.size();i++ )
-            {
-                Point p = hull.get(i);
-                pg.addPoint( p.x, p.y );
-            }
-            return pg;
+            if ( prevPg != null )
+                shapes.add( prevPg );
+            // convert to array
+            Shape[] ss = new Shape[shapes.size()];
+            shapes.toArray(ss);
+            return ss;
         }
         else
             return null;

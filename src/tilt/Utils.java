@@ -17,13 +17,17 @@
  */
 package tilt;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
 import java.awt.Point;
+import java.awt.geom.PathIterator;
+import java.awt.Polygon;
 import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import tilt.image.FastConvexHull;
 
 /**
  * Some routines that need sharing by all
@@ -229,5 +233,87 @@ public class Utils
         }
 
         return ret;
+    }
+    /**
+     * Get the minimal separation between two polygons
+     * @param pg1 the first polygon
+     * @param pg2 the second polygon
+     * @return the smallest distance between any two points of pg1, pg2
+     */
+    public static int distanceBetween( Polygon pg1, Polygon pg2 )
+    {
+        int minDist = Integer.MAX_VALUE;
+        ArrayList<Point> points1 = polygonToPoints(pg1);
+        ArrayList<Point> points2 = polygonToPoints(pg2);
+        for ( int i=0;i<points1.size();i++ )
+        {
+            Point p1 = points1.get(i);
+            for ( int j=0;j<points2.size();j++ )
+            {
+                Point p2 = points2.get(j);
+                int x = Math.abs(p1.x-p2.x);
+                int y = Math.abs(p1.y-p2.y);
+                long dist = Math.round(Math.hypot(x,y));
+                if ( dist < minDist )
+                    minDist = (int)dist;
+            }
+        }
+        return minDist;
+    }
+    /**
+     * Convert a polygon to an array of points
+     * @param pg the poly
+     * @return an arraylist of type Point
+     */
+    public static ArrayList<Point> polygonToPoints( Polygon pg )
+    {
+        ArrayList<Point> points = new ArrayList<>();
+        PathIterator iter = pg.getPathIterator(null);
+        float[] coords = new float[6];
+        while ( !iter.isDone())
+        {
+            int step = iter.currentSegment(coords);
+            switch ( step )
+            {
+                case PathIterator.SEG_CLOSE: case PathIterator.SEG_LINETO:
+                    case PathIterator.SEG_MOVETO:
+                    points.add( new Point(Math.round(coords[0]),
+                        Math.round(coords[1])) );
+                    break;
+                default:
+                    break;
+            }
+            iter.next();
+        }
+        return points;
+    }
+    /**
+     * Convert an array of points to a polygon
+     * @param points the arraylist of points
+     * @return a Polygon
+     */
+    public static Polygon pointsToPolygon( ArrayList<Point> points )
+    {
+        Polygon pg = new Polygon();
+        for ( int i=0;i<points.size();i++ )
+        {
+            Point pt = points.get(i);
+            pg.addPoint( pt.x, pt.y );
+        }
+        return pg;
+    }
+    /**
+     * Merge two polygons into a minimal single polygon
+     * @param pg1 the first poly
+     * @param pg2 the second poly
+     * @return one Polygon being the merge of both
+     */
+    public static Polygon mergePolygons( Polygon pg1, Polygon pg2 )
+    {
+        ArrayList<Point> points1 = polygonToPoints(pg1);
+        ArrayList<Point> points2 = polygonToPoints(pg2);
+        points1.addAll(points2);
+        ArrayList<Point> points3 = FastConvexHull.execute(points1);
+        return pointsToPolygon( points3 );
     }
 }

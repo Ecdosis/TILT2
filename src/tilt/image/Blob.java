@@ -18,11 +18,13 @@
 
 package tilt.image;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.net.InetAddress;
 import javax.imageio.ImageIO;
 import java.util.Stack;
+import java.util.ArrayList;
 import org.json.simple.*;
 
 /**
@@ -49,6 +51,7 @@ public class Blob
     /** First black pixel*/
     Point firstBlackPixel;
     Stack<Point> stack;
+    ArrayList<Point> hull;
     Blob( WritableRaster parent )
     {
         this.parent = parent;
@@ -200,8 +203,9 @@ public class Blob
      * @param start the first blackdot
      * @param iArray the array containing the dirty dot
      */
-    void checkDirtyDot( WritableRaster wr, Point start, int[] iArray )
+    void checkDirtyDot( WritableRaster wr, Point start,  int[] iArray )
     {
+        hull = new ArrayList<>();
         // do it without recursion
         stack.push( start );
         while ( !stack.empty() )
@@ -245,6 +249,8 @@ public class Blob
                         stack.push( new Point(p.x+1, p.y-1) );
                 }
             }
+            else
+                hull.add( p );
         }
     }
     /**
@@ -329,6 +335,10 @@ public class Blob
             e.printStackTrace(System.out);
         }
     }
+    /**
+     * Convert to string for debug
+     * @return a String representation of the blog in situ (big)
+     */
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
@@ -346,5 +356,27 @@ public class Blob
             sb.append("\n");
         }
         return sb.toString();
+    }
+    /**
+     * Convert a blob to a Polygon if you can
+     * @return a Polygon that is a convex hull of the blob or null
+     */
+    Polygon toPolygon()
+    {
+        if ( dirt != null && firstBlackPixel != null )
+        {
+            if ( hull == null )
+                expandArea( dirt, firstBlackPixel );
+            Polygon pg = new Polygon();
+            ArrayList<Point> cv = FastConvexHull.execute(hull);
+            for ( int i=0;i<cv.size();i++ )
+            {
+                Point p = cv.get(i);
+                pg.addPoint( p.x, p.y );
+            }
+            return pg;
+        }
+        else
+            return null;
     }
 }
