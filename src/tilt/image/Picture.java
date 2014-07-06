@@ -59,7 +59,7 @@ public class Picture {
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
      * @param coords coordinates for the picture from the geoJSON file
-     * @param poster the ipaddress of the poster of the image
+     * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
     public Picture( String urlStr, JSONArray coords, InetAddress poster ) 

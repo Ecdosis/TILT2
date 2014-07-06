@@ -50,6 +50,8 @@ public class FindLines
         this.src = src;
         hScale = Math.round(wr.getWidth()*H_SCALE_RATIO);
         vScale = Math.round(wr.getHeight()*V_SCALE_RATIO);
+        if ( vScale==0 )
+            vScale = 1;
         height = (wr.getHeight()+vScale-1)/vScale;
         width = (wr.getWidth()+hScale-1)/hScale;
         compacted = new int[width][height];

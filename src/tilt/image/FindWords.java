@@ -59,7 +59,6 @@ public class FindWords
         page.finalise(wr );
         wordSquare = new Rectangle(0,0,page.getWordGap(),page.getLineHeight()/2);
         this.src = src;
-        int shapesFound = 0;
         ArrayList<Line> lines = page.getLines();
         for ( int i=0;i<lines.size();i++ )
         {
@@ -67,7 +66,8 @@ public class FindWords
             Point[] points = line.getPoints();
             for ( int j=0;j<points.length;j++ )
             {
-                Shape s = findWord( points[j].x, points[j].y, true );
+                Shape s = findWord( points[j].x, points[j].y, true, 
+                    page.getWordGap() );
                 Line inLine = page.contains(s);
                 if ( s != null )
                 {
@@ -78,41 +78,81 @@ public class FindWords
                     }
                     else if ( inLine != line )
                         line.addShared( inLine, s );
-                    // temporary
-                    shapesFound++;
-                    break;
                 }
             }
-            if ( shapesFound > 4 )
-                break;
         }
         page.mergeLines();
+    }
+    /**
+     * Get the number of blank cols from the left
+     * @param r the rectangle in the image to test
+     */
+    private int getBlankColsL( Rectangle r )
+    {
+        int numBlanks= 0;
+        int[] iArray = new int[r.height];
+        for ( int x=r.x;x<r.x+r.width;x++ )
+        {
+            wr.getPixels( x, r.y, 1, r.height, iArray );
+            for ( int i=0;i<iArray.length;i++ )
+                if ( iArray[i] == 0 )
+                    break;
+            numBlanks++;
+        }
+        return numBlanks;
+    }/**
+     * Get the number of blank cols from the right
+     * @param r the rectangle in the image to test
+     */
+    private int getBlankColsR( Rectangle r )
+    {
+        int numBlanks= 0;
+        int[] iArray = new int[r.height];
+        for ( int x=r.x+r.width-1;x>=r.x;x-- )
+        {
+            wr.getPixels( x, r.y, 1, r.height, iArray );
+            for ( int i=0;i<iArray.length;i++ )
+                if ( iArray[i] == 0 )
+                    break;
+            numBlanks++;
+        }
+        return numBlanks;
     }
     /**
      * Find a word
      * @param x the x-coordinate of the start in true dimensions
      * @param y the y-coordinate of the start point in true coordinates
      * @param polygon true if a polygon is desired, else a Rectangle 
+     * @param wordGap the median word-gap
      * @return a shape (rectangle or polygon) or null if not found
      */
-    private Shape findWord( int x,int y, boolean polygon )
+    private Shape findWord( int x,int y, boolean polygon, int wordGap )
     {
         Area a = new Area();
         float mean =  averageArea( x, y, wordSquare.width, wordSquare.height );
-        if ( mean > average )
+        Rectangle r = new Rectangle(x,y,wordSquare.width, 
+            wordSquare.height);
+        while ( mean > average )
         {
-            Rectangle r = new Rectangle(x,y,wordSquare.width, 
-                wordSquare.height);
             a.add( new Area(r) );
-            extendAreaUp( a, x, y-wordSquare.height, wordSquare.width );
-            extendAreaDown( a, x, y+1, wordSquare.width );
-            Shape shape = areaToPolygon( a ); 
-            if ( !polygon )
-                return shape.getBounds();
-            else
-                return shape;
+            if ( y > 0 )
+                extendAreaUp( a, x, y-1, wordSquare.width );
+            if ( y < wr.getHeight()-1 )
+                extendAreaDown( a, x, y+1, wordSquare.width );
+            int rBlanks = getBlankColsR(r);
+            x += wordSquare.width;
+            r = new Rectangle(x,y,wordSquare.width, wordSquare.height);
+            int lBlanks = getBlankColsL(r);
+            if ( lBlanks+rBlanks > wordGap )
+                break;
+            else if ( x > wr.getWidth() )
+                break;
         }
-        return null;
+        Shape shape = areaToPolygon( a ); 
+        if ( !polygon )
+            return shape.getBounds();
+        else
+            return shape;
     }
     /**
      * Average the pixel intensity in a rectangle
@@ -139,7 +179,7 @@ public class FindWords
      * Extend any pixels in the lowermost row upwards
      * @param a the area to extend
      * @param x the x-coordinate of the left
-     * @param y the y coordinate of the top
+     * @param y the y coordinate of the *bottom*
      * @param xsize the width of the region
      */
     void extendAreaUp( Area a, int x, int y,  int xsize )

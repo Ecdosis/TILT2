@@ -18,7 +18,12 @@
 
 package tilt.image;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.net.InetAddress;
+import javax.imageio.ImageIO;
+import java.util.Stack;
+import org.json.simple.*;
 
 /**
  * An amorphous region of connected black pixels in an image
@@ -43,10 +48,12 @@ public class Blob
     int minX,maxX,minY,maxY;
     /** First black pixel*/
     Point firstBlackPixel;
+    Stack<Point> stack;
     Blob( WritableRaster parent )
     {
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
+        this.stack = new Stack();
     }
     /**
      * Actually commit the blob to the dirty raster
@@ -56,7 +63,7 @@ public class Blob
      */
     public void save( WritableRaster dirt, WritableRaster wr, Point loc )
     {
-        this.dirt = parent;
+        this.dirt = dirt;
         // recompute the blob - a bit inefficient but storing it is far worse
         expandArea( wr, loc );
     }
@@ -167,31 +174,22 @@ public class Blob
      * @param x the x-coordinate of the black pixel
      * @param y the y-coordinate of the black pixel
      * @param iArray an array of 1 black pixel
-     * @return true if the new pixel was in the parent
      */
-    private boolean setBlackPixel( int x, int y,int[] iArray )
+    private void setBlackPixel( int x, int y,int[] iArray )
     {
-        parent.getPixel(x,y,iArray);
-        if ( iArray[0]!=0 )
-        {
-            if ( dirt != null )
-            {
-                iArray[0] = 0;
-                dirt.setPixel(x,y,iArray);
-            }
-            numBlackPixels++;
-            if ( x < minX )
-                minX = x;
-            if ( x > maxX )
-                maxX = x;
-            if ( y < minY )
-                minY = y;
-            if ( y > maxY )
-                maxY = y;
-            return false;
-        }
-        else
-            return true;
+        if ( dirt != null )
+            dirt.setPixel(x,y,iArray);
+        else    // accumulate
+            parent.setPixel( x, y, iArray );
+        numBlackPixels++;
+        if ( x < minX )
+            minX = x;
+        if ( x > maxX )
+            maxX = x;
+        if ( y < minY )
+            minY = y;
+        if ( y > maxY )
+            maxY = y;
     }
     /**
      * Is this pixel already in the dirty set?
@@ -205,99 +203,69 @@ public class Blob
         return iArray[0]==0;
     }
     /**
+     * Check if there is one dirty dot not already seen, and if not recurse.
+     * @param wr the raster to search
+     * @param start the first blackdot
+     * @param iArray the array containing the dirty dot
+     */
+    void checkDirtyDot( WritableRaster wr, Point start, int[] iArray )
+    {
+        stack.push( start );
+        while ( !stack.empty() )
+        {
+            Point p = stack.pop();
+            wr.getPixel( p.x, p.y, iArray );
+            if ( iArray[0] == 0 )
+            {
+                if ( dirt != null )
+                    dirt.getPixel( p.x, p.y, iArray );
+                else
+                    parent.getPixel( p.x, p.y, iArray );
+                if ( iArray[0] != 0 )
+                {
+                    iArray[0] = 0;
+                    // set one pixel known to be black and not already set in dirty
+                    setBlackPixel( p.x, p.y, iArray );
+                    // top
+                    if ( p.y > 0 )
+                        stack.push( new Point(p.x,p.y-1) );
+                    // bottom
+                    if ( p.y < wr.getHeight()-1 )
+                        stack.push( new Point(p.x, p.y+1) );
+                    // left
+                    if ( p.x > 0 )
+                        stack.push( new Point(p.x-1, p.y) );
+                    // right
+                    if ( p.x < wr.getWidth()-1 )
+                        stack.push( new Point(p.x+1, p.y) );
+                    // bot-left
+                    if ( p.y < wr.getHeight()-1 && p.x > 0 )
+                        stack.push( new Point(p.x-1, p.y+1) );
+                    // bot-right
+                    if ( p.y < wr.getHeight()-1 && p.x < wr.getWidth()-1 )
+                        stack.push( new Point(p.x+1, p.y+1) );
+                    // top-left
+                    if ( p.y > 0 && p.x > 0 )
+                        stack.push( new Point(p.x-1, p.y-1) );
+                    // top-right
+                    if ( p.y > 0 && p.x < wr.getWidth()-1 )
+                        stack.push( new Point(p.x+1, p.y-1) );
+                }
+            }
+        }
+    }
+    /**
      * Expand a dark pixel down and to left and right
      * @param wr the raster to expand within
      * @param start the start point
      */
-    void expandArea( WritableRaster wr, Point start )
+    public void expandArea( WritableRaster wr, Point start )
     {
         int[] iArray = new int[1];
-        int l = start.x;
-        int r = start.x;
-        boolean done = false;
+        numBlackPixels = 0;
+        stack.clear();
+        checkDirtyDot(wr,start,iArray);
         firstBlackPixel = start;
-        setBlackPixel(start.x,start.y,iArray);
-        // find r in first row
-        for ( int x=start.x+1;x<wr.getWidth();x++ )
-        {
-            wr.getPixel(x,start.y,iArray);
-            if ( iArray[0] != 0 )
-                break;
-            else
-            {
-                r = x;
-                // NB no white pixels in first row
-                setBlackPixel(x,start.y,iArray);
-            }
-        }
-        // find subsequent rows
-        for ( int y=start.y+1;y<wr.getHeight();y++ )
-        {
-            boolean lUnset = true;
-            boolean rUnset = true;
-            int oldL = l;
-            int oldR = r;
-            // try to extend l to the left
-            for ( int x=l;x>=0;x-- )
-            {
-                wr.getPixel(x,y,iArray);
-                if ( iArray[0]==0 )
-                {
-                    done = setBlackPixel(x,y,iArray);
-                    lUnset = false;
-                    l = x;
-                }
-                else
-                    break;
-                if ( done )
-                    break;
-            }
-            // extend r to the right
-            for ( int x=r;x<wr.getWidth();x++ )
-            {
-                wr.getPixel(x,y,iArray);
-                if ( iArray[0]==0 )
-                {
-                    done = setBlackPixel(x,y,iArray);
-                    rUnset = false;
-                    r = x;
-                }
-                else
-                    break;
-                if ( done )
-                    break;
-            }
-            // process middle bit
-            for ( int x=oldL+1;x<oldR;x++ )
-            {
-                wr.getPixel(x,y,iArray);
-                if ( iArray[0]==0 )
-                {
-                    if ( rUnset )
-                        r = x;  // keep updating r
-                    if ( lUnset )
-                    {
-                        lUnset = false;
-                        l = x;
-                    }
-                    done = setBlackPixel(x,y,iArray);
-                }
-                if ( done )
-                    break;
-            }
-            if ( done || (lUnset && rUnset) )
-                break;
-            else
-            {
-                // count white pixels
-                for ( int x=l;x<=r;x++ )
-                {
-                    wr.getPixel(x,y,iArray);
-                    if ( iArray[0]!=0 )
-                        numWhitePixels++;
-                }
-            }
-        }
     }
     /**
      * Get this blob's width
@@ -314,5 +282,75 @@ public class Blob
     int getHeight()
     {
         return (maxY-minY)+1;
+    }
+    /**
+     * Test
+     * @param args ignored
+     */
+    public static void main(String[] args )
+    {
+        try
+        {
+            String s="[[0.0,0.0],[100.0,0.0],[100.0,100.0],[0.0,100.0]]";
+            Object obj=JSONValue.parse(s);
+            JSONArray coords=(JSONArray)obj;
+            Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
+                InetAddress.getByName("127.0.0.1") );
+            p.convertToTwoTone();
+            BufferedImage bandw = ImageIO.read(p.twotone);
+            WritableRaster wr = bandw.getRaster();
+            Blob largest = null;
+            int max = 0;
+            int[] iArray = new int[1];
+            WritableRaster darkRegions = bandw.copyData(null);
+            Blob.setToWhite( darkRegions );
+            for ( int y=0;y<wr.getHeight();y++ )
+            {
+                for ( int x=0;x<wr.getWidth();x++ )
+                {
+                    Blob b = new Blob(darkRegions);
+                    wr.getPixel(x,y,iArray);
+                    if ( iArray[0] == 0 )
+                    {
+                        b.expandArea(wr, new Point(x,y) );
+                        if ( b.size()>max )
+                        {
+                            System.out.println("Found new blob at "+x+","+y+" size="+b.size());
+                            largest = b;
+                            max = b.size();
+                        }
+                    }
+                }
+            }
+            if ( largest != null )
+            {
+                WritableRaster dirt = bandw.copyData(null);
+                Blob.setToWhite( dirt );
+                largest.save(dirt,wr,largest.firstBlackPixel);
+                System.out.println(largest.toString());
+            }
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace(System.out);
+        }
+    }
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        int[] iArray = new int[1];
+        for ( int y=0;y<dirt.getHeight();y++ )
+        {
+            for ( int x=0;x<dirt.getWidth();x++ )
+            {
+                dirt.getPixel(x,y,iArray);
+                if ( iArray[0]==0 )
+                    sb.append("*");
+                else
+                    sb.append(" ");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }
