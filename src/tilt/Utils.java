@@ -27,6 +27,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import static tilt.Utils.dist2;
 import tilt.image.FastConvexHull;
 
 /**
@@ -235,16 +236,62 @@ public class Utils
         return ret;
     }
     /**
-     * Get the minimal separation between two polygons
-     * @param pg1 the first polygon
-     * @param pg2 the second polygon
-     * @return the smallest distance between any two points of pg1, pg2
+     * The distance between two points squared
+     * @param v the first point
+     * @param w the second point
+     * @return the distance between v and w squared
      */
-    public static int distanceBetween( Polygon pg1, Polygon pg2 )
+    static float dist2( Point v, Point w ) 
+    { 
+        int xDiff = v.x - w.x;
+        int yDiff = v.y - w.y;
+        return xDiff*xDiff + yDiff*yDiff;
+    }
+    /**
+     * Distance from a point to a line-segment squared
+     * @param p the point
+     * @param v the 1st point of the segment
+     * @param w the 2nd point of the segment
+     * @return the distance as a float
+     */
+    static float distToSegmentSquared( Point p, Point v, Point w) 
     {
-        int minDist = Integer.MAX_VALUE;
-        ArrayList<Point> points1 = polygonToPoints(pg1);
-        ArrayList<Point> points2 = polygonToPoints(pg2);
+        float l2 = dist2(v, w);
+        if (l2 == 0.0f) 
+            return dist2(p, v);
+        float t = ((p.x-v.x)*(w.x-v.x)+(p.y-v.y)*(w.y-v.y))/l2;
+        if (t < 0) 
+            return dist2(p, v);
+        if (t > 1) 
+            return dist2(p, w);
+        Point q = new Point(v.x+Math.round(t*(w.x-v.x)),v.y
+            +Math.round(t*(w.y-v.y)));
+        return dist2( p, q );
+    }
+    /**
+     * Compute the distance from a point to a line segment
+     * @param p the point
+     * @param v first point of the line
+     * @param w second point of the line
+     * @return the distance as a float
+     */
+    public static float distanceToSegment( Point p, Point v, Point w )
+    {
+        float squared = distToSegmentSquared(p,v,w);
+        return (float)Math.sqrt(squared);
+    }
+    /**
+     * Get the minimal separation between two polygons
+     * @param P the first polygon
+     * @param Q the second polygon
+     * @return the smallest distance between segments or vertices of P, Q
+     */
+    public static int distanceBetween( Polygon P, Polygon Q )
+    {
+        float minDist = Float.MAX_VALUE;
+        ArrayList<Point> points1 = polygonToPoints(P);
+        ArrayList<Point> points2 = polygonToPoints(Q);
+        Point last1=null,last2=null;
         for ( int i=0;i<points1.size();i++ )
         {
             Point p1 = points1.get(i);
@@ -253,12 +300,29 @@ public class Utils
                 Point p2 = points2.get(j);
                 int x = Math.abs(p1.x-p2.x);
                 int y = Math.abs(p1.y-p2.y);
-                long dist = Math.round(Math.hypot(x,y));
+                // distance between vertices
+                float dist = Math.round(Math.hypot(x,y));
                 if ( dist < minDist )
-                    minDist = (int)dist;
+                    minDist = dist;
+                // distance between p1 and a segment of Q
+                if ( last2 != null )
+                {
+                    float fDist2 = distanceToSegment( p1, last2, p2 );
+                    if ( fDist2 < minDist )
+                        minDist = fDist2;
+                }
+                // distance between p2 and a segment of P
+                if ( last1 != null )
+                {
+                    float fDist1 = distanceToSegment( p2, last1, p1 );
+                    if ( fDist1 < minDist )
+                        minDist = fDist1;
+                }
+                last2 = p2;
             }
-        }
-        return minDist;
+            last1 = p1;
+        } 
+        return Math.round(minDist);
     }
     /**
      * Convert a polygon to an array of points

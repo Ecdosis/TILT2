@@ -144,8 +144,10 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
+                boolean manuscript = (props.containsKey("manuscript"))?
+                    (boolean)props.get("manuscript"):true;
                 Picture p = new Picture( (String)props.get("url"), 
-                    cc, poster );
+                    cc, manuscript, poster );
             }
             sb.append("<img width=\"500\" src=\"");
             sb.append("http://");

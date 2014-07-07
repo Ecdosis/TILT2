@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.awt.Point;
-import java.awt.Shape;
+import java.awt.Polygon;
 import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
 import java.awt.image.WritableRaster;
@@ -37,18 +37,21 @@ import java.awt.image.BufferedImage;
 public class Page 
 {
     ArrayList<Line> lines;
-    HashMap<Shape,Line> map;
+    HashMap<Polygon,Line> map;
     int medianLineDepth;
     int medianWordGap;
-    
+    boolean manuscript;
     /**
      * Convert an array of scaled column-peaks into lines
      * @param cols a 2-D array of scaled line-peaks going *down* the page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
+     * @param manuscript true if this is a manuscript
      */
-    public Page( ArrayList[] cols, int hScale,int vScale ) throws Exception
+    public Page( ArrayList[] cols, int hScale, int vScale, 
+        boolean manuscript ) throws Exception
     {
+        this.manuscript = manuscript;
         map = new HashMap<>();
         lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
@@ -225,21 +228,21 @@ public class Page
     }
     /**
      * Does this page already contain that shape? On which line
-     * @param s the shape to look for
+     * @param pg the shape to look for
      * @return the line it is already registered with
      */
-    public Line contains( Shape s )
+    public Line contains( Polygon pg )
     {
-        return map.get( s );
+        return map.get( pg );
     }
     /**
      * Add a shape to the registry
-     * @param s the shape to remember
+     * @param pg the shape to remember
      * @param line the line it is associated with
      */
-    public void addShape( Shape s, Line line )
+    public void addShape( Polygon pg, Line line )
     {
-        map.put( s, line );
+        map.put( pg, line );
     }
     /**
      * Merge lines that contain the same shapes
@@ -315,5 +318,16 @@ public class Page
     public int getLineHeight()
     {
         return medianLineDepth;
+    }
+    /**
+     * Join up adjacent part-words
+     */
+    public void joinWords()
+    {
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            l.mergeWords( medianWordGap, manuscript );
+        }
     }
 }

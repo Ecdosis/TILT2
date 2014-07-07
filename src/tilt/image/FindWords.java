@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.geom.Area;
-import java.awt.geom.PathIterator;
 /**
  * Using the lines lists search for words
  * @author desmond
@@ -63,7 +61,7 @@ public class FindWords
             Point[] points = line.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
-                Shape[] s = findPartWord( points[j], points[j+1] );
+                Polygon[] s = findPartWord( points[j], points[j+1] );
                 if ( s != null )
                 {
                     for ( int k=0;k<s.length;k++ )
@@ -81,6 +79,7 @@ public class FindWords
             }
         }
         page.mergeLines();
+        page.joinWords();
     }
     /**
      * Find part of a word. All blobs near the line will be added.
@@ -88,7 +87,7 @@ public class FindWords
      * @param p2 the end of this baseline segment
      * @return a polygon or null if not found
      */
-    private Shape[] findPartWord( Point p1, Point p2 )
+    private Polygon[] findPartWord( Point p1, Point p2 )
     {
         int midY = (p1.y+p2.y)/2;
         int top = midY-page.getLineHeight()/2;
@@ -96,7 +95,7 @@ public class FindWords
             top = 0;
         // compute rectangle in which to look for blobs
         Rectangle r = new Rectangle( p1.x, top, p2.x-p1.x, 
-            page.getLineHeight() );
+            2*page.getLineHeight()/3 );
         int[] iArray = new int[1];
         int endY = r.y+r.height;
         int endX = r.x+r.width;
@@ -123,7 +122,7 @@ public class FindWords
         {
             ArrayList<Polygon> shapes = new ArrayList<>();
             Polygon prevPg = null;
-            int wordGap =  page.getWordGap();
+            int wordGap = page.getWordGap();
             for ( int i=0;i<blobs.size();i++ )
             {
                 Blob b = blobs.get(i);
@@ -144,7 +143,7 @@ public class FindWords
             if ( prevPg != null )
                 shapes.add( prevPg );
             // convert to array
-            Shape[] ss = new Shape[shapes.size()];
+            Polygon[] ss = new Polygon[shapes.size()];
             shapes.toArray(ss);
             return ss;
         }

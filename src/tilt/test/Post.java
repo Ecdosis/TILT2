@@ -94,13 +94,14 @@ public class Post extends Test
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n}"
-    +"\n}\n";
+    +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\",\n"
+    +"\"manuscript\": true}\n}\n";
     static String DEROBERTO_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n}\n}\n";
+    +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\",\n"
+    +"\"manuscript\": true}\n}\n";
     static String DEROBERTO2_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"

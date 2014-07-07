@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import javax.imageio.ImageIO;
 import java.util.Stack;
 import java.util.ArrayList;
+import tilt.Utils;
 import org.json.simple.*;
 
 /**
@@ -294,7 +295,7 @@ public class Blob
             Object obj=JSONValue.parse(s);
             JSONArray coords=(JSONArray)obj;
             Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
-                InetAddress.getByName("127.0.0.1") );
+                true, InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);
             WritableRaster wr = bandw.getRaster();
@@ -369,12 +370,7 @@ public class Blob
                 expandArea( dirt, firstBlackPixel );
             Polygon pg = new Polygon();
             ArrayList<Point> cv = FastConvexHull.execute(hull);
-            for ( int i=0;i<cv.size();i++ )
-            {
-                Point p = cv.get(i);
-                pg.addPoint( p.x, p.y );
-            }
-            return pg;
+            return Utils.pointsToPolygon(cv);
         }
         else
             return null;

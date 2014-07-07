@@ -30,6 +30,7 @@ import java.awt.Color;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import java.util.HashSet;
+import tilt.Utils;
 /**
  * Represent a discovered line in an image
  * @author desmond
@@ -41,11 +42,11 @@ public class Line
     /** array of actual image coordinates to draw the line between */
     ArrayList<Point> points;
     /** array of shapes representing words */
-    ArrayList<Shape> shapes;
+    ArrayList<Polygon> shapes;
     /** scaled vertical endpoint */
     int end;
     /** shapes shared with some other lines */
-    HashMap<Line,ArrayList<Shape>> shared;
+    HashMap<Line,ArrayList<Polygon>> shared;
     /** total number of shapes, shared and non-shared */
     int total;
     /** median y-value */
@@ -206,7 +207,7 @@ public class Line
      * Add a shape (polygon or rectangle) to the line. Keep it sorted.
      * @param s the shape to add
      */
-    public void add( Shape s )
+    public void add( Polygon s )
     {
         int i;
         Rectangle sBounds = s.getBounds();
@@ -256,7 +257,7 @@ public class Line
         while ( iter.hasNext() )
         {
             Line l = iter.next();
-            ArrayList<Shape> list = shared.get( l );
+            ArrayList<Polygon> list = shared.get( l );
             if ( list.size() >= proportion )
                 return true;
         }
@@ -266,7 +267,7 @@ public class Line
      * Merge this line with its most similar colleague
      * @param map update this shape to line map for moved shapes
      */
-    void merge( HashMap<Shape,Line> map )
+    void merge( HashMap<Polygon,Line> map )
     {
         float proportion = Math.round(SHARED_RATIO*total);
         Set<Line> keys = shared.keySet();
@@ -274,15 +275,15 @@ public class Line
         while ( iter.hasNext() )
         {
             Line l = iter.next();
-            ArrayList<Shape> list = shared.get( l );
+            ArrayList<Polygon> list = shared.get( l );
             if ( list.size() >= proportion )
             {
                 // move all OUR shapes over to the dominant line
                 for ( int j=0;j<shapes.size();j++ )
                 {
-                    Shape s = shapes.get(j);
-                    map.put( s, l );
-                    l.add( s );
+                    Polygon pg = shapes.get(j);
+                    map.put( pg, l );
+                    l.add( pg );
                 }
                 shapes.clear();
                 break;
@@ -297,11 +298,15 @@ public class Line
     public void print( Graphics g, WritableRaster wr )
     {
         Color tRed = new Color(255, 0,0, 128 );
+        Color tBlue = new Color(0, 255,0, 128 );
         Color old = g.getColor();
-        g.setColor( tRed );
         for ( int i=0;i<shapes.size();i++ )
         {
             Shape s = shapes.get(i);
+            if ( i%2==1)
+                g.setColor( tRed );
+            else
+                g.setColor( tBlue );
             if ( s instanceof Polygon )
                 g.fillPolygon( (Polygon)s );
             else if ( s instanceof Rectangle )
@@ -376,5 +381,68 @@ public class Line
         }
         else
             return DEFAULT_WORD_GAP;
+    }
+    /**
+     * Merge polygons that are close together
+     * @param wordGap median gap between words
+     * @param manuscript true if this is a manuscript
+     */
+    public void mergeWords( int wordGap, boolean manuscript )
+    {
+        Polygon prev = null;
+        ArrayList<Integer> gaps = new ArrayList<>();
+        ArrayList<Polygon> newShapes = new ArrayList<>();
+        float averageGap;
+        if ( !manuscript )
+        {
+            for ( int i=0;i<shapes.size();i++ )
+            {
+                Polygon pg = shapes.get(i);
+                if ( prev != null )
+                {
+                    int gap = Utils.distanceBetween( prev, pg );
+                    gaps.add( gap );
+                    prev = pg;
+                }
+                else
+                    prev = pg;
+            }
+            // compute average gap
+            float totalGaps = 0.0f;
+            for ( int i=0;i<gaps.size();i++ )
+            {
+                int gap = gaps.get(i).intValue();
+                totalGaps += gap;
+            }
+            averageGap = totalGaps/gaps.size();
+        }
+        else
+            averageGap = 2*wordGap/3;
+        prev = null;
+        int j=0;
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon pg = shapes.get(i);
+            if ( prev != null )
+            {
+                // gaps will have changed due to merging
+                int current = Utils.distanceBetween( prev, pg );
+                if ( current < averageGap  )
+                {
+                    prev = Utils.mergePolygons(prev,pg);
+                }
+                else
+                {
+                    newShapes.add( prev );
+                    prev = pg;
+                }
+            }
+            else
+                prev = pg;
+        }
+        if ( prev != null )
+            newShapes.add( prev );
+        //System.out.println("");
+        this.shapes = newShapes;
     }
 }
