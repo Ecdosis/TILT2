@@ -46,10 +46,7 @@
  * square in the matrix in the bottom-right corner represents the cost of 
  * getting there, not the cost of <em>leaving</em> it. The final move may 
  * likewise be an insertion, deletion or exchange. To compute it thus requires 
- * an additional row and column, and one of the three emboldened squares in 
- * the bottom right of this extended region will contain the minimal cost of 
- * matching the two columns of integers, depending on whether the final move 
- * was an insertion, deletion or exchange. So in the drawing above the optimal 
+ * an additional row and column. So in the drawing above the optimal 
  * cost is 4, resulting from an exchange of a 9 and 10.</p>
  * <p>The {@link tilt.image.matchup.Matrix#traceBack() traceback} method then
  * recovers the optimal alignment from the matrix by starting from the final

@@ -66,13 +66,11 @@
  * line-fragments are then assembled into an entire page of lines by the 
  * {@link tilt.image.page} package.</p>
  * <h4>Third Stage &ndash; Recognise Words</h4>
- * <p>A narrow band around each line is scanned for black pixels. If the 
- * average of this are is greater than the overall are of the image, it is 
- * accepted as belonging to a word. Then, any black marks inside this
- * rectangle are added to the word-shape so long as they are contiguous
- * with it. This expansion happens above and below the line. FInally, the word
- * is expanded left and right using the same process until a word gap is 
- * encountered. The size of this is determined heuristically by the 
- * {@link tilt.image.page.Line} class</p>
+ * <p>A narrow band around each line is scanned for black pixels.</p>
+ * <palign="center"><img src="doc-files/small.png" width="400"></p>
+ * <p>Any that are found are extended as long as they are part of a blob 
+ * of connected pixels. Each blob is then surrounded by its closest fit 
+ * polygon. FInally the polygons are merged wherever the distance between 
+ * them is less than a fraction of the average word space.</p>
  */
 package tilt;
