@@ -84,28 +84,6 @@ public class Matrix
             return (two<=three)?two:three;
     }
     /**
-     * Find out which of the three endpoints is the best one
-     * @return a POint - use the x and y to set start for backtrace
-     */
-    Point bestEndPoint()
-    {
-        if ( N == 0 || M == 0 )
-            return new Point(N,M);
-        else
-        {
-            int topRight = (M>0)?MAT[M-1][N]:Integer.MAX_VALUE;
-            int botLeft = (N>0)?MAT[M][N-1]:Integer.MAX_VALUE;
-            int botRight = MAT[M][N];
-            int best = bestOfThree(topRight,botLeft,botRight);
-            if ( botRight == best )
-                return new Point(N,M);
-            else if ( botLeft == best )
-                return new Point(N-1,M);
-            else
-                return new Point(N,M-1);
-        }
-    }
-    /**
      * Debug matrix to text
      * @return a string
      */
