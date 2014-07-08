@@ -40,18 +40,18 @@ public class Page
     HashMap<Polygon,Line> map;
     int medianLineDepth;
     int medianWordGap;
-    boolean manuscript;
+    double spaceScaling;
     /**
      * Convert an array of scaled column-peaks into lines
      * @param cols a 2-D array of scaled line-peaks going *down* the page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
-     * @param manuscript true if this is a manuscript
+     * @param the amount to scale spaces
      */
     public Page( ArrayList[] cols, int hScale, int vScale, 
-        boolean manuscript ) throws Exception
+        double spaceScaling ) throws Exception
     {
-        this.manuscript = manuscript;
+        this.spaceScaling = spaceScaling;
         map = new HashMap<>();
         lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
@@ -327,7 +327,7 @@ public class Page
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
-            l.mergeWords( medianWordGap, manuscript );
+            l.mergeWords( spaceScaling );
         }
     }
 }

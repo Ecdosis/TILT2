@@ -55,22 +55,22 @@ public class Picture {
     File cleaned;
     File baselines;
     File words;
-    boolean manuscript;
+    double spaceScaling;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
      * @param coords coordinates for the picture from the geoJSON file
-     * @param manuscript true if this is a manuscript image
+     * @param spaceScaling the fraction by which to scale spaces
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
-    public Picture( String urlStr, JSONArray coords, boolean manuscript, 
+    public Picture( String urlStr, JSONArray coords, double spaceScaling, 
         InetAddress poster ) throws TiltException
     {
         try
         {
             URL url = new URL( urlStr );
-            this.manuscript = manuscript;
+            this.spaceScaling = spaceScaling;
             // use url as id for now
             id = urlStr;
             this.poster = poster;
@@ -379,7 +379,7 @@ public class Picture {
             if ( cleaned == null )
                 convertToCleaned();
             BufferedImage withLines = ImageIO.read(cleaned);
-            FindLines fl = new FindLines( withLines, manuscript );
+            FindLines fl = new FindLines( withLines, spaceScaling );
             page = fl.getPage();
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,

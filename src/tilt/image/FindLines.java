@@ -44,10 +44,10 @@ public class FindLines
     int vScale;
     BufferedImage src;
     Page page;
-    boolean manuscript;
-    public FindLines( BufferedImage src, boolean manuscript ) throws Exception
+    double spaceScaling;
+    public FindLines( BufferedImage src, double spaceScaling ) throws Exception
     {
-        this.manuscript = manuscript;
+        this.spaceScaling = spaceScaling;
         WritableRaster wr = src.getRaster();
         this.src = src;
         hScale = Math.round(wr.getWidth()*H_SCALE_RATIO);
@@ -123,7 +123,7 @@ public class FindLines
             }
         }
         // now draw the lines
-        page = new Page( cols, hScale, vScale, manuscript );
+        page = new Page( cols, hScale, vScale, spaceScaling );
         page.refineRight( wr, hScale, vScale, LIGHT_SHADE );
         page.refineLeft( wr, hScale, vScale, LIGHT_SHADE );
         page.draw( src.getGraphics() );

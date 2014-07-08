@@ -37,7 +37,7 @@ import tilt.Utils;
  */
 public class Line 
 {
-    static int DEFAULT_WORD_GAP = 24;
+    static double DEFAULT_WORD_GAP = 24.0;
     boolean open;
     /** array of actual image coordinates to draw the line between */
     ArrayList<Point> points;
@@ -380,46 +380,45 @@ public class Line
             return array[array.length/2];
         }
         else
-            return DEFAULT_WORD_GAP;
+            return (int)DEFAULT_WORD_GAP;
     }
     /**
      * Merge polygons that are close together
-     * @param wordGap median gap between words
-     * @param manuscript true if this is a manuscript
+     * @param scale proportion to scale inter-blob spacing
      */
-    public void mergeWords( int wordGap, boolean manuscript )
+    public void mergeWords( double scale )
     {
         Polygon prev = null;
         ArrayList<Integer> gaps = new ArrayList<>();
         ArrayList<Polygon> newShapes = new ArrayList<>();
-        float averageGap;
-        if ( !manuscript )
+        double averageGap;
+        for ( int i=0;i<shapes.size();i++ )
         {
-            for ( int i=0;i<shapes.size();i++ )
+            Polygon pg = shapes.get(i);
+            if ( prev != null )
             {
-                Polygon pg = shapes.get(i);
-                if ( prev != null )
-                {
-                    int gap = Utils.distanceBetween( prev, pg );
-                    gaps.add( gap );
-                    prev = pg;
-                }
-                else
-                    prev = pg;
+                int gap = Utils.distanceBetween( prev, pg );
+                gaps.add( gap );
+                prev = pg;
             }
-            // compute average gap
-            float totalGaps = 0.0f;
-            for ( int i=0;i<gaps.size();i++ )
-            {
-                int gap = gaps.get(i).intValue();
-                totalGaps += gap;
-            }
+            else
+                prev = pg;
+        }
+        // compute average gap
+        double totalGaps = 0.0f;
+        for ( int i=0;i<gaps.size();i++ )
+        {
+            int gap = gaps.get(i).intValue();
+            totalGaps += gap;
+        }
+        if ( gaps.size()>0 )
+        {
             averageGap = totalGaps/gaps.size();
         }
         else
-            averageGap = 2*wordGap/3;
+            averageGap = DEFAULT_WORD_GAP;
+        averageGap *= scale;
         prev = null;
-        int j=0;
         for ( int i=0;i<shapes.size();i++ )
         {
             Polygon pg = shapes.get(i);
@@ -442,7 +441,6 @@ public class Line
         }
         if ( prev != null )
             newShapes.add( prev );
-        //System.out.println("");
         this.shapes = newShapes;
     }
 }

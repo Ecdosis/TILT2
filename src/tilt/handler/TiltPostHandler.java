@@ -137,6 +137,7 @@ public class TiltPostHandler extends TiltHandler
         Object obj=JSONValue.parse(json);
         if ( obj instanceof JSONObject )
         {
+            double spaceScaling = 1.0;
             JSONObject g = (JSONObject)obj;
             JSONObject props = (JSONObject)g.get("properties");
             JSONObject geometry = (JSONObject)g.get("geometry");
@@ -144,10 +145,19 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
-                boolean manuscript = (props.containsKey("manuscript"))?
-                    (boolean)props.get("manuscript"):true;
+                try
+                {
+                    spaceScaling = (props.containsKey("space-scaling"))?
+                        (double)props.get("space-scaling"):1.0;
+                }
+                catch ( Exception e )
+                {
+                    spaceScaling = 1.0;
+                }
+                // create the picture and store it in the picture registry
                 Picture p = new Picture( (String)props.get("url"), 
-                    cc, manuscript, poster );
+                    cc, spaceScaling, poster );
+                // it will be identified later by its docid during GET
             }
             sb.append("<img width=\"500\" src=\"");
             sb.append("http://");

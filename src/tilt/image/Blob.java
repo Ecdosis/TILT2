@@ -295,7 +295,7 @@ public class Blob
             Object obj=JSONValue.parse(s);
             JSONArray coords=(JSONArray)obj;
             Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
-                true, InetAddress.getByName("127.0.0.1") );
+                0.6f, InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);
             WritableRaster wr = bandw.getRaster();
