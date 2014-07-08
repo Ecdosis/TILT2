@@ -204,9 +204,8 @@ public class Matrix
      */
     public ArrayList<Move> traceBack() throws Exception
     {
-        Point best = bestEndPoint();
-        int x = best.x;
-        int y = best.y;
+        int x = N;
+        int y = M;
         ArrayList<Move> path = new ArrayList<Move>();
         while ( x > 0 || y > 0 )
         {
