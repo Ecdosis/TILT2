@@ -90,7 +90,7 @@ public class Post extends Test
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images//00000005.jpg\",\n"
-    +"\t\"space-scaling\": 0.7\n\t}\n}\n";
+    +"\t\"space-scaling\": 1.0\n\t}\n}\n";
     static String CAPUANA_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
