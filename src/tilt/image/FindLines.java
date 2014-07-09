@@ -117,10 +117,25 @@ public class FindLines
             if ( current > 0.0f && index != -1 )
                 cols[x].add(new Integer(index) );
         }
+        // smooth peaks
+//        if ( width > 0 )
+//        {
+//            for ( int x=0;x<width;x++ )
+//            {
+//                for ( int y=1;y<cols[x].size()-1;y++ )
+//                {
+//                    int curr = ((Integer)cols[x].get(y)).intValue();
+//                    int prev = ((Integer)cols[x].get(y-1)).intValue();
+//                    int next = ((Integer)cols[x].get(y+1)).intValue();
+//                    cols[x].set(y,new Integer((curr+prev+next)/3));
+//                }
+//            }
+//        }
         // now draw the lines
         page = new Page( cols, hScale, vScale, spaceScaling );
         page.refineRight( wr, hScale, vScale, LIGHT_SHADE );
         page.refineLeft( wr, hScale, vScale, LIGHT_SHADE );
+        page.finalise( wr );
         page.draw( src.getGraphics() );
     }
     /**

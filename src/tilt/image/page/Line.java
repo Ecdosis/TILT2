@@ -35,7 +35,7 @@ import tilt.Utils;
  * Represent a discovered line in an image
  * @author desmond
  */
-public class Line 
+public class Line implements Comparable<Line>
 {
     static double DEFAULT_WORD_GAP = 24.0;
     boolean open;
@@ -51,6 +51,7 @@ public class Line
     int total;
     /** median y-value */
     int medianY;
+    int averageY;
     static float SHARED_RATIO= 0.75f;
     public Line()
     {
@@ -294,12 +295,19 @@ public class Line
      * Print the shapes onto the original image
      * @param g the graphics environment
      * @param wr the raster to write on
+     * @paramn the number of the line
      */
-    public void print( Graphics g, WritableRaster wr )
+    public void print( Graphics g, WritableRaster wr, int n )
     {
         Color tRed = new Color(255, 0,0, 128 );
         Color tBlue = new Color(0, 255,0, 128 );
         Color old = g.getColor();
+        if ( shapes.size()>0 )
+        {
+            Rectangle bounds = shapes.get(0).getBounds();
+            g.setColor( Color.black );
+            g.drawString( Integer.toString(n), bounds.x-20, bounds.y-10 );
+        }
         for ( int i=0;i<shapes.size();i++ )
         {
             Shape s = shapes.get(i);
@@ -341,6 +349,21 @@ public class Line
         return medianY;
     }
     /**
+     * Get the average Y value of the line
+     * @return an int,being the average yValue of the points in the line
+     */
+    public int getAverageY()
+    {
+        if ( averageY == 0 )
+        {
+            int total = 0;
+            for ( int i=0;i<points.size();i++ )
+                total += points.get(i).y;
+            averageY = total/points.size();
+        }
+        return averageY;
+    }
+    /**
      * Work out what the median gap between words is
      * @param vGap the median gap between baselines
      * @param wr the raster of image black and white pixels
@@ -356,14 +379,15 @@ public class Line
             Point p1 = points.get( i );
             Point p2 = points.get( i+1 );
             int y = (p1.y+p2.y)/2;
+            y = (y-(vGap/2)<0)?0:y-(vGap/2);
             for ( int x=p1.x;x<p2.x;x++ )
             {
-                int total = 0;
+                int colTotal = 0;
                 wr.getPixels(x,y,1,vGap,iArray);
                 for ( int j=0;j<vGap;j++ )
                     if ( iArray[j]== 0 )
-                        total++;
-                if ( total == 0 )
+                        colTotal++;
+                if ( colTotal == 0 )
                     hGap++;
                 else if ( hGap > 0 )
                 {
@@ -442,5 +466,91 @@ public class Line
         if ( prev != null )
             newShapes.add( prev );
         this.shapes = newShapes;
+    }
+    /**
+     * Compute the horizontal overlap between two lines
+     * @param other the other line
+     * @return the fraction of the two lines together which overlaps
+     */
+    float overlap( Line other )
+    {
+        if ( this.points.isEmpty() || other.points.isEmpty() )
+            return 0.0f;
+        else
+        {
+            int left1 = this.points.get(0).x;
+            int left2= other.points.get(0).x;
+            int right1 = this.points.get(points.size()-1).x;
+            int right2 = other.points.get(other.points.size()-1).x;
+            if ( right1 < left2 || right2 < left1 )
+                return 0.0f;
+            // we completely enclose other
+            else if (left2 > left1 && right2 < right1)
+                return (float)(right2-left2)/(float)(right1-left1);
+            // other completely encloses us
+            else if ( left1>left2&&right1<right2 )
+                return (float)(right1-left1)/(float)(right2-left2);
+            // we precede other but overlap
+            else if ( right1 > left2 )
+            {
+                int overlap = right1-left2;
+                int total = right2-left1;
+                return (float)overlap/(float)total;
+            }
+            // other precedes us but overlaps
+            else if ( right2 > left1  )
+            {
+                int overlap = right2-left1;
+                int total = right1-left2;
+                return (float)overlap/(float)total;
+            }
+            // shouldn't happen
+            else
+                return 0.0f;
+        }
+    }
+    /**
+     * A line is before another based on first point position in x direction.
+     * @param other the other line
+     * @return 1 if we are after other, 0 if at the same position else -1
+     */
+    @Override
+    public int compareTo( Line other )
+    {
+        if ( this.points.isEmpty() )
+        {
+            if ( other.points.isEmpty() )
+                return 0;
+            else    // we are less than other
+                return -1;
+        }
+        else if ( other.points.isEmpty() )
+        {
+            if ( this.points.isEmpty() )
+                return 0;
+            else    // other is less than us
+                return 1;
+        }
+        else
+        {
+            return this.points.get(0).x-other.points.get(0).x;
+        }
+    }
+    /**
+     * Insert sort the points on the x-coordinate
+     */
+    void sortPoints()
+    {
+        for ( int i=0;i<points.size();i++ )
+        {
+            Point p = points.get(i);
+            int j = i;
+            while ( j > 0 && points.get(j-1).x > p.x )
+            {
+                points.set(j,points.get(j-1));
+                j--;
+            }
+            points.set(j,p);
+        }
     }
 }

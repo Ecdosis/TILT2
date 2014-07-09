@@ -51,7 +51,7 @@ public class FindWords
         Blob.setToWhite(dirty);
         average = ppAverage;
         this.page = page;
-        page.finalise( wr );
+        //page.finalise( wr );
         this.src = src;
         ArrayList<Line> lines = page.getLines();
         for ( int i=0;i<lines.size();i++ )
@@ -89,12 +89,12 @@ public class FindWords
     private Polygon[] findPartWord( Point p1, Point p2 )
     {
         int midY = (p1.y+p2.y)/2;
-        int top = midY-page.getLineHeight()/2;
+        int rHt = 2*page.getLineHeight()/3;
+        int top = midY-rHt/2;
         if ( top < 0 )
             top = 0;
         // compute rectangle in which to look for blobs
-        Rectangle r = new Rectangle( p1.x, top, p2.x-p1.x, 
-            2*page.getLineHeight()/3 );
+        Rectangle r = new Rectangle( p1.x, top, p2.x-p1.x, rHt );
         int[] iArray = new int[1];
         int endY = r.y+r.height;
         int endX = r.x+r.width;
@@ -120,27 +120,12 @@ public class FindWords
         if ( blobs.size()> 0 )
         {
             ArrayList<Polygon> shapes = new ArrayList<>();
-            Polygon prevPg = null;
-            int wordGap = page.getWordGap();
             for ( int i=0;i<blobs.size();i++ )
             {
                 Blob b = blobs.get(i);
                 Polygon pg = b.toPolygon();
-                if ( prevPg != null )
-                {
-                    if ( Utils.distanceBetween(prevPg,pg) < wordGap )
-                        prevPg = Utils.mergePolygons(prevPg,pg);
-                    else
-                    {
-                        shapes.add( prevPg );
-                        prevPg = pg;
-                    }
-                }
-                else
-                    prevPg = pg;
+                shapes.add( pg );
             }
-            if ( prevPg != null )
-                shapes.add( prevPg );
             // convert to array
             Polygon[] ss = new Polygon[shapes.size()];
             shapes.toArray(ss);

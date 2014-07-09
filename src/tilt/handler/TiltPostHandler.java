@@ -149,6 +149,7 @@ public class TiltPostHandler extends TiltHandler
                 {
                     spaceScaling = (props.containsKey("space-scaling"))?
                         (double)props.get("space-scaling"):1.0;
+                    System.out.println("space-scaling="+spaceScaling);
                 }
                 catch ( Exception e )
                 {

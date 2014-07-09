@@ -46,7 +46,7 @@ public class Page
      * @param cols a 2-D array of scaled line-peaks going *down* the page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
-     * @param the amount to scale spaces
+     * @param spaceScaling the amount to scale spaces
      */
     public Page( ArrayList[] cols, int hScale, int vScale, 
         double spaceScaling ) throws Exception
@@ -64,16 +64,14 @@ public class Page
             listToIntArray(col2,list2);
             Matrix m = new Matrix( list1, list2 );
             ArrayList moves = m.traceBack();
-            int x1,x2,z1,z2;
+            int x2,z2;
             for ( int y1=0,y2=0,j=0;j<moves.size();j++ )
             {
                 Move move = (Move)moves.get(j);
                 switch ( move )
                 {
                     case exch:
-                        x1=i*hScale;
                         x2=(i+1)*hScale;
-                        z1=list1[y1]*vScale;
                         z2=list2[y2]*vScale;
                         this.update(new Point(x2,z2), list1[y1],list2[y2]);
                         y1++;
@@ -92,6 +90,19 @@ public class Page
                 }
             }
         }
+//        Line prev = null;
+//        for ( int i=0;i<lines.size();i++ )
+//        {
+//            Line l = lines.get(i);
+//            if ( prev != null )
+//            {
+//                if ( prev.end> l.end )
+//                    System.out.println("prev end="+prev.end+" l.end="+l.end);
+//                prev = l;
+//            }
+//            else
+//                prev = l;
+//        }
     }
     /**
      * Convert an ArrayList of Integers to an int array
@@ -270,7 +281,32 @@ public class Page
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get( i );
-            l.print( g, original.getRaster() );
+            l.print( g, original.getRaster(), i+1 );
+        }
+    }
+    /**
+     * Sort all lines based on their medianY position
+     */
+    void sortLines()
+    {
+        int i, j, k, h; 
+        Line v;
+        int[] incs = { 1391376, 463792, 198768, 86961, 33936,
+            13776, 4592, 1968, 861, 336, 
+            112, 48, 21, 7, 3, 1 };
+        for ( k = 0; k < 16; k++)
+        {
+            for ( h=incs[k],i=h;i<lines.size();i++ )
+            { 
+                v = lines.get(i); 
+                j = i;
+                while (j >= h && lines.get(j-h).getAverageY()>v.getAverageY() )
+                { 
+                    lines.set(j,lines.get(j-h)); 
+                    j -= h; 
+                }
+                lines.set(j,v);
+            }
         }
     }
     /**
@@ -285,7 +321,7 @@ public class Page
         {
             Line l1 = lines.get( i );
             Line l2 = lines.get( i+1 );
-            vGaps.add( Math.abs(l2.getMedianY()-l1.getMedianY()) );
+            vGaps.add( Math.abs(l2.getAverageY()-l1.getAverageY()) );
         }
         Integer[] vArray = new Integer[vGaps.size()];
         vGaps.toArray( vArray );
@@ -302,6 +338,8 @@ public class Page
         hGaps.toArray( hArray );
         Arrays.sort( hArray );
         medianWordGap = hArray[hArray.length/2].intValue();
+        sortLines();
+        joinBrokenLines();
     }
     /**
      * Retrieve the median gap between words in pixels
@@ -328,6 +366,83 @@ public class Page
         {
             Line l = lines.get(i);
             l.mergeWords( spaceScaling );
+        }
+    }
+    /**
+     * Join up broken lines BEFORE any shapes have been recognised
+     */
+    void joinBrokenLines()
+    {
+        // 1. find lines that are less than half the average lineheight apart
+        // and overlap by less than 10% of their overall length
+        ArrayList<ArrayList<Line>> sets = new ArrayList<>();
+        int halfMedianHeight = medianLineDepth/2;
+        Line prev = null;
+        ArrayList<Line> current = null;
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line line = lines.get(i);
+            if ( prev != null 
+                && Math.abs(prev.getAverageY()-line.getAverageY())<halfMedianHeight
+                && prev.overlap(line) < 0.25f )
+            {
+                System.out.println("overlap="+prev.overlap(line));
+                System.out.println("line diff="+Math.abs(prev.getAverageY()-line.getAverageY()));
+                if ( current == null )
+                    current = new ArrayList<>();
+                if ( !current.contains(prev) )
+                    current.add( prev );
+                current.add( line );
+            }
+            else if ( current != null )
+            {
+                sets.add( current );
+                current = null;
+            }
+            prev = line;
+        }
+        // coda
+        if ( current != null )
+            sets.add( current );
+        // examine closely related lines
+        for ( int i=0;i<sets.size();i++ )
+        {
+            ArrayList<Line> set = sets.get(i);
+            Line[] array = new Line[set.size()];
+            set.toArray(array);
+            Arrays.sort(array);
+            int mTotal = 0;
+            for ( int m=0;m<set.size();m++ )
+            {
+                mTotal+= set.get(m).end;
+            }
+            int newEnd = mTotal/set.size();
+            Line merged = new Line();
+            for ( int j=0;j<set.size();j++ )
+            {
+                Line l = set.get(j);
+                for ( int k=0;k<l.points.size();k++ )
+                {
+                    Point p = l.points.get(k);
+                    merged.addPoint( p, newEnd );
+                }
+                // remove once finished
+                lines.remove( l );
+            }
+            merged.sortPoints();
+            // insert merged line into page
+            int j;
+            for ( j=0;j<lines.size();j++ )
+            {
+                Line l = lines.get(j);
+                if ( l.getAverageY() > merged.getAverageY() )
+                {
+                    lines.add( j, merged );
+                    break;
+                }
+            }
+            if ( j == lines.size() )
+                lines.add( merged );
         }
     }
 }
