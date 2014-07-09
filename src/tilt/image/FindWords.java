@@ -17,7 +17,6 @@
  */
 
 package tilt.image;
-import tilt.Utils;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import tilt.image.page.*;

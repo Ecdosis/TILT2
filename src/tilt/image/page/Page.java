@@ -365,7 +365,7 @@ public class Page
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
-            l.mergeWords( spaceScaling );
+            l.mergeWords( spaceScaling, false );
         }
     }
     /**
@@ -386,8 +386,8 @@ public class Page
                 && Math.abs(prev.getAverageY()-line.getAverageY())<halfMedianHeight
                 && prev.overlap(line) < 0.25f )
             {
-                System.out.println("overlap="+prev.overlap(line));
-                System.out.println("line diff="+Math.abs(prev.getAverageY()-line.getAverageY()));
+//                System.out.println("overlap="+prev.overlap(line));
+//                System.out.println("line diff="+Math.abs(prev.getAverageY()-line.getAverageY()));
                 if ( current == null )
                     current = new ArrayList<>();
                 if ( !current.contains(prev) )

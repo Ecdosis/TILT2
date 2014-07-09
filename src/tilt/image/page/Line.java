@@ -409,11 +409,12 @@ public class Line implements Comparable<Line>
     /**
      * Merge polygons that are close together
      * @param scale proportion to scale inter-blob spacing
+     * @param debugif true print out diagnostic information
      */
-    public void mergeWords( double scale )
+    public void mergeWords( double scale, boolean debug )
     {
         Polygon prev = null;
-        ArrayList<Integer> gaps = new ArrayList<>();
+        HashSet<Integer> gaps = new HashSet<>();
         ArrayList<Polygon> newShapes = new ArrayList<>();
         double averageGap;
         for ( int i=0;i<shapes.size();i++ )
@@ -422,23 +423,26 @@ public class Line implements Comparable<Line>
             if ( prev != null )
             {
                 int gap = Utils.distanceBetween( prev, pg );
+                if ( debug )
+                    System.out.print(" width="+pg.getBounds().width+" gap="+gap);
                 gaps.add( gap );
                 prev = pg;
             }
             else
                 prev = pg;
         }
+        System.out.println("");
         // compute average gap
         double totalGaps = 0.0f;
-        for ( int i=0;i<gaps.size();i++ )
+        Integer[] gapArray = new Integer[gaps.size()];
+        gaps.toArray( gapArray );
+        for ( int i=0;i<gapArray.length;i++ )
         {
-            int gap = gaps.get(i).intValue();
+            int gap = gapArray[i].intValue();
             totalGaps += gap;
         }
         if ( gaps.size()>0 )
-        {
             averageGap = totalGaps/gaps.size();
-        }
         else
             averageGap = DEFAULT_WORD_GAP;
         averageGap *= scale;
@@ -450,7 +454,7 @@ public class Line implements Comparable<Line>
             {
                 // gaps will have changed due to merging
                 int current = Utils.distanceBetween( prev, pg );
-                if ( current < averageGap  )
+                if ( current <= averageGap  )
                 {
                     prev = Utils.mergePolygons(prev,pg);
                 }
