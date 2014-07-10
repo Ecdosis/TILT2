@@ -67,7 +67,7 @@
  * {@link tilt.image.page} package.</p>
  * <h4>Third Stage &ndash; Recognise Words</h4>
  * <p>A narrow band around each line is scanned for black pixels.</p>
- * <palign="center"><img src="doc-files/small.png" width="400"></p>
+ * <p align="center"><img src="doc-files/small.png" width="400"></p>
  * <p>Any that are found are extended as long as they are part of a blob 
  * of connected pixels. Each blob is then surrounded by its closest fit 
  * polygon. FInally the polygons are merged wherever the distance between 
