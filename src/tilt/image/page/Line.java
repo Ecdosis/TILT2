@@ -37,7 +37,6 @@ import tilt.Utils;
  */
 public class Line implements Comparable<Line>
 {
-    static double DEFAULT_WORD_GAP = 24.0;
     boolean open;
     /** array of actual image coordinates to draw the line between */
     ArrayList<Point> points;
@@ -98,6 +97,31 @@ public class Line implements Comparable<Line>
         Point[] line = new Point[points.size()];
         points.toArray(line);
         return line;
+    }
+    /**
+     * Add gaps between shapes to the map
+     * @param map a map of shape gaps to frequency of that gap
+     */
+    void addGaps( HashMap<Integer,Integer> map )
+    {
+        Polygon prev = null;
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon pg = shapes.get(i);
+            if ( prev != null )
+            {
+                int gap = Utils.distanceBetween( prev, pg );
+                Integer key = new Integer(gap);
+                int current = 0;
+                if ( map.containsKey(key) )
+                    current = map.get(key).intValue();
+                current++;
+                map.put( key, new Integer(current) );
+                prev = pg;
+            }
+            else
+                prev = pg;
+        }
     }
     /**
      * Draw the line on the image for debugging
@@ -364,89 +388,13 @@ public class Line implements Comparable<Line>
         return averageY;
     }
     /**
-     * Work out what the median gap between words is
-     * @param vGap the median gap between baselines
-     * @param wr the raster of image black and white pixels
-     * @return an int
-     */
-    public int getMedianHGap( int vGap, WritableRaster wr )
-    {
-        HashSet<Integer> gaps = new HashSet<Integer>();
-        int[] iArray = new int[vGap];
-        int hGap = 0;
-        for ( int i=0;i<points.size()-1;i++ )
-        {
-            Point p1 = points.get( i );
-            Point p2 = points.get( i+1 );
-            int y = (p1.y+p2.y)/2;
-            y = (y-(vGap/2)<0)?0:y-(vGap/2);
-            for ( int x=p1.x;x<p2.x;x++ )
-            {
-                int colTotal = 0;
-                wr.getPixels(x,y,1,vGap,iArray);
-                for ( int j=0;j<vGap;j++ )
-                    if ( iArray[j]== 0 )
-                        colTotal++;
-                if ( colTotal == 0 )
-                    hGap++;
-                else if ( hGap > 0 )
-                {
-                    gaps.add( new Integer(hGap) );
-                    hGap = 0;
-                }
-            }
-        }
-        if ( gaps.size()> 0 )
-        {
-            Integer[] array = new Integer[gaps.size()];
-            gaps.toArray(array);
-            Arrays.sort(array);
-            return array[array.length/2];
-        }
-        else
-            return (int)DEFAULT_WORD_GAP;
-    }
-    /**
      * Merge polygons that are close together
-     * @param scale proportion to scale inter-blob spacing
-     * @param debugif true print out diagnostic information
+     * @param minWordGap average word gap on the page
      */
-    public void mergeWords( double scale, boolean debug )
+    public void mergeWords( int minWordGap )
     {
         Polygon prev = null;
-        HashSet<Integer> gaps = new HashSet<>();
         ArrayList<Polygon> newShapes = new ArrayList<>();
-        double averageGap;
-        for ( int i=0;i<shapes.size();i++ )
-        {
-            Polygon pg = shapes.get(i);
-            if ( prev != null )
-            {
-                int gap = Utils.distanceBetween( prev, pg );
-                if ( debug )
-                    System.out.print(" width="+pg.getBounds().width+" gap="+gap);
-                gaps.add( gap );
-                prev = pg;
-            }
-            else
-                prev = pg;
-        }
-        System.out.println("");
-        // compute average gap
-        double totalGaps = 0.0f;
-        Integer[] gapArray = new Integer[gaps.size()];
-        gaps.toArray( gapArray );
-        for ( int i=0;i<gapArray.length;i++ )
-        {
-            int gap = gapArray[i].intValue();
-            totalGaps += gap;
-        }
-        if ( gaps.size()>0 )
-            averageGap = totalGaps/gaps.size();
-        else
-            averageGap = DEFAULT_WORD_GAP;
-        averageGap *= scale;
-        prev = null;
         for ( int i=0;i<shapes.size();i++ )
         {
             Polygon pg = shapes.get(i);
@@ -454,7 +402,7 @@ public class Line implements Comparable<Line>
             {
                 // gaps will have changed due to merging
                 int current = Utils.distanceBetween( prev, pg );
-                if ( current <= averageGap  )
+                if ( current <= minWordGap  )
                 {
                     prev = Utils.mergePolygons(prev,pg);
                 }

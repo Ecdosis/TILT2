@@ -34,23 +34,18 @@ public class FindWords
     Page page;
     WritableRaster wr;
     WritableRaster dirty;
-    static float WORDSQUARE_RATIO = 0.032f;
     Rectangle wordSquare;
-    float average;
     /**
      * Create a word-finder
      * @param src the src image in pure black and white
      * @param page the page object with postulated lines
-     * @param ppAverage the per pixel average blackness for the whole image
      */
-    public FindWords( BufferedImage src, Page page, float ppAverage ) 
+    public FindWords( BufferedImage src, Page page ) 
     {
         wr = src.getRaster();
         dirty = src.copyData(null);
         Blob.setToWhite(dirty);
-        average = ppAverage;
         this.page = page;
-        //page.finalise( wr );
         this.src = src;
         ArrayList<Line> lines = page.getLines();
         for ( int i=0;i<lines.size();i++ )
@@ -77,6 +72,7 @@ public class FindWords
             }
         }
         page.mergeLines();
+        page.getWordGap(); 
         page.joinWords();
     }
     /**

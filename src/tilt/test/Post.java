@@ -90,25 +90,25 @@ public class Post extends Test
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images//00000005.jpg\",\n"
-    +"\t\"space-scaling\": 1.0\n\t}\n}\n";
+    +"\t\"num-words\": 150\n\t}\n}\n";
     static String CAPUANA_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\",\n"
-    +"\t\"space-scaling\": 0.6\n\t}\n}\n";
+    +"\t\"num-words\": 205\n\t}\n}\n";
     static String DEROBERTO_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\",\n"
-    +"\t\"space-scaling\": 0.6\n\t}\n}\n";
+    +"\t\"num-words\": 353\n\t}\n}\n";
     static String DEROBERTO2_JSON = 
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\",\n"
-    +"\t\"space-scaling\": 1.0\n\t}\n}\n";
+    +"\t\"num-words\": 291\n\t}\n}\n";
     static String POST_CSS =
     "#left {float:left;margin:10px}\n" +
     "#right {float:left;margin:10px}\n" +

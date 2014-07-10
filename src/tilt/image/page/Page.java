@@ -22,6 +22,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -39,19 +40,19 @@ public class Page
     ArrayList<Line> lines;
     HashMap<Polygon,Line> map;
     int medianLineDepth;
-    int medianWordGap;
-    double spaceScaling;
+    int minWordGap;
+    int numWords;
     /**
      * Convert an array of scaled column-peaks into lines
      * @param cols a 2-D array of scaled line-peaks going *down* the page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
-     * @param spaceScaling the amount to scale spaces
+     * @param numWords number of words on page
      */
-    public Page( ArrayList[] cols, int hScale, int vScale, 
-        double spaceScaling ) throws Exception
+    public Page( ArrayList[] cols, int hScale, int vScale, int numWords ) 
+        throws Exception
     {
-        this.spaceScaling = spaceScaling;
+        this.numWords = numWords;
         map = new HashMap<>();
         lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
@@ -327,27 +328,40 @@ public class Page
         vGaps.toArray( vArray );
         Arrays.sort( vArray );
         medianLineDepth = (vArray.length<=1)?0:vArray[vArray.length/2].intValue();
-        // compute median word-gap
-        HashSet<Integer> hGaps = new HashSet<>();
-        for ( int i=0;i<lines.size();i++ )
-        {
-            Line l = lines.get(i);
-            hGaps.add( l.getMedianHGap(medianLineDepth,wr) );
-        }
-        Integer[] hArray = new Integer[hGaps.size()];
-        hGaps.toArray( hArray );
-        Arrays.sort( hArray );
-        medianWordGap = hArray[hArray.length/2].intValue();
         sortLines();
         joinBrokenLines();
     }
     /**
-     * Retrieve the median gap between words in pixels
+     * Retrieve the minimum gap between words in pixels
      * @return an int
      */
     public int getWordGap()
     {
-        return medianWordGap;
+        if ( minWordGap == 0 )
+        {
+            // compute median word-gap
+            HashMap<Integer,Integer> hGaps = new HashMap<>();
+            for ( int i=0;i<lines.size();i++ )
+            {
+                Line l = lines.get(i);
+                l.addGaps( hGaps );
+            }
+            Set<Integer> keys = hGaps.keySet();
+            Integer[] hArray = new Integer[hGaps.size()];
+            keys.toArray( hArray );
+            Arrays.sort( hArray );
+            int runningTotal= 0;
+            for ( int i=hArray.length-1;i>=0;i-- )
+            {
+                runningTotal += hGaps.get(hArray[i]).intValue();
+                if ( runningTotal >= numWords )
+                {
+                    minWordGap = hArray[i].intValue();
+                    break;
+                }
+            }
+        }
+        return minWordGap;
     }
     /**
      * Retrieve the median line-height (distance between baselines) in pixels
@@ -362,10 +376,11 @@ public class Page
      */
     public void joinWords()
     {
+        System.out.println("numWords="+numWords+" minWordGap="+minWordGap);
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
-            l.mergeWords( spaceScaling, false );
+            l.mergeWords( minWordGap );
         }
     }
     /**
@@ -386,8 +401,6 @@ public class Page
                 && Math.abs(prev.getAverageY()-line.getAverageY())<halfMedianHeight
                 && prev.overlap(line) < 0.25f )
             {
-//                System.out.println("overlap="+prev.overlap(line));
-//                System.out.println("line diff="+Math.abs(prev.getAverageY()-line.getAverageY()));
                 if ( current == null )
                     current = new ArrayList<>();
                 if ( !current.contains(prev) )
