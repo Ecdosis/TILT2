@@ -199,7 +199,7 @@ public class Blob
         return iArray[0]==0;
     }
     /**
-     * Check if there is one dirty dot not already seen, and if not recurse.
+     * Check if there is one dirty dot not already seen.
      * @param wr the raster to search
      * @param start the first blackdot
      * @param iArray the array containing the dirty dot

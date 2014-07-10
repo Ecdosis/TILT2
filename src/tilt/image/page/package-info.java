@@ -21,6 +21,9 @@
  * <p align="center"><img src="doc-files/page.png" width="200"></p>
  * <p>The {@link Page} class allows the calculation of useful parameters
  * for later processing: the median line-depth (distance between baselines)
- * and the median word-gap.</p>
+ * and the minimum word-gap. The latter is the basis for word-recognition
+ * in the image. See 
+ * <a href="http://bltilt.blogspot.com.au/2014/07/getting-word-spacing-right.html">
+ * Getting word-spacing right </a></p>
  */
  package tilt.image.page;

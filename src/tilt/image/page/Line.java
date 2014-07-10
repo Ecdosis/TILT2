@@ -319,7 +319,7 @@ public class Line implements Comparable<Line>
      * Print the shapes onto the original image
      * @param g the graphics environment
      * @param wr the raster to write on
-     * @paramn the number of the line
+     * @param n the number of the line
      */
     public void print( Graphics g, WritableRaster wr, int n )
     {
