@@ -91,19 +91,6 @@ public class Page
                 }
             }
         }
-//        Line prev = null;
-//        for ( int i=0;i<lines.size();i++ )
-//        {
-//            Line l = lines.get(i);
-//            if ( prev != null )
-//            {
-//                if ( prev.end> l.end )
-//                    System.out.println("prev end="+prev.end+" l.end="+l.end);
-//                prev = l;
-//            }
-//            else
-//                prev = l;
-//        }
     }
     /**
      * Convert an ArrayList of Integers to an int array
@@ -339,7 +326,6 @@ public class Page
     {
         if ( minWordGap == 0 )
         {
-            // compute median word-gap
             HashMap<Integer,Integer> hGaps = new HashMap<>();
             for ( int i=0;i<lines.size();i++ )
             {
