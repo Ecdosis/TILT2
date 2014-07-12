@@ -68,7 +68,7 @@ public class HTML
     {
         return "<!doctype HTML5>\n<html>"
             +head.toString()
-            +body.toString()
+            +"<body>"+body.toString()+"</body>"
             +"</html>";
     }
 }

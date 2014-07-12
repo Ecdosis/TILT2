@@ -24,6 +24,7 @@ import tilt.Utils;
 import tilt.constants.Params;
 import tilt.constants.ImageType;
 import java.net.InetAddress;
+import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
@@ -39,12 +40,14 @@ import tilt.constants.Service;
 public class TiltPostHandler extends TiltHandler
 {
     String geoJSON;
+    String text;
     ImageType picType;
     InetAddress poster;
     public TiltPostHandler()
     {
         encoding = "UTF-8";
         picType = ImageType.original;
+        text = "";
     }
     /**
      * Parse the import params from the request
@@ -79,6 +82,10 @@ public class TiltPostHandler extends TiltHandler
                         else if ( fieldName.equals(Params.PICTYPE) )
                         {
                             picType = ImageType.read(item.getString());
+                        }
+                        else if ( fieldName.equals(Params.TEXT) )
+                        {
+                            text = item.getString();
                         }
                     }
                 }
@@ -124,6 +131,88 @@ public class TiltPostHandler extends TiltHandler
         return addr;
     }
     /**
+     * Count words in a text
+     * @param txt a string
+     * @return the number of space-delimited character-runs in txt
+     */
+    private int countWords( String txt )
+    {
+        int nWords = 0;
+        int state = 0;
+        for ( int i=0;i<txt.length();i++ )
+        {
+            switch ( state )
+            {
+                case 0: // initial
+                    if ( Character.isWhitespace(txt.charAt(i)) )
+                        state = 1;
+                    else
+                        state = 2;
+                    break;
+                case 1: // matching spaces
+                    if ( !Character.isWhitespace(txt.charAt(i)) )
+                        state = 2;
+                    break;
+                case 2:// matching text
+                    if ( Character.isWhitespace(txt.charAt(i)) )
+                    {
+                        state = 1;
+                        nWords++;
+                    }
+                    break;
+            }
+        }
+        // coda
+        if ( state == 2 )
+            nWords++;
+        return nWords;
+    }
+    /**
+     * Get the plain text content of some html
+     */
+    String plainText( String html )
+    {
+        StringTokenizer st = new StringTokenizer(html,"<> ",true);
+        StringBuilder sb = new StringBuilder();
+        int state = 0;
+        while ( st.hasMoreElements() )
+        {
+            String token = st.nextToken();
+            switch ( state )
+            {
+                case 0: // looking for start-tag
+                    if (token.equals("<") )
+                        state = 1;
+                    break;
+                case 1: // reading start tag
+                    if ( token.equals(">") )
+                        state = 2;
+                    else if ( token.toLowerCase().equals("head") )
+                        state = 3;
+                    break;
+                case 2: // reading text
+                    if ( !token.equals("<") )
+                        sb.append( token );
+                    else
+                        state = 1;
+                    break;
+                case 3:
+                    if ( token.equals("<") )
+                        state = 4;
+                    break;
+                case 4:
+                    if ( token.toLowerCase().equals("/head") )
+                        state = 5;
+                    break;
+                case 5:
+                    if ( token.equals(">") )
+                        state = 0;
+                    break;
+            }
+        }
+        return sb.toString();
+    }
+    /**
      * Create a HTML IMG element referring to the image we need
      * @param request the http request
      * @param json the GeoJSON text
@@ -145,15 +234,7 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
-                try
-                {
-                    numWords = (props.containsKey("num-words"))?
-                        (long)props.get("num-words"):250;
-                }
-                catch ( Exception e )
-                {
-                    numWords = 250;
-                }
+                numWords = countWords( plainText(text) );
                 // create the picture and store it in the picture registry
                 Picture p = new Picture( (String)props.get("url"), 
                     cc, (int)numWords, poster );
@@ -202,6 +283,7 @@ public class TiltPostHandler extends TiltHandler
                 {
                     picType = ImageType.read(request.getParameter(Params.PICTYPE));
                     geoJSON = request.getParameter(Params.GEOJSON );
+                    text = request.getParameter(Params.TEXT );
                 }
                 if ( geoJSON != null )
                 {
