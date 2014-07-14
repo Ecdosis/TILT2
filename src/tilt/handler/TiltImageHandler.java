@@ -52,7 +52,7 @@ public class TiltImageHandler  extends TiltHandler
                 byte[]pic = null;
                 switch (imageType) 
                 {
-                    case original:
+                    case original: case link:
                         pic = p.getOrigData();
                         break;
                     case greyscale:

@@ -65,10 +65,10 @@ public class PictureRegistry
      */
     public static void register( Picture pic, String url ) throws DoSException
     {
-        String id = posters.get(pic.poster);
-        if ( id != null )
+        String url_id = posters.get(pic.poster);
+        if ( url_id != null )
         {
-            if ( !url.equals(urls.get(id)) )
+            if ( !url.equals(urls.get(url_id)) )
                 throw new DoSException("Please wait before uploading a new image");
         }
         Long key = new Long(System.currentTimeMillis());

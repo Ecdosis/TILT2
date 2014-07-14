@@ -26,4 +26,5 @@ public class Service
 {
     public static String TEST = "test";
     public static String TILT = "tilt";
+    public static String GEOJSON = "geojson";
 }

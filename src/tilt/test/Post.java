@@ -98,6 +98,12 @@ public class Post extends Test
     +".hidden { display: none}\n"
     + "textarea { display: none }\n"
     + "#title { font-weight: bold}";
+    /**
+     * Create a hidden div (of class "hidden")
+     * @param id the id of the div
+     * @param contents its contents
+     * @return the hidden element
+     */
     Element hiddenDiv( String id, String contents )
     {
         Element div = new Element("div");
@@ -123,6 +129,7 @@ public class Post extends Test
             doc.getHead().addJQuery("1.9.0");
             doc.getHead().addScript( POST_JS );
             doc.getHead().addCss(POST_CSS);
+            // commented out to svae space
 //            Element h1 = new Element("h1");
 //            h1.addText("TILT Upload test");
 //            doc.addElement( h1 );

@@ -15,38 +15,7 @@
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2014
  */
-
-package tilt.constants;
-
 /**
- * Types of image requested
- * @author desmond
+ * This package renders a page as a GeoJson document
  */
-public enum ImageType 
-{
-    original,
-    greyscale,
-    twotone,
-    cleaned,
-    baselines,
-    words,
-    link;
-    /**
-     * Convert a string into
-     * @param str a string representation perhaps in upper or mixed case
-     * @return the enum version of str
-     */
-    public static ImageType read( String str )
-    {
-        ImageType it;
-        try
-        {
-            it = valueOf(str.toLowerCase());
-        }
-        catch ( Exception e )
-        {
-            it= original;
-        }
-        return it;
-    }
-}
+package tilt.image.page.geojson;

@@ -362,7 +362,7 @@ public class Page
      */
     public void joinWords()
     {
-        System.out.println("numWords="+numWords+" minWordGap="+minWordGap);
+        //System.out.println("numWords="+numWords+" minWordGap="+minWordGap);
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
@@ -443,5 +443,13 @@ public class Page
             if ( j == lines.size() )
                 lines.add( merged );
         }
+    }
+    /**
+     * Compose the shape information as GeoJson
+     * @return the GeoJson
+     */
+    public String toGeoJson()
+    {
+        return "";
     }
 }

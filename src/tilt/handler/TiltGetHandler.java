@@ -23,44 +23,43 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import tilt.Utils;
 import tilt.test.Test;
+
 /**
  * Handle a GET request for various image types, text, GeoJSON
+ *
  * @author desmond
  */
-public class TiltGetHandler extends TiltHandler
-{
-    public void handle( HttpServletRequest request, 
-        HttpServletResponse response, String urn ) throws TiltException
-    {
-        try
-        {
+public class TiltGetHandler extends TiltHandler {
+
+    public void handle(HttpServletRequest request,
+        HttpServletResponse response, String urn) throws TiltException {
+        try {
             String service = Utils.first(urn);
-            if ( service.equals(Service.TEST.toString()) )
-            {
-                try
-                {
-                    String second = Utils.second( urn );
-                    if ( second == null || second.length()==0 )
+            if (service.equals(Service.TEST.toString())) {
+                try {
+                    String second = Utils.second(urn);
+                    if (second == null || second.length() == 0) {
                         second = "Post";
-                    else if ( second.length()>0 )
+                    } else if (second.length() > 0) {
                         second = Character.toUpperCase(second.charAt(0))
-                            +second.substring(1);
-                    String className = "tilt.test."+second;
-                    Class tClass = Class.forName( className );
-                    Test t = (Test)tClass.newInstance();
-                    t.handle( request, response, Utils.pop(urn) );
+                            + second.substring(1);
+                    }
+                    String className = "tilt.test." + second;
+                    Class tClass = Class.forName(className);
+                    Test t = (Test) tClass.newInstance();
+                    t.handle(request, response, Utils.pop(urn));
+                } catch (Exception e) {
+                    throw new TiltException(e);
                 }
-                catch ( Exception e )
-                {
-                    throw new TiltException( e );
-                }
+            } else if (service.equals(Service.TILT)) {
+                new TiltImageHandler().handle(request, response, Utils.pop(urn));
             }
-            else if ( service.equals(Service.TILT) )
-                new TiltImageHandler().handle(request,response,Utils.pop(urn));
-        }
-        catch ( Exception e )
-        {
-            throw new TiltException( e );
+            else if ( service.equals(Service.GEOJSON) )
+            {
+                new GeoJsonHandler().handle(request, response, Utils.pop(urn));
+            }
+        } catch (Exception e) {
+            throw new TiltException(e);
         }
     }
 }

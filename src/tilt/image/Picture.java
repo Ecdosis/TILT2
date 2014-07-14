@@ -456,7 +456,7 @@ public class Picture {
      * @return a byte array being the greyscale rendition of it
      * @throws ImageException 
      */
-    public byte[] getGreyscaleData( ) throws ImageException
+    public byte[] getGreyscaleData() throws ImageException
     {
         if ( greyscale == null )
             convertToGreyscale();
@@ -494,5 +494,13 @@ public class Picture {
         if ( words == null )
             convertToWords();
         return getPicData( words );
+    }
+    /**
+     * Get the GeoJson shapes data
+     * @return a GeoJson string
+     */
+    public String getGeoJson()
+    {
+        return page.toGeoJson();
     }
 }
