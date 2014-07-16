@@ -111,31 +111,24 @@ public class PictureRegistry
      */
     public static void prune() throws ImageException
     {
-        try
+        ArrayList<Long> delenda = new ArrayList<>();
+        Set<Long> keys = map.keySet();
+        Iterator<Long> iter = keys.iterator();
+        while ( iter.hasNext() )
         {
-            ArrayList<Long> delenda = new ArrayList<>();
-            Set<Long> keys = map.keySet();
-            Iterator<Long> iter = keys.iterator();
-            while ( iter.hasNext() )
+            Long key = iter.next();
+            if ( System.currentTimeMillis()-key.longValue() > FORGET_TIME )
             {
-                Long key = iter.next();
-                if ( System.currentTimeMillis()-key.longValue() > FORGET_TIME )
-                {
-                    delenda.add( key );
-                }
-            }
-            for ( int i=0;i<delenda.size();i++ )
-            {
-                Long key = delenda.get(i);
-                Picture p = map.get(key);
-                p.dispose();
-                Object removed = removeByValue( urls, key );
-                removeByValue( posters, removed );
+                delenda.add( key );
             }
         }
-        catch ( Exception e )
+        for ( int i=0;i<delenda.size();i++ )
         {
-            e.printStackTrace(System.out);
+            Long key = delenda.get(i);
+            Picture p = map.get(key);
+            p.dispose();
+            Object removed = removeByValue( urls, key );
+            removeByValue( posters, removed );
         }
     }
     /**
