@@ -86,7 +86,7 @@ public class Post extends Test
     +"$(\"#geojson\").width());\nvar htext = $(\"#HARPUR_JSON\").t"
     +"ext();\n$(\"#geojson\").val(htext);\nvar hhtml = $(\"#HARPUR"
     +"_TEXT\").html();\n$(\"#content\").html(hhtml);\n$(\"#text\")"
-    +".val(hhtml);\n});\n";
+    +".val(hhtml);\n$(\"#selections\").val(\"HARPUR\");\n});\n";
     static String POST_CSS =
     "#left {float:left;margin:10px}\n"
     +"#right {float:left;margin:10px}\n"
@@ -129,10 +129,6 @@ public class Post extends Test
             doc.getHead().addJQuery("1.9.0");
             doc.getHead().addScript( POST_JS );
             doc.getHead().addCss(POST_CSS);
-            // commented out to svae space
-//            Element h1 = new Element("h1");
-//            h1.addText("TILT Upload test");
-//            doc.addElement( h1 );
             HashMap<String,String> selections = new HashMap<>();
             for ( int i=0;i<Texts.samples.length;i++ )
             {

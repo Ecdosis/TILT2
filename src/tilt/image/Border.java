@@ -30,6 +30,8 @@ public class Border
     Area area;
     /** average number of pixels in a block */
     float average;
+    /** maximum number of pixels in a "white" block */
+    float whiteLevel;
     /** size of blocks relative to image */
     static float RATIO = 0.02f;
     /** fraction of image to scan for border */
@@ -52,6 +54,9 @@ public class Border
         vUnit = Math.round(wr.getHeight()*RATIO);
         int height = wr.getHeight()/vUnit;
         int width = wr.getWidth()/hUnit;
+        this.whiteLevel = Math.round(average*hUnit*vUnit)/3;
+        if ( this.whiteLevel==0 )
+            this.whiteLevel = 1;
         this.average = Math.round(average*hUnit*vUnit);
         this.border = Math.round(wr.getWidth()*BRD);          
         Rectangle r = new Rectangle( wr.getWidth(), wr.getHeight());
@@ -62,32 +67,32 @@ public class Border
         area.subtract( new Area(q) );
         // now add in discovered blocks
         // lhs
-        for ( int i=0;i<=height;i++ )
+        for ( int i=1;i<height-1;i++ )
         {
-            int v = (i*vUnit+vUnit>wr.getHeight())?wr.getHeight():i*vUnit;
-            Unit u = new Unit(0,v,Direction.right);
+            int v = i*vUnit;
+            Unit u = new Unit(hUnit,v,Direction.right);
             u.move();
         }
         // rhs
-        for ( int i=0;i<=height;i++ )
+        for ( int i=1;i<height-1;i++ )
         {
-            int h = wr.getWidth()-hUnit;
-            int v = (i*vUnit+vUnit>wr.getHeight())?wr.getHeight():i*vUnit;
+            int h = wr.getWidth()-hUnit*2;
+            int v = i*vUnit;
             Unit u = new Unit(h,v,Direction.left);
             u.move();
         }
         // top
-        for ( int i=0;i<=width;i++ )
+        for ( int i=1;i<width-1;i++ )
         {
-            int h = (i*hUnit+hUnit>wr.getWidth())?wr.getWidth():i*hUnit;
-            Unit u = new Unit(h,0,Direction.down);
+            int h = i*hUnit;
+            Unit u = new Unit(h,vUnit,Direction.down);
             u.move();
         }
         // bottom
-        for ( int i=0;i<=width;i++ )
+        for ( int i=1;i<width-1;i++ )
         {
-            int h = (i*hUnit+hUnit>wr.getWidth())?wr.getWidth():i*hUnit;
-            Unit u = new Unit(h,wr.getHeight()-vUnit,Direction.up);
+            int h = i*hUnit;
+            Unit u = new Unit(h,wr.getHeight()-vUnit*2,Direction.up);
             u.move();
         }
     }
@@ -99,7 +104,8 @@ public class Border
     {
         seenNothing,
         seenBlack,
-        seenWhite;
+        seenOneWhite,
+        seenTwoWhite;
     }
     /**
      * Directions of scan
@@ -125,6 +131,7 @@ public class Border
         /** state of match */
         State state;
         int count;
+        Area accumulation;
         /**
          * Create a move object
          * @param x its x-position (left)
@@ -137,6 +144,7 @@ public class Border
             this.y = y;
             this.dir = dir;
             this.state = State.seenNothing;
+            this.accumulation = new Area();
         }
         /**
          * Run the move
@@ -145,8 +153,8 @@ public class Border
         {
             // make sure this is zero!
             this.count = 0;
-            int hLimit = (x+hUnit<wr.getWidth())?x+hUnit:wr.getWidth();
-            int vLimit = (y+vUnit<wr.getHeight())?y+vUnit:wr.getHeight();
+            int hLimit = x+hUnit;
+            int vLimit = y+vUnit;
             int[] iArray = new int[1];
             for ( int v=y;v<vLimit;v++ )
             {
@@ -164,13 +172,13 @@ public class Border
             switch ( dir )
             {
                 case right:
-                    r = new Rectangle( 0, y, x+hUnit, vUnit );
+                    r = new Rectangle( x, y, x+hUnit, vUnit );
                     break;
                 case left:
                     r = new Rectangle( x, y, wr.getWidth()-x, vUnit );
                     break;
                 case down:
-                    r = new Rectangle( x, 0, hUnit, y+vUnit );
+                    r = new Rectangle( x, y, hUnit, y+vUnit );
                     break;
                 case up:
                     r = new Rectangle( x, y, hUnit, wr.getHeight()-y );
@@ -183,12 +191,31 @@ public class Border
          */
         void recompute()
         {
-            if ( count > average && state == State.seenNothing )
+            Rectangle r = makeRectangle();
+            Area currentArea = new Area(r);
+            accumulation.add( currentArea ); 
+            if ( count > average )
             {
-                Rectangle r = makeRectangle();
-                if ( r != null )
-                    area.add( new Area(r) );
-                state = State.seenBlack;
+                if ( state == State.seenNothing )
+                    state = State.seenBlack;
+                else 
+                    state = State.seenTwoWhite;
+            }
+            else if ( count <= whiteLevel )
+            {
+                if ( state == State.seenBlack )
+                    state = State.seenOneWhite;
+                else if ( state==State.seenOneWhite )
+                {
+                    state = State.seenTwoWhite;
+                    accumulation.subtract( currentArea );
+                    area.add( accumulation );
+                }
+            }
+            // else carry on but don't accept it as white
+            if ( state != State.seenTwoWhite )
+            {
+                // we're still good to go
                 switch ( dir )
                 {
                     case left:
@@ -221,30 +248,19 @@ public class Border
                         break;
                 }
             }
-            else if ( count > average && state == State.seenBlack )
-            {
-                Rectangle r = makeRectangle();
-                if ( r != null )
-                {
-                    if ( area.contains(r) )
-                        state = State.seenWhite;
-                    else
-                        area.add( new Area(r) );
-                }
-            }
-            else if ( count < average )
-            {
-                state = State.seenWhite;
-            }
-            // else we're done
         }
         /**
          * Set up the initial move and run it
          */
         void move()
         {
-            run();
-            recompute();
+            Rectangle r = makeRectangle();
+            // has this rectangle has already been processed by another unit?
+            if ( !area.contains(r) )
+            {
+                run();
+                recompute();
+            }
         }
     }
 }

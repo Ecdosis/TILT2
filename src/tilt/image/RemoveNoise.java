@@ -50,7 +50,8 @@ public class RemoveNoise
     private void clearPixels( WritableRaster wr )
     {
         int[] iArray = new int[1];
-        Point p = new Point(0,0);
+        iArray[0] = 0;
+//        Point p = new Point(0,0);
         for ( int y=0;y<wr.getHeight();y++ )
         {
             for ( int x=0;x<wr.getWidth();x++ )
@@ -58,8 +59,6 @@ public class RemoveNoise
                 wr.getPixel(x,y,iArray);
                 if ( iArray[0] == 0 )
                 {
-                    p.x = x;
-                    p.y = y;
                     darkRegions.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
                     {
@@ -67,6 +66,10 @@ public class RemoveNoise
                         wr.setPixel(x,y,iArray );
                     }
                 }
+//                p.x = x;
+//                p.y = y;
+//                if ( border.area.contains(p) )
+//                    wr.setPixel(x,y,iArray );
             }
         }
     }
@@ -115,6 +118,7 @@ public class RemoveNoise
         WritableRaster wr = src.getRaster();
         Point loc= new Point(0,0);
         int[] iArray = new int[1];
+        Point p = new Point(500,500);
         for ( int y=0;y<wr.getHeight();y++ )
         {
             loc.y = y;
@@ -126,16 +130,16 @@ public class RemoveNoise
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
                     {
-                        loc.y = y;
-                        loc.x = x;
                         if ( !isDirty(loc) && !isRejected(loc) )
                         {
                             Blob b = new Blob(darkRegions);
                             b.expandArea( wr, loc );
-                            if ( b.isValid(wr.getWidth(),wr.getHeight()) )
+                            if ( b.isValid(wr.getWidth(),wr.getHeight())
+                                ||b.isOddShaped(wr.getWidth(),wr.getHeight()) )
                             {
                                 b.save(darkRegions,wr,loc);
                             }
+                            
                             else
                             {
                                 b.save(rejectedRegions,wr,loc);

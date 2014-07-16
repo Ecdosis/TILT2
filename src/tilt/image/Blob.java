@@ -26,6 +26,7 @@ import javax.imageio.ImageIO;
 import java.util.Stack;
 import java.util.ArrayList;
 import tilt.Utils;
+import tilt.handler.TextIndex;
 import org.json.simple.*;
 
 /**
@@ -41,8 +42,9 @@ public class Blob
     /** minimum ratio of black to white pixels in area */
     static float MIN_BLACK_PC = 0.5f;
     /** minimum proportion of width or height taken up by blob */
-    static float MIN_H_PROPORTION = 0.1f;
+    static float MIN_H_PROPORTION = 0.05f;
     static float MIN_V_PROPORTION = 0.05f;
+    static float ODD_SHAPE = 4.0f;
     /** accumulate black pixels here */
     WritableRaster dirt; 
     /** unless they are already in here */
@@ -107,10 +109,17 @@ public class Blob
         int height = wr.getHeight();
         // set all to white
         int[] iArray = new int[width];
+        int[] dirty = new int[width];
         for ( int x=0;x<width;x++ )
             iArray[x] = 255;
         for ( int y=0;y<height;y++ )
+        {
+            wr.getPixels(0,y,width,1,dirty);
+            for ( int i=0;i<width;i++ )
+                if ( dirty[i]==0 )
+                    blackPixels++;
             wr.setPixels(0,y,width,1,iArray);
+        }
         return (float)blackPixels/(float)(wr.getWidth()*wr.getHeight());
     }
     /**
@@ -152,18 +161,36 @@ public class Blob
             return true;
         else if ( ratio > MIN_BLACK_PC )
         {
-            if ( width/(float)iWidth>=MIN_H_PROPORTION)
+            float hprop = width/(float)iWidth;
+            float vprop = height/(float)iHeight;
+            if ( hprop >= MIN_H_PROPORTION )
                 return true;
-            else if ( height/(float)iHeight>=MIN_V_PROPORTION)
+            else if ( vprop >=MIN_V_PROPORTION )
                 return true;
-            //else
-            //    System.out.println("rejecting blob at "+minX+","+minY
-            //    +" width="+width+" height="+height+" edge="+edge);
+//            if ( htWtRatio>= 2.0 )
+//                System.out.println("vprop="+vprop);
+//            if ( wtHtRatio>= 2.0 )
+//                System.out.println("hprop="+hprop);
         }
         //else
         //    System.out.println("rejecting blob at "+minX+","+minY+" width="
         //    +width+" height="+height+" edge="+edge);
         return false;
+    }
+    public boolean isOddShaped( int iWidth, int iHeight )
+    {
+        float width = (float)(maxX+1-minX);
+        float height = (float)(maxY+1-minY);
+        float htWtRatio= (float)height/(float)width;
+        float wtHtRatio = (float)width/(float)height;
+        float hprop = width/(float)iWidth;
+        float vprop = height/(float)iHeight;
+        if ( (hprop >= MIN_H_PROPORTION) && (wtHtRatio > ODD_SHAPE) )
+            return true;
+        else if ( (vprop >=MIN_V_PROPORTION) && (htWtRatio > ODD_SHAPE) )
+            return true;
+        else
+            return false;
     }
     /**
      * Set a black pixel in the dirt array, keep track of minima etc
@@ -295,7 +322,7 @@ public class Blob
             Object obj=JSONValue.parse(s);
             JSONArray coords=(JSONArray)obj;
             Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
-                7, InetAddress.getByName("127.0.0.1") );
+                new TextIndex("",""), InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);
             WritableRaster wr = bandw.getRaster();

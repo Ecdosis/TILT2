@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.util.TreeMap;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.Iterator;
 import tilt.exception.ImageException;
 import tilt.exception.DoSException;
@@ -43,9 +44,9 @@ public class PictureRegistry
      */
     static 
     {
-        map = new TreeMap<Long,Picture>();
-        urls = new HashMap<String,Long>();
-        posters = new HashMap<InetAddress,String>();
+        map = new TreeMap<>();
+        urls = new HashMap<>();
+        posters = new HashMap<>();
         // clean out temp directory
         String tmpDir = System.getProperty("java.io.tmpdir");
         File dir = new File( tmpDir );
@@ -66,10 +67,16 @@ public class PictureRegistry
     public static void register( Picture pic, String url ) throws DoSException
     {
         String url_id = posters.get(pic.poster);
+        // url_id is the last url poasted by poster
         if ( url_id != null )
         {
-            if ( !url.equals(urls.get(url_id)) )
-                throw new DoSException("Please wait before uploading a new image");
+            if ( url_id.equals(url) )
+            {
+                Long lastTime = urls.get(url_id);
+                if ( System.currentTimeMillis()-lastTime.longValue() < FORGET_TIME )
+                    throw new DoSException(
+                        "Please wait before uploading the same image");
+            }
         }
         Long key = new Long(System.currentTimeMillis());
         map.put( key, pic );
@@ -77,53 +84,64 @@ public class PictureRegistry
         posters.put(pic.poster,url);
     }
     /**
+     * Remove an entry in a map identified by its value not its key
+     * @param map the map to remove it from
+     * @param value the value
+     * @return return the removed KEY or null if not found
+     */
+    private static Object removeByValue( HashMap map, Object value )
+    {
+        Object key=null;
+        Set keys = map.keySet();
+        Iterator iter = keys.iterator();
+        while ( iter.hasNext() )
+        {
+            key = iter.next();
+            Object obj = map.get(key);
+            if ( obj.equals(value) )
+            {
+                map.remove(key);
+                break;
+            }
+        }
+        return key;
+    }
+    /**
      * Weed out files that haven't been accessed for some time
      */
     public static void prune() throws ImageException
     {
-        Set<Long> keys = map.keySet();
-        Iterator<Long> iter = keys.iterator();
-        while ( iter.hasNext() )
+        try
         {
-            Long key = iter.next();
-            if ( System.currentTimeMillis()-key.longValue() > FORGET_TIME )
+            ArrayList<Long> delenda = new ArrayList<>();
+            Set<Long> keys = map.keySet();
+            Iterator<Long> iter = keys.iterator();
+            while ( iter.hasNext() )
             {
-                Picture p = map.get(key);
-                p.dispose();
-                map.remove( key );
-                // clear from urls also
-                Set<String> urlKeys = urls.keySet();
-                Iterator<String> iter2 = urlKeys.iterator();
-                while ( iter2.hasNext() )
+                Long key = iter.next();
+                if ( System.currentTimeMillis()-key.longValue() > FORGET_TIME )
                 {
-                    String url = iter2.next();
-                    Long value = urls.get(url);
-                    if ( value.longValue()==key.longValue() )
-                    {
-                        urls.remove( url );
-                        Set<InetAddress> iKeys = posters.keySet();
-                        Iterator<InetAddress> iiter = iKeys.iterator();
-                        while ( iiter.hasNext() )
-                        {
-                            InetAddress iKey = iiter.next();
-                            if ( posters.get(iKey).equals(url) )
-                            {
-                                posters.remove( iKey );
-                                break;
-                            }
-                        }
-                        break;
-                    }
+                    delenda.add( key );
                 }
             }
-            else
-                break;
+            for ( int i=0;i<delenda.size();i++ )
+            {
+                Long key = delenda.get(i);
+                Picture p = map.get(key);
+                p.dispose();
+                Object removed = removeByValue( urls, key );
+                removeByValue( posters, removed );
+            }
+        }
+        catch ( Exception e )
+        {
+            e.printStackTrace(System.out);
         }
     }
     /**
      * Get an individual picture object, using its url as an id
      * @param url the url
-     * @return the correspnding Picture object
+     * @return the corresponding Picture object
      * @throws ImageException 
      */
     public static Picture get( String url ) throws ImageException
@@ -133,5 +151,20 @@ public class PictureRegistry
             return map.get(key);
         else
             throw new ImageException("Picture "+url+" not found");
+    }
+    /**
+     * Update an individual picture object, using its url as an id
+     * @param url the url
+     * @param pic the new version of the Picture object
+     * @throws ImageException 
+     */
+    public static void update( String url, Picture pic ) throws ImageException
+    {
+        Long key = urls.get( url );
+        map.remove( key );
+        urls.remove( url );
+        key = new Long(System.currentTimeMillis());
+        map.put( key, pic );
+        urls.put( url, key );
     }
 }

@@ -29,7 +29,8 @@ import java.awt.Polygon;
 import java.awt.Color;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
-import java.util.HashSet;
+import org.json.simple.*;
+import java.awt.geom.Area;
 import tilt.Utils;
 /**
  * Represent a discovered line in an image
@@ -46,6 +47,8 @@ public class Line implements Comparable<Line>
     int end;
     /** shapes shared with some other lines */
     HashMap<Line,ArrayList<Polygon>> shared;
+    /** offsets into text alignment, one per shape */
+    ArrayList<Integer> offsets;
     /** total number of shapes, shared and non-shared */
     int total;
     /** median y-value */
@@ -56,6 +59,7 @@ public class Line implements Comparable<Line>
     {
         points = new ArrayList<>();
         shapes = new ArrayList<>();
+        offsets = new ArrayList<>();
         shared = new HashMap<>();
         open = true;
     }
@@ -504,5 +508,85 @@ public class Line implements Comparable<Line>
             }
             points.set(j,p);
         }
+    }
+    /**
+     * Get the overall bounding box of this line
+     * @return a rectangle
+     */
+    private Rectangle getBounds()
+    {
+        Area region = new Area();
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon shape = shapes.get(i);
+            region.add(new Area(shape) );
+        }
+        return region.getBounds();
+    }
+    /**
+     * Convert the line to a JSON object for export
+     * @param pageWidth the width of the image in pixels
+     * @param pageHeight the height of the image in pixels
+     * @return a GeoJSON object for this line
+     */
+    public JSONObject toGeoJSON( int pageWidth, int pageHeight )
+    {
+        JSONObject collection = new JSONObject();
+        collection.put("type","FeatureCollection");
+        collection.put("name","Line");
+        Rectangle bounds = getBounds();
+        JSONArray bbox = new JSONArray();
+        bbox.add(bounds.x);
+        bbox.add(bounds.y);
+        bbox.add(bounds.x+bounds.width);
+        bbox.add(bounds.y+bounds.height);
+        collection.put("bbox",bbox);
+        JSONArray features = new JSONArray();
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            JSONObject feature = new JSONObject();
+            feature.put("type","Feature");
+            ArrayList<Point> pts = Utils.polygonToPoints(shapes.get(i));
+            JSONObject geometry = new JSONObject();
+            JSONArray coordinates = new JSONArray();
+            for ( int j=0;j<pts.size();j++ )
+            {
+                geometry.put("type","Polygon");
+                JSONArray point = new JSONArray();
+                point.add( (float)pts.get(j).x/(float)pageWidth );
+                point.add( (float)pts.get(j).y/(float)pageHeight );
+                coordinates.add( point );
+            }
+            geometry.put( "coordinates", coordinates );
+            feature.put( "geometry", geometry );
+            // add feature properties like text-offset here
+            if ( offsets.size() >i )
+            {
+                Integer val = offsets.get( i );
+                JSONArray properties = new JSONArray();
+                JSONObject offset = new JSONObject();
+                offset.put( "offset", val.intValue() );
+                properties.add( offset );
+                feature.put( "properties", properties );
+            }
+            features.add( feature );
+        }
+        collection.put( "features", features );
+        return collection;
+    }
+    /**
+     * Get the widths of the polygons on the line
+     * @return an array of word-widths on the line
+     */
+    int[] getWidths()
+    {
+        int[] widths = new int[shapes.size()];
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon pg = shapes.get(i);
+            Rectangle bounds = pg.getBounds();
+            widths[i] = bounds.width;
+        }
+        return widths;
     }
 }

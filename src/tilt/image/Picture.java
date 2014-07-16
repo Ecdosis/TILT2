@@ -37,6 +37,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import tilt.image.page.Page;
+import tilt.handler.TextIndex;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -55,7 +56,8 @@ public class Picture {
     File cleaned;
     File baselines;
     File words;
-    int numWords;
+    Double[][] coords;
+    TextIndex text;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -64,15 +66,15 @@ public class Picture {
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
-    public Picture( String urlStr, JSONArray coords, int numWords, 
+    public Picture( String urlStr, JSONArray coords, TextIndex text, 
         InetAddress poster ) throws TiltException
     {
         try
         {
             URL url = new URL( urlStr );
-            this.numWords = numWords;
             // use url as id for now
             id = urlStr;
+            this.text = text;
             this.poster = poster;
             // try to register the picture
             PictureRegistry.register( this, urlStr );
@@ -86,6 +88,16 @@ public class Picture {
             String mimeType = getFormatName();
             if ( !mimeType.equals(PNG_TYPE) )
                 convertToPng();
+            this.coords = new Double[4][2];
+            JSONArray array = (JSONArray)coords.get(0);
+            for ( int i=0;i<4;i++ )
+            {
+                JSONArray vector = (JSONArray)array.get(i);
+                for ( int j=0;j<2;j++ )
+                {
+                    this.coords[i][j] = (Double)vector.get(j);
+                }
+            }
         }
         catch ( Exception e )
         {
@@ -379,7 +391,7 @@ public class Picture {
             if ( cleaned == null )
                 convertToCleaned();
             BufferedImage withLines = ImageIO.read(cleaned);
-            FindLines fl = new FindLines( withLines, numWords );
+            FindLines fl = new FindLines( withLines, text.numWords() );
             page = fl.getPage();
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,
@@ -413,7 +425,18 @@ public class Picture {
         {
             throw new ImageException(e);
         }
-     }
+    }
+    /**
+     * Generate the text to image links
+     * @throws ImageException 
+     */
+    void convertToLinks() throws ImageException
+    {
+        if ( words == null )
+            convertToWords();
+//        float ppc = page.pixelsPerChar();
+//        Matchup( int[] A, int [] B );
+    }
     /**
      * Retrieve the data of a picture file
      * @return a byte array
@@ -499,8 +522,21 @@ public class Picture {
      * Get the GeoJson shapes data
      * @return a GeoJson string
      */
-    public String getGeoJson()
+    public String getGeoJson() throws ImageException
     {
-        return page.toGeoJson();
+        try
+        {
+//            if ( links == null )
+//                convertToLinks();
+            BufferedImage image = ImageIO.read(words);
+            double hScale = coords[2][0].doubleValue()-coords[0][0].doubleValue();
+            double vScale = coords[3][1].doubleValue()-coords[3][1].doubleValue();
+            return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
+                (int)Math.round(vScale*image.getHeight()) );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
     }
 }

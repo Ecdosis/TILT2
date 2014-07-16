@@ -77,6 +77,7 @@ public class TiltImageHandler  extends TiltHandler
                     String mimeType = URLConnection.guessContentTypeFromStream(bis);
                     response.setContentType(mimeType);
                     ServletOutputStream sos = response.getOutputStream();
+
                     sos.write( pic );
                     sos.close();
                 }

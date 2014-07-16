@@ -30,6 +30,7 @@ import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
+import org.json.simple.*;
 
 /**
  * Represent a collection of lines already recognised on a page
@@ -448,8 +449,24 @@ public class Page
      * Compose the shape information as GeoJson
      * @return the GeoJson
      */
-    public String toGeoJson()
+    public String toGeoJson( int pageWidth, int pageHeight )
     {
-        return "";
+        JSONObject image=new JSONObject();
+        image.put("type","FeatureCollection");
+        JSONArray bounds = new JSONArray();
+        // assume one bounding box for now, witout rotation
+        bounds.add(new Double(0.0) );
+        bounds.add(new Double(0.0) );
+        bounds.add(new Double(100.0) );
+        bounds.add(new Double(100.0) );
+        image.put( "bbox", bounds );
+        JSONArray features = new JSONArray();
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            features.add( l.toGeoJSON(pageWidth, pageHeight) );
+        }
+        image.put("features", features );
+        return image.toString();
     }
 }

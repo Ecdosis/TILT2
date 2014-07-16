@@ -150,11 +150,11 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
-                numWords = (text==null)?0:text.numWords();
                 // System.out.println("numWords="+numWords);
                 // create the picture and store it in the picture registry
                 Picture p = new Picture( (String)props.get("url"), 
-                    cc, (int)numWords, poster );
+                    cc, text, poster );
+                PictureRegistry.update( (String)props.get("url"), p );
                 // it will be identified later by its docid during GET
             }
             sb.append("<img width=\"500\" src=\"");
