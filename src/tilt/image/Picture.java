@@ -58,6 +58,7 @@ public class Picture {
     File words;
     Double[][] coords;
     TextIndex text;
+    Linker links;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -526,8 +527,8 @@ public class Picture {
     {
         try
         {
-//            if ( links == null )
-//                convertToLinks();
+            if ( links == null )
+                convertToLinks();
             BufferedImage image = ImageIO.read(words);
             double hScale = coords[2][0].doubleValue()-coords[0][0].doubleValue();
             double vScale = coords[3][1].doubleValue()-coords[3][1].doubleValue();

@@ -16,9 +16,10 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 package tilt.align;
+import java.util.ArrayList;
 
 /**
- * Align word-shapes with actual words.
+ * Align word-shapes with actual words. 
  * @author desmond 7/7/13
  */
 public class Matchup 
@@ -222,10 +223,9 @@ public class Matchup
      * Create a path of linked Path objects tracing the optimal alignment
      * @param D the array of diagonals
      * @param finish the index of the final diagonal
-     * @param d the index of the diagonal
      * @return the head of the list being the path of aligned cells
      */
-    private Path makePath( Pos[] D, int finish, int d )
+    private Path makePath( Pos[] D, int finish )
     {
         Pos p = D[finish];
         Path head = null;
@@ -395,7 +395,18 @@ public class Matchup
             } while ( D[finish]== null 
                 || D[finish].x!=B.length||D[finish].y!=A.length );
             print();
-            Path path = makePath( D, finish, diagonal(finish) );
+            Pos end = D[finish];
+            ArrayList<Pos> list = new ArrayList<>();
+            while ( end.parent!= null )
+            {
+                list.add(0,end);
+                end = end.parent;
+            }
+            for ( int i=0;i<list.size();i++ )
+            {
+                System.out.println(list.get(i));
+            }
+            Path path = makePath( D, finish );
             //path.print();
             System.out.println( "lowest cost alignment="+D[finish].score);
             return path.toArray();
@@ -426,6 +437,7 @@ public class Matchup
                 for ( int j=0;j<rows[i][0].length;j++ )
                 {
                     System.out.print(B[rows[i][0][j]]);
+                    //System.out.print(rows[i][0][j]);
                     if ( j<rows[i][0].length-1 )
                         System.out.print(",");
                 }
@@ -433,6 +445,7 @@ public class Matchup
                 System.out.print("A: ");
                 for ( int j=0;j<rows[i][1].length;j++ )
                 {
+                    //System.out.print(rows[i][1][j]);
                     System.out.print(A[rows[i][1][j]]);
                     if ( j<rows[i][1].length-1 )
                         System.out.print(",");

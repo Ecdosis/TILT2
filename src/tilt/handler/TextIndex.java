@@ -221,6 +221,19 @@ public class TextIndex
         return numWords;
     }
     /**
+     * Get the total number of characters on the page
+     * @return an int
+     */
+    public int numChars()
+    {
+        int chars = 0;
+        for ( int i=0;i<words.length;i++ )
+        {
+            chars += words[i].length();
+        }
+        return chars;
+    }
+    /**
      * Get the extracted words
      * @return an array of Strings
      */
@@ -243,6 +256,23 @@ public class TextIndex
     public int[] getHyphens()
     {
         return hyphens;
+    }
+    /**
+     * Get the widths of words (including hyphens at the end)
+     * @param ppc the fractional number of pixels per char
+     * @return an array of word widths
+     */
+    public int[] getWordWidths( float ppc )
+    {
+        int[] widths = new int[words.length];
+        for ( int i=0;i<words.length;i++ )
+        {
+            String word = words[i];
+            if ( hyphens[i] == SOFT_HYPHEN || hyphens[i] == HARD_HYPHEN )
+                word += "-";
+            widths[i] = Math.round((float)word.length()*ppc);
+        }
+        return widths;
     }
     public static void main( String[] args )
     {

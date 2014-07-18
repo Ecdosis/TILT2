@@ -155,7 +155,7 @@ public class Texts
     +"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
     +"}\n}\n"},
     {"SONNETS", "Harpur Sonnets",
-    "<p align=\"center\">THOUGHTS. 9</p>\n<h3 align=\"center\">VII"
+    "<h3 align=\"center\">VII"
     +"I.</h3>\n<h3 align=\"center\">ANDREW MARVEL.</h3>\n<p>Spirit"
     +", that lookest from the starry fold<br>\nof Truth’s white ﬂo"
     +"ck, next to thy Milton there,<br>\nAccept my reverence, thou"

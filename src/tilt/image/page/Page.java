@@ -469,4 +469,42 @@ public class Page
         image.put("features", features );
         return image.toString();
     }
+    /**
+     * Get the number of pixels per char
+     * @param numChars the number of chars on the page
+     * @return the fractional number of pixels per char
+     */
+    public float pixelsPerChar( int numChars )
+    {
+        float pixelWidth = 0;
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            int[] wordWidths = l.getWidths();
+            for ( int j=0;j<wordWidths.length;j++ )
+                pixelWidth += wordWidths[j];
+        }
+        return pixelWidth/(float) numChars;
+    }
+    /**
+     * Get the widths of all the shapes on the page in pixels
+     * @return an array of rounded shape widths as ints
+     */
+    public int[] getShapeWidths()
+    {
+        int size = 0;
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            size += l.countShapes();
+        }
+        int[] widths = new int[size];
+        int start = 0;
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            start += l.getShapeWidths( widths, start );
+        }
+        return widths;
+    }
 }

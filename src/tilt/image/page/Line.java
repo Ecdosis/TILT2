@@ -589,4 +589,27 @@ public class Line implements Comparable<Line>
         }
         return widths;
     }
+    /**
+     * Get the number of shapes on a line
+     * @return an int
+     */
+    int countShapes()
+    {
+        return shapes.size();
+    }
+    /**
+     * Fill in the pixel widths of each shape in the line
+     * @param widthsthe array to partly fill in
+     * @param start the start index into widths
+     * @return the number of entries filled in
+     */
+    int getShapeWidths( int[] widths, int start )
+    {
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon pg = shapes.get(i);
+            widths[start+i] = pg.getBounds().width;
+        }
+        return shapes.size();
+    }
 }
