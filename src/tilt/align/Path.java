@@ -29,6 +29,17 @@ class Path
         this.xValues = xValues;
         this.yValues = yValues;
     }
+    Path( Pos parent, Pos child )
+    {
+        int xLen = child.x-parent.x;
+        int yLen = child.y-parent.y;
+        this.xValues = new int[xLen];
+        this.yValues = new int[yLen];
+        for ( int j=0,i=parent.x;i<child.x;i++,j++ )
+            this.xValues[j] = i;
+        for ( int j=0,i=parent.y;i<child.y;i++,j++ )
+            this.yValues[j] = i;
+    }
     void print()
     {
         System.out.print( "A: " );
@@ -38,6 +49,8 @@ class Path
             if ( i < yValues.length-1 )
                 System.out.print(",");
         }
+        if ( yValues.length==0 )
+            System.out.print("x");
         System.out.print( ", B: " );
         for ( int i=0;i<xValues.length;i++ )
         {
@@ -45,6 +58,8 @@ class Path
             if ( i < xValues.length-1 )
                 System.out.print(",");
         }
+        if ( xValues.length==0 )
+            System.out.print("x");
         System.out.print("\n");
         if ( next != null )
             next.print();

@@ -227,28 +227,27 @@ public class Matchup
      */
     private Path makePath( Pos[] D, int finish )
     {
-        Pos p = D[finish];
-        Path head = null;
-        while ( p != null )
+        Pos end = D[finish];
+        ArrayList<Pos> list = new ArrayList<>();
+        while ( end != null )
         {
-            Pos old = p;
-            p = p.parent;
-            if ( p != null )
-            {
-                // did we move down diagonally? (alignment)
-                if ( old.x-p.x > 0 && old.y-p.y > 0 )
-                {
-                    Path child = head;
-                    int[] bpaths = new int[old.x-p.x];
-                    int[] apaths = new int[old.y-p.y];
-                    for ( int i=p.x;i<old.x;i++ )
-                        bpaths[i-p.x] = i;
-                    for ( int i=p.y;i<old.y;i++ )
-                        apaths[i-p.y] = i;
-                    head = new Path( bpaths, apaths );
-                    head.next = child;
-                }
-            }
+            list.add(0,end);
+            end = end.parent;
+        }
+        Pos current;
+        Pos prev = list.get(0);
+        Path head = null;
+        Path p = null;
+        for ( int i=1;i<list.size();i++ )
+        {
+            Path prevP = p;
+            current = list.get(i);
+            p = new Path( prev, current );
+            if ( prevP != null )
+                prevP.next = p;
+            if ( head == null )
+                head = p;
+            prev = current;
         }
         return head;
     }
@@ -395,19 +394,8 @@ public class Matchup
             } while ( D[finish]== null 
                 || D[finish].x!=B.length||D[finish].y!=A.length );
             print();
-            Pos end = D[finish];
-            ArrayList<Pos> list = new ArrayList<>();
-            while ( end.parent!= null )
-            {
-                list.add(0,end);
-                end = end.parent;
-            }
-            for ( int i=0;i<list.size();i++ )
-            {
-                System.out.println(list.get(i));
-            }
             Path path = makePath( D, finish );
-            //path.print();
+            path.print();
             System.out.println( "lowest cost alignment="+D[finish].score);
             return path.toArray();
         }
@@ -441,6 +429,8 @@ public class Matchup
                     if ( j<rows[i][0].length-1 )
                         System.out.print(",");
                 }
+                if ( rows[i][0].length==0 )
+                    System.out.print("x");
                 System.out.print(", ");
                 System.out.print("A: ");
                 for ( int j=0;j<rows[i][1].length;j++ )
@@ -450,6 +440,8 @@ public class Matchup
                     if ( j<rows[i][1].length-1 )
                         System.out.print(",");
                 }
+                if ( rows[i][1].length==0 )
+                    System.out.print("x");
                 System.out.print("\n");
             }
         }
