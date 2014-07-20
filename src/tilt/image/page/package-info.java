@@ -17,7 +17,8 @@
  */
 /**
  * The purpose of this package is to represent the visually identified 
- * parts of the page: the lines and word-shapes. The layout is basically as follows:</p>
+ * parts of the page: the lines and word-shapes. The layout is basically 
+ * as follows:</p>
  * <p align="center"><img src="doc-files/page.png" width="200"></p>
  * <p>The {@link Page} class allows the calculation of useful parameters
  * for later processing: the median line-depth (distance between baselines)
@@ -25,5 +26,8 @@
  * in the image. See 
  * <a href="http://bltilt.blogspot.com.au/2014/07/getting-word-spacing-right.html">
  * Getting word-spacing right </a></p>
+ * <p>There is also the problem of merging adjacent shapes that align to
+ * the same word, and splitting shapes that align to different words. These
+ * operations are handled by the Split and Merge classes.</p>
  */
  package tilt.image.page;
