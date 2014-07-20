@@ -32,6 +32,8 @@ import java.util.Arrays;
 import org.json.simple.*;
 import java.awt.geom.Area;
 import tilt.Utils;
+import tilt.exception.ImageException;
+import tilt.exception.AlignException;
 /**
  * Represent a discovered line in an image
  * @author desmond
@@ -55,6 +57,7 @@ public class Line implements Comparable<Line>
     int medianY;
     int averageY;
     static float SHARED_RATIO= 0.75f;
+    public static final int NO_OFFSET = -1;
     public Line()
     {
         points = new ArrayList<>();
@@ -524,7 +527,7 @@ public class Line implements Comparable<Line>
         return region.getBounds();
     }
     /**
-     * Convert the line to a JSON object for export
+     * Convert the line to a GeoJSON object for export
      * @param pageWidth the width of the image in pixels
      * @param pageHeight the height of the image in pixels
      * @return a GeoJSON object for this line
@@ -611,5 +614,57 @@ public class Line implements Comparable<Line>
             widths[start+i] = pg.getBounds().width;
         }
         return shapes.size();
+    }
+    /**
+     * Does the index for this shape exist?
+     * @param index the index to query
+     * @return true if a shape at that index in shapes exists else false
+     */
+    boolean hasShape( int index )
+    {
+        return index < shapes.size();
+    }
+    /**
+     * Set the word offset of the indexed shape
+     * @param index the index of the shape in shapes
+     * @param offset the offset of that word in the text
+     */
+    public void setShapeOffset( int index, int offset ) throws AlignException
+    {
+        if ( offset != offsets.size() )
+            throw new AlignException("Add the offsets in order");
+        offsets.add( offset );
+    }
+    /**
+     * Split one shape into several at the correct places
+     * @param index the index into shapes
+     * @param offsets the word-offsets to set for each new shape
+     * @param wr the raster of the cleaned image
+     * @return the number of split shapes 
+     */
+    public int splitShape( int index, int[] offsets, WritableRaster wr)
+    {
+        return 0;
+    }
+    /**
+     * Get a shape by its index
+     * @param index the index
+     * @return a Polygon
+     */
+    Polygon getShape( int index )
+    {
+        return shapes.get( index );
+    }
+    int getShapeIndex( Polygon pg )
+    {
+        return shapes.indexOf( pg );
+    }
+    void removeShape( Polygon pg )
+    {
+        shapes.remove( pg );
+    }
+    void addShape( int index, Polygon pg )
+    {
+        shapes.add( index, pg );
     }
 }

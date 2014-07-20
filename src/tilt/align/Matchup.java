@@ -16,6 +16,7 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 package tilt.align;
+import tilt.exception.MatchupException;
 import java.util.ArrayList;
 
 /**
@@ -395,8 +396,8 @@ public class Matchup
                 || D[finish].x!=B.length||D[finish].y!=A.length );
             print();
             Path path = makePath( D, finish );
-            path.print();
-            System.out.println( "lowest cost alignment="+D[finish].score);
+            //path.print();
+            //System.out.println( "lowest cost alignment="+D[finish].score);
             return path.toArray();
         }
         catch ( Exception e )

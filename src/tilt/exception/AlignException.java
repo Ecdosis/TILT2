@@ -15,15 +15,27 @@
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2014
  */
-package tilt.align;
+package tilt.exception;
 
 /**
- * Exception if something went wrong with the matchup
- * @author desmond
+ *  Something went wrong with an image
+ *  @author desmond
  */
-public class MatchupException extends Exception
+public class AlignException extends TiltException
 {
-    public MatchupException( Exception e )
+    /**
+     * Create a new AlignExeption from scratch
+     * @param message the message it is to contain
+     */
+    public AlignException( String message )
+    {
+        super( message );
+    }
+    /**
+     * For wrapping another exception
+     * @param e the other exception
+     */
+    public AlignException( Exception e )
     {
         super( e );
     }

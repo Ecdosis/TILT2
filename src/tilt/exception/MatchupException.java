@@ -15,28 +15,16 @@
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2014
  */
-
-package tilt.image;
-import tilt.align.Matchup;
-import tilt.handler.TextIndex;
-import tilt.image.page.Page;
+package tilt.exception;
 
 /**
- * Link shapes to words
+ * Exception if something went wrong with the matchup
  * @author desmond
  */
-public class Linker 
+public class MatchupException extends Exception
 {
-    TextIndex text;
-    Page page;
-    public Linker( TextIndex text, Page page )
+    public MatchupException( Exception e )
     {
-        this.text = text;
-        this.page = page;
-        float ppc = page.pixelsPerChar( text.numChars() );
-        int[] shapeWidths = page.getShapeWidths();
-        int[] wordWidths = text.getWordWidths( ppc );
-        Matchup matcher = new Matchup( wordWidths, shapeWidths );
-        //matcher.align();
+        super( e );
     }
 }

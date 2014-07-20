@@ -23,6 +23,7 @@ import tilt.exception.ImageException;
 import org.json.simple.*;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.File;
 import tilt.exception.TiltException;
 import java.nio.channels.ReadableByteChannel;
@@ -38,14 +39,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import tilt.image.page.Page;
 import tilt.handler.TextIndex;
+import tilt.align.Matchup;
 
 /**
  * Handle everything related to the abstract image in all its forms
  * @author desmond
  */
 public class Picture {
-    private static String PNG_TYPE = "PNG";
-    
+    private final static String PNG_TYPE = "PNG";
     String id;
     InetAddress poster;
     float ppAverage;
@@ -58,12 +59,11 @@ public class Picture {
     File words;
     Double[][] coords;
     TextIndex text;
-    Linker links;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
      * @param coords coordinates for the picture from the geoJSON file
-     * @param numWords the number of words on the page
+     * @param text the text to align with
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
@@ -144,9 +144,9 @@ public class Picture {
             fis.close();
             return data;
         }
-        catch ( Exception e )
+        catch ( IOException ioe )
         {
-            throw new ImageException(e);
+            throw new ImageException(ioe);
         }
     }
     /**
@@ -154,7 +154,7 @@ public class Picture {
      * @return a mime type
      * @throws ImageException 
      */
-    String getFormatName() throws ImageException
+    final String getFormatName() throws ImageException
     {
         try
         {
@@ -177,7 +177,7 @@ public class Picture {
      * Convert the input file from anything to png
      * @throws ImageException 
      */
-    void convertToPng() throws ImageException
+    final void convertToPng() throws ImageException
     {
         try
         {
@@ -433,10 +433,23 @@ public class Picture {
      */
     void convertToLinks() throws ImageException
     {
-        if ( words == null )
-            convertToWords();
-//        float ppc = page.pixelsPerChar();
-//        Matchup( int[] A, int [] B );
+        if ( cleaned == null )
+            convertToCleaned();
+        float ppc = page.pixelsPerChar( text.numChars() );
+        int[] shapeWidths = page.getShapeWidths();
+        int[] wordWidths = text.getWordWidths( ppc );
+        Matchup m = new Matchup( wordWidths, shapeWidths );
+        try
+        {
+            int[][][] alignments = m.align();
+            int[] wordOffsets = text.getTextOffsets();
+            BufferedImage clean =  ImageIO.read(cleaned);
+            page.align( alignments, wordOffsets, wordWidths, clean.getRaster() );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
     }
     /**
      * Retrieve the data of a picture file
@@ -527,8 +540,8 @@ public class Picture {
     {
         try
         {
-            if ( links == null )
-                convertToLinks();
+            // do this always, because the user will want it redone
+            convertToLinks();
             BufferedImage image = ImageIO.read(words);
             double hScale = coords[2][0].doubleValue()-coords[0][0].doubleValue();
             double vScale = coords[3][1].doubleValue()-coords[3][1].doubleValue();

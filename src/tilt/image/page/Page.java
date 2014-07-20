@@ -14,7 +14,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2014
- */
+ */        
+
 
 package tilt.image.page;
 import java.awt.Color;
@@ -28,6 +29,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
+import tilt.exception.*;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import org.json.simple.*;
@@ -506,5 +508,69 @@ public class Page
             start += l.getShapeWidths( widths, start );
         }
         return widths;
+    }
+    /**
+     * Align word shapes in image to words in text
+     * @param wordOffsets actuals offsets into text of each word
+     * @param wordWidths the widths of the words in pixels
+     * @param alignments and array of alignments, each [0]=shapes,[1]=words
+     * @param wr raster of cleaned image
+     * @throws AlignException
+     */
+    public void align( int[][][] alignments, int[] wordOffsets, 
+        int[] wordWidths, WritableRaster wr ) throws AlignException
+    {
+        if ( lines.size() > 0 )
+        {
+            // line index
+            int j = 0;
+            // shape index per line
+            int k = 0;
+            Line l = lines.get(0);
+            ArrayList<Merge> merges = new ArrayList<>();
+            ArrayList<Split> splits = new ArrayList<>();
+            for ( int[][] alignment : alignments )
+            {
+                int[] shapes = alignment[0];
+                int[] words = alignment[1];
+                if ( !l.hasShape(k) )
+                {
+                    l = lines.get(++j);
+                    k = 0;
+                }
+                if ( shapes.length == words.length )
+                {
+                    l.setShapeOffset( k++, wordOffsets[words[0]] );
+                }
+                else if ( shapes.length == 1 && words.length > 1 )
+                {
+                    int[] offsets = new int[words.length];
+                    int[] widths = new int[words.length];
+                    for ( int m=0;m<words.length;m++ )
+                    {
+                        offsets[m] = wordOffsets[words[m]];
+                        widths[m] = wordWidths[words[m]];
+                    }
+                    splits.add( new Split(l, k, offsets, widths, wr) );
+                }
+                else if ( shapes.length > 1 && words.length == 1 )
+                {
+                    merges.add( new Merge(l, shapes, wordOffsets[words[0]]) );
+                    k += shapes.length;
+                }
+            }
+            // now execute the saved merges and splits
+            try
+            {
+                for ( Merge m : merges )
+                    m.execute();
+                for ( Split s : splits )
+                    s.execute();
+            }
+            catch ( Exception e )
+            {
+                throw new AlignException( e );
+            }
+        }
     }
 }
