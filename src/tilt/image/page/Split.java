@@ -155,64 +155,64 @@ public class Split
         ArrayList<Point> points = Utils.polygonToPoints( shape );
         for ( int i=0;i<newPolys.length;i++ )
             newPolys[i] = new ArrayList<>();
-		// examine each original point
+        // examine each original point
         for ( int i=0;i<points.size();i++ )
         {
             Point p = points.get( i );
             // determine which shape it falls into
             for ( int j=0;j<=splits.length;j++ )
             {
-				int leftSplit = -1;
-				int rightSplit = -1;
-				if ( j==splits.length )
-					leftSplit = splits[j-1];
-				else if ( j==0 )
-					rightSplit = splits[0];
-				else
-				{
-					leftSplit = splits[j-1];
-					rightSplit = splits[j];
-				}
+                int leftSplit = -1;
+                int rightSplit = -1;
+                if ( j==splits.length )
+                    leftSplit = splits[j-1];
+                else if ( j==0 )
+                    rightSplit = splits[0];
+                else
+                {
+                    leftSplit = splits[j-1];
+                    rightSplit = splits[j];
+                }
                 // determine where p goes
-				if ( p.x < rightSplit || (rightSplit==-1 && j==splits.length) )
-				{
-					// so p belongs within shapes[j]
-					if ( i > 0 )
-					{
-						// examine previous point
-						Point q = points.get( i-1 );
-						if ( q.x < leftSplit )
-							newPolys[j].add( getDiagonalPoint(q,p,leftSplit) );
-						else if ( rightSplit!=-1 && q.x >= rightSplit )
-							newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
-					}
-					newPolys[j].add( p );
-					if ( i < points.size()-1 )
-					{
-						Point q = points.get( i+1 );
-						if ( q.x < leftSplit )
-							newPolys[j].add(getDiagonalPoint(q,p,leftSplit));
-						else if ( rightSplit!=-1 && q.x >= rightSplit )
-							newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
-					}
-					break;
-				}
+                if ( p.x < rightSplit || (rightSplit==-1 && j==splits.length) )
+                {
+                    // so p belongs within shapes[j]
+                    if ( i > 0 )
+                    {
+                        // examine previous point
+                        Point q = points.get( i-1 );
+                        if ( q.x < leftSplit )
+                            newPolys[j].add( getDiagonalPoint(q,p,leftSplit) );
+                        else if ( rightSplit!=-1 && q.x >= rightSplit )
+                            newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
+                    }
+                    newPolys[j].add( p );
+                    if ( i < points.size()-1 )
+                    {
+                        Point q = points.get( i+1 );
+                        if ( q.x < leftSplit )
+                            newPolys[j].add(getDiagonalPoint(q,p,leftSplit));
+                        else if ( rightSplit!=-1 && q.x >= rightSplit )
+                            newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
+                    }
+                    break;
+                }
             }
         }
-		// now close the generated shapes
-		for ( int i=0;i<newPolys.length;i++ )
-		{
-			ArrayList<Point> r = newPolys[i];
-			if ( r.size()>0 )
-			{
-				Point p = r.get(0);
-				Point q = r.get(r.size()-1);
-				if ( !p.equals(q) )
-					r.add( new Point(p.x,p.y) );
-			}
-		}
+        // now close the generated shapes
+        for ( int i=0;i<newPolys.length;i++ )
+        {
+            ArrayList<Point> r = newPolys[i];
+            if ( r.size()>0 )
+            {
+                Point p = r.get(0);
+                Point q = r.get(r.size()-1);
+                if ( !p.equals(q) )
+                    r.add( new Point(p.x,p.y) );
+            }
+        }
         // convert to polygons
-		Polygon[] polys = new Polygon[newPolys.length];
+        Polygon[] polys = new Polygon[newPolys.length];
         for ( int i=0;i<polys.length;i++ )
         {
             polys[i] = new Polygon();
@@ -222,22 +222,22 @@ public class Split
         }
         return polys;
     }
-	/**
+    /**
      * Add a new point at the given x-offset between 2 points
      * @param p the left point
      * @param q the right point
      * @param split the split x-position
      */
-	private Point getDiagonalPoint( Point p, Point q, int split ) 
+    private Point getDiagonalPoint( Point p, Point q, int split ) 
         throws SplitException
     {
         Point u = null;
         if ( p.x < q.x && split > p.x )
         {
-			float deltaSplitX = (float)(split-p.x);
-			float deltaX = (float)(q.x-p.x);
-			float ratio = deltaSplitX/deltaX;
-			float deltaY = (float)(q.y-p.y);
+            float deltaSplitX = (float)(split-p.x);
+            float deltaX = (float)(q.x-p.x);
+            float ratio = deltaSplitX/deltaX;
+            float deltaY = (float)(q.y-p.y);
             u = new Point( split, p.y+Math.round(ratio*deltaY) );
         }
         else
