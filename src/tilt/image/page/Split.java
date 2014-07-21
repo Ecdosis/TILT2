@@ -42,7 +42,7 @@ public class Split
      * @param l the line containing the polygon to split
      * @param shape the index of the shape that's too big
      * @param offsets the word-offsets for the new shapes
-     * @param widths the widths of the words
+     * @param widths the widths of the &gt; 1 words that belong to shape
      * @param wr the raster of the cleaned image
      */
     Split( Line l, int shape, int[] offsets,  int[] widths, WritableRaster wr )
@@ -66,7 +66,8 @@ public class Split
         return array;
     }
     /**
-     * Actually split, storing the result in the line's shapes array
+     * Actually split the designated shape, storing the result directly in 
+     * the line's shapes array.
      */
     void execute() throws SplitException
     {
@@ -134,9 +135,10 @@ public class Split
             Polygon[] shapes = split( splits );
             // replace existing shape with split portions
             int shapeIndex = line.getShapeIndex( shape );
+            int i = 0;
             line.removeShape( shape );
             for ( Polygon pg : shapes )
-                line.addShape( shapeIndex, pg );
+                line.addShape( shapeIndex, pg, offsets[i++] );
         }
         catch ( Exception e )
         {

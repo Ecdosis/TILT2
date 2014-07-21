@@ -78,7 +78,7 @@ public class Merge
         for ( Polygon s : delenda )
             line.removeShape( s );
         if ( first != -1 )
-           line.addShape( first, poly );
+           line.addShape( first, poly, wordOffset );
        else
            throw new ImageException( "Merge: couldn't find shape");
     }

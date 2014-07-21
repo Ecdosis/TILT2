@@ -32,7 +32,6 @@ import java.util.Arrays;
 import org.json.simple.*;
 import java.awt.geom.Area;
 import tilt.Utils;
-import tilt.exception.ImageException;
 import tilt.exception.AlignException;
 /**
  * Represent a discovered line in an image
@@ -661,10 +660,15 @@ public class Line implements Comparable<Line>
     }
     void removeShape( Polygon pg )
     {
-        shapes.remove( pg );
+        int index = shapes.indexOf(pg);
+        if ( index < offsets.size() )
+            offsets.remove( index );
+        shapes.remove( index );
     }
-    void addShape( int index, Polygon pg )
+    void addShape( int index, Polygon pg, int wordOffset )
     {
         shapes.add( index, pg );
+        if ( offsets.size() >= index )
+            offsets.add( index, wordOffset );
     }
 }
