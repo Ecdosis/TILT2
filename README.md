@@ -10,3 +10,7 @@ equivalents on other platforms.
 
 You must also install AeseSpeller from 
 https://github.com/schmidda/AeseSpeller.
+
+DOCUMENTATION
+
+The full documentation is in dist/javadoc.
