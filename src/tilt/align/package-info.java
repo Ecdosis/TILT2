@@ -30,5 +30,7 @@
  * transcription, shapes of words identified in the image can be aligned with 
  * the correct text, and the shapes themselves merged or split as needed.</p>
  * <p align="center"><img src="doc-files/alignment.png" width="500"></p>
+ * <p>It is central to the alignment of word-shapes in the text-image to 
+ * actual words in the text.</p>
  */
 package tilt.align;

@@ -11,6 +11,14 @@ equivalents on other platforms.
 You must also install AeseSpeller from 
 https://github.com/schmidda/AeseSpeller.
 
+For local use you will need to install a web-server. If you use Apache 
+and mod-proxy you should add the folllowing line to proxy.conf:
+
+ProxyPass /tilt/ http://localhost:8082/tilt/ retry=0
+
+TILT runs on TCP port 8082, so this should be free of other applications 
+listening on that port.
+
 DOCUMENTATION
 
 The full documentation is in dist/javadoc.
