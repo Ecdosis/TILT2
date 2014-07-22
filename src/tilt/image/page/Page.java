@@ -531,8 +531,10 @@ public class Page
             Line l = lines.get(0);
             ArrayList<Merge> merges = new ArrayList<>();
             ArrayList<Split> splits = new ArrayList<>();
-            for ( int[][] alignment : alignments )
+            int i = 0;
+            while ( i < alignments.length )
             {
+                int[][] alignment = alignments[i];
                 int[] shapes = alignment[0];
                 int[] words = alignment[1];
                 if ( !l.hasShape(k) )
@@ -557,15 +559,25 @@ public class Page
                 }
                 else if ( shapes.length > 1 && words.length == 1 )
                 {
-                    merges.add( new Merge(l, shapeOffsets[j], shapes, 
-                        wordOffsets[words[0]]) );
-                    k += shapes.length;
+                    int last = shapes.length-1;
+                    if ( shapes[last] < shapeOffsets[j] )
+                    {
+                        merges.add( new Merge(l, shapeOffsets[j], shapes, 
+                            wordOffsets[words[0]]) );
+                        k += shapes.length;
+                    }
+                    else
+                    {
+                        // some on one line, some on next
+                        // split alignment
+                        i--;
+                    }
                 }
                 else if ( words.length==0 )
                     k++;
                 else    // no shape for word
                     continue;
-                    
+                i++;
             }
             // now execute the saved merges and splits
             try

@@ -20,7 +20,7 @@
  * parts of the page: the lines and word-shapes. The layout is basically 
  * as follows:</p>
  * <p align="center"><img src="doc-files/page.png" width="200"></p>
- * <p>The {@link tilt.image.page.Page package-info} class allows the calculation of useful parameters
+ * <p>The {@link tilt.image.page.Page} class allows the calculation of useful parameters
  * for later processing: the median line-depth (distance between baselines)
  * and the minimum word-gap. The latter is the basis for word-recognition
  * in the image. See 

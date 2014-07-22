@@ -24,12 +24,19 @@ package tilt.constants;
  */
 public enum ImageType 
 {
+    /** original image unchanged by tilt */
     original,
+    /** original image reduced to 256 shades of grey */
     greyscale,
+    /** 8-bit greyscale image reduced to black (0) and white (255) */
     twotone,
+    /** same as twotone, which borders and large blobs removed */
     cleaned,
+    /** cleaned image with lines draw over the top */
     baselines,
+    /** original image with word shapes in alternating colours */
     words,
+    /** original image and key to requesting linkage to text */
     link;
     /**
      * Convert a string into

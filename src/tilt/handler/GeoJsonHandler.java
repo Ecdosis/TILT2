@@ -19,8 +19,17 @@ import tilt.image.PictureRegistry;
  */
 public class GeoJsonHandler extends TiltHandler
 {
+    /** the image URL */
     String docid;
+    /** the GeoJson we extract from the picture */
     String geoJson;
+    /**
+     * Handle a request for a GeoJon description of the text to image links
+     * @param request the http request
+     * @param response the http response
+     * @param urn the remaining urn of the request
+     * @throws TiltException 
+     */
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {
