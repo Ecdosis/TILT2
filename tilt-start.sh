@@ -9,6 +9,9 @@ getjarpaths()
   echo $JARPATH
   return
 }
+if [ -f dist/TILT2.jar ]; then
+  cp dist/TILT2.jar .
+fi
 if [ "`uname`" = "Darwin" ]; then
   WEB_ROOT="/Library/WebServer/Documents"
 else
