@@ -156,5 +156,13 @@
  * <li>pictype: the desired pictype for the returned image (optional)</li> 
  * <li>text: the text to align to. This should be in HTML (required).</li> </ul>
  * </li></ul>
+ * <h4>TITL Service</h4>
+ * <p>TILT runs as a HTTP service on port 8082. The default URL is: 
+ * http://localhost:8082/tilt, but this can be simplified to 
+ * http://localhost/tilt/ by using mod-proxy. TILT uses Jetty to produce a 
+ * standalone service, but it can be easily converted to run in an application-
+ * server like Tomcat. TILT can be started via the tilt-start.sh script and 
+ * similarly stopped via tilt-stop.sh. These scripts set up the required jars 
+ * and also the path to the aesespeller library.</p>
  */
 package tilt;
