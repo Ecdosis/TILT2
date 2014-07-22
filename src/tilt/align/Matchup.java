@@ -355,7 +355,8 @@ public class Matchup
     }
     /**
      * Run the alignment
-     * @return a 3-D array of path rows, each a 2-D array of B,A word indices
+     * @return a 3-D array of path steps, each a 2-D array of B,A word,shape 
+     * indices
      */
     public int[][][] align() throws MatchupException
     {

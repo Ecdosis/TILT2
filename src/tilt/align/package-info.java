@@ -17,11 +17,13 @@
  */
 
 /**
- * <p>This package is an adaptation of Esko Ukkonen's diff algorithm to the 
- * alignment of two sets of integers, representing pixel-widths in an image
- * and in a text (approximated). The original algorithm found the optimal
- * alignment between two texts using the insert, delete and exchange operations
- * via a set of diagonals. This adaptation uses the same approach, but adds 
+ * <p>This package is an adaptation of Esko Ukkonen's diff algorithm in 
+ * Information and Control 64, 100-118, 1985. Originally designed for the 
+ * alignment of two sets of characters or strings, it is here adapted to the 
+ * alignment of precise pixel-widths in an image and approximated pixel-widths 
+ * in a text. The original algorithm found the optimal alignment between two 
+ * texts using the insert, delete and exchange operations via a set of 
+ * diagonals. This adaptation uses the same approach, but adds 
  * two new moves: h-extension and v-extension, which allows a number in one
  * set to be aligned with more than one in the other set, so 25, 35 could be 
  * aligned with 60. This reflects the problem in recognising manuscript texts
@@ -30,7 +32,7 @@
  * transcription, shapes of words identified in the image can be aligned with 
  * the correct text, and the shapes themselves merged or split as needed.</p>
  * <p align="center"><img src="doc-files/alignment.png" width="500"></p>
- * <p>It is central to the alignment of word-shapes in the text-image to 
- * actual words in the text.</p>
+ * <p>This algorithm is central to the correct function of the TILT 
+ * application.</p>
  */
 package tilt.align;

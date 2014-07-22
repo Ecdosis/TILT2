@@ -19,20 +19,22 @@
 /**
  * This package handles everything directly related to the manipulation of 
  * images, and preparing them for text-to-image linking. The 
- * {@link tilt.image.Blob} class identifies connected pixels in B&amp;W images.
- * The {@link tilt.image.Border} class identifies blobs close to the edges that
- * can be safely deleted. The {@link tilt.image.FastConvexHull} algorithm
- * selects those points that are outliers of a set of points representing
- * something, and draws a <em>convex</em> polygon around them. The 
- * {@link tilt.image.FindLines} class identifies lines in various kinds of 
- * textual images. The {@link tilt.image.Picture} class manages the picture,
- * originally fetch from a URL, in its many formats: B&amp; W, original, 
- * with lines etc. It is stored in the {@link tilt.image.PictureRegistry},
- * which manages the temporary files associated with each image type. Images
- * are regularly deleted when no longer required and are only loaded into 
- * memory when needed. The {@link tilt.image.RemoveNoise} class supervises the
- * removal of noise in the borders and anomalous blobs in the inner border.
- * The {@link tilt.image.XCompare} class is a comparison method needed by 
- * {@link tilt.image.FastConvexHull}.
+ * <ul><li>{@link tilt.image.Blob} class identifies connected pixels in 
+ * B&amp;W images.</li> <li>The {@link tilt.image.Border} class identifies 
+ * blobs close to the edges that can be safely deleted.</li><li>The {@link
+ * tilt.image.FastConvexHull} algorithm selects those points that are
+ * outliers of a set of points representing something, and draws a
+ * <em>convex</em> polygon around them.</li><li>The {@link
+ * tilt.image.FindLines} class identifies lines in various kinds of textual
+ * images.</li><li>The {@link tilt.image.Picture} class manages the
+ * picture, originally fetch from a URL, in its many formats: B&amp; W,
+ * original, with lines etc.</li><li>{@link tilt.image.Picture}s are stored 
+ * in the {@link tilt.image.PictureRegistry}, which manages the temporary 
+ * files associated with each image type. Images are regularly deleted when 
+ * no longer required and are only loaded into memory when needed.</li><li>The
+ * {@link tilt.image.RemoveNoise} class supervises the removal of noise in
+ * the borders and anomalous blobs in the inner border.</li> <li>The {@link
+ * tilt.image.XCompare} class is a comparison method needed by {@link
+ * tilt.image.FastConvexHull}.</li></ul>
  */
 package tilt.image;

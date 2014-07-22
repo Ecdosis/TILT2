@@ -18,10 +18,10 @@
 
 package tilt.image.matchup;
 import java.util.ArrayList;
-import java.awt.Point;
 /**
  * An MxN (x by y) matrix of ints through which to find the best alignment
- * (adapted from Needleman & Wunsch J. Mol. Biol. 48 (1970) 443-453)
+ * (adapted from Needleman & Wunsch J. Mol. Biol. 48 (1970) 443-453). This
+ * is used for joining up partial lines as they are identified in a page.
  * @author desmond
  */
 public class Matrix 
