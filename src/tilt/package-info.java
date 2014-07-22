@@ -118,8 +118,7 @@
  * following path-component to form the name of a class that should be a
  * sub-class of tilt.test.Test. So the path /tilt/test/post will invoke the
  * {@link tilt.test.Post#handle} method when a GET request is directed to
- * that URL.</li> <li>image &ndash; this will be directed to {@link
- * tilt.handler.TiltImageHandler#handle} in the {@link
+ * that URL.</li> <li>image &ndash; this will be directed to the {@link
  * tilt.handler.TiltImageHandler} class. Required parameters are:
  * <ul><li>docid: the URL of a suitable image file</li> <li>pictype: this
  * <em>must</em> be one of the values in the {@link
@@ -156,7 +155,7 @@
  * <li>pictype: the desired pictype for the returned image (optional)</li> 
  * <li>text: the text to align to. This should be in HTML (required).</li> </ul>
  * </li></ul>
- * <h4>TITL Service</h4>
+ * <h4>TILT Service</h4>
  * <p>TILT runs as a HTTP service on port 8082. The default URL is: 
  * http://localhost:8082/tilt, but this can be simplified to 
  * http://localhost/tilt/ by using mod-proxy. TILT uses Jetty to produce a 
