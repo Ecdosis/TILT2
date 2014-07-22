@@ -30,23 +30,24 @@ import tilt.exception.ImageException;
 public class Merge 
 {
     /** store shapes explicitly not by index */
-    ArrayList<Polygon> shapes;
+    ArrayList<Polygon> polygons;
     /** word-offset to be applied to merged shape */
     int wordOffset;
     /** line object where the shapes are stored */
     Line line;
     /**
-     * Store merges between shapes in a line
+     * Store merges between shapes in <em>one</em> line
      * @param line the line to update
+     * @param shapeOffset offset into page-level shapes array for line start
      * @param shapes indices of the shapes
      * @param wordOffset the offset that the merged shape should have
      */
-    Merge( Line line, int[] shapes, int wordOffset )
+    Merge( Line line, int shapeOffset, int[] shapes, int wordOffset )
     {
         // convert from indices to absolute shapes
-        this.shapes = new ArrayList<>();
+        this.polygons = new ArrayList<>();
         for ( int shape : shapes )
-            this.shapes.add( line.getShape(shape) );
+            this.polygons.add( line.getShape(shape-shapeOffset) );
         this.wordOffset = wordOffset;
         this.line = line;
     }
@@ -59,7 +60,7 @@ public class Merge
         int first = -1;
         // gather points from all shapes
         ArrayList<Point> pts = new ArrayList<>();
-        for ( Polygon shape : shapes )
+        for ( Polygon shape : polygons )
         {
             if ( first == -1 )
                 first = line.getShapeIndex(shape);
@@ -73,7 +74,7 @@ public class Merge
             poly.addPoint( pt.x, pt.y );
         // update list
         ArrayList<Polygon> delenda = new ArrayList<>();
-        for ( Polygon shape : shapes )
+        for ( Polygon shape : polygons )
             delenda.add( shape );
         for ( Polygon s : delenda )
             line.removeShape( s );

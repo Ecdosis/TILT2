@@ -394,7 +394,7 @@ public class Matchup
                 //print();
             } while ( D[finish]== null 
                 || D[finish].x!=B.length||D[finish].y!=A.length );
-            print();
+            //print();
             Path path = makePath( D, finish );
             //path.print();
             //System.out.println( "lowest cost alignment="+D[finish].score);

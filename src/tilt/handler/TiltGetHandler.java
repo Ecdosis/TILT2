@@ -51,7 +51,7 @@ public class TiltGetHandler extends TiltHandler {
                 } catch (Exception e) {
                     throw new TiltException(e);
                 }
-            } else if (service.equals(Service.TILT)) {
+            } else if (service.equals(Service.IMAGE)) {
                 new TiltImageHandler().handle(request, response, Utils.pop(urn));
             }
             else if ( service.equals(Service.GEOJSON) )

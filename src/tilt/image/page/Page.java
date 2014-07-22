@@ -511,14 +511,16 @@ public class Page
     }
     /**
      * Align word shapes in image to words in text
+     * @param shapeOffsets offsets into the shapes array for each line start
      * @param wordOffsets actuals offsets into text of each word
      * @param wordWidths the widths of the words in pixels
      * @param alignments and array of alignments, each [0]=shapes,[1]=words
      * @param wr raster of cleaned image
      * @throws AlignException
      */
-    public void align( int[][][] alignments, int[] wordOffsets, 
-        int[] wordWidths, WritableRaster wr ) throws AlignException
+    public void align( int[][][] alignments, int[] shapeOffsets, 
+        int[] wordOffsets, int[] wordWidths, WritableRaster wr ) 
+        throws AlignException
     {
         if ( lines.size() > 0 )
         {
@@ -555,9 +557,15 @@ public class Page
                 }
                 else if ( shapes.length > 1 && words.length == 1 )
                 {
-                    merges.add( new Merge(l, shapes, wordOffsets[words[0]]) );
+                    merges.add( new Merge(l, shapeOffsets[j], shapes, 
+                        wordOffsets[words[0]]) );
                     k += shapes.length;
                 }
+                else if ( words.length==0 )
+                    k++;
+                else    // no shape for word
+                    continue;
+                    
             }
             // now execute the saved merges and splits
             try
@@ -572,5 +580,21 @@ public class Page
                 throw new AlignException( e );
             }
         }
+    }
+    /**
+     * Get the indices into the shapes for the page at each line start
+     * @return an array of ints
+     */
+    public int[] getShapeLineStarts()
+    {
+        int[] starts = new int[lines.size()];
+        int i = 0;
+        int total = 0;
+        for ( Line l : lines )
+        {
+            starts[i++] = total;
+            total += l.shapes.size();
+        }
+        return starts;
     }
 }

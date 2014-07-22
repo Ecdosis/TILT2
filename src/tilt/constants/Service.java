@@ -24,7 +24,8 @@ package tilt.constants;
  */
 public class Service 
 {
-    public static String TEST = "test";
-    public static String TILT = "tilt";
-    public static String GEOJSON = "geojson";
+    public static final String TEST = "test";
+    public static final String TILT = "tilt";
+    public static final String GEOJSON = "geojson";
+    public static final String IMAGE = "image";
 }

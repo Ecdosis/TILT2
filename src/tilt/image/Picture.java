@@ -433,8 +433,8 @@ public class Picture {
      */
     void convertToLinks() throws ImageException
     {
-        if ( cleaned == null )
-            convertToCleaned();
+        if ( words == null )
+            convertToWords();
         float ppc = page.pixelsPerChar( text.numChars() );
         int[] shapeWidths = page.getShapeWidths();
         int[] wordWidths = text.getWordWidths( ppc );
@@ -442,9 +442,11 @@ public class Picture {
         try
         {
             int[][][] alignments = m.align();
+            int[] shapeOffsets = page.getShapeLineStarts();
             int[] wordOffsets = text.getTextOffsets();
-            BufferedImage clean =  ImageIO.read(cleaned);
-            page.align( alignments, wordOffsets, wordWidths, clean.getRaster() );
+            BufferedImage clean = ImageIO.read(cleaned);
+            page.align( alignments, shapeOffsets, wordOffsets, wordWidths, 
+                clean.getRaster() );
         }
         catch ( Exception e )
         {

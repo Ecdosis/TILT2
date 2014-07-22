@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import tilt.constants.Service;
 import tilt.handler.*;
 import tilt.exception.*;
 
@@ -56,16 +57,23 @@ public class JettyServer extends AbstractHandler
         baseRequest.setHandled( true );
         try
         {
-            if ( method.equals("GET") )
-                new TiltGetHandler().handle( request, response, target );
-            else if ( method.equals("PUT") )
-                new TiltPutHandler().handle( request, response, target );
-            else if ( method.equals("DELETE") )
-                new TiltDeleteHandler().handle( request, response, target );
-            else if ( method.equals("POST") )
-                new TiltPostHandler().handle( request, response, target );
+            String service = Utils.first(target);
+            if ( service.equals(Service.TILT) )
+            {
+                String urn = Utils.pop(target);
+                if ( method.equals("GET") )
+                    new TiltGetHandler().handle( request, response, urn );
+                else if ( method.equals("PUT") )
+                    new TiltPutHandler().handle( request, response, urn );
+                else if ( method.equals("DELETE") )
+                    new TiltDeleteHandler().handle( request, response, urn );
+                else if ( method.equals("POST") )
+                    new TiltPostHandler().handle( request, response, urn );
+                else
+                    throw new TiltException("Unknown http method "+method);
+            }
             else
-                throw new TiltException("Unknown http method "+method);
+                throw new TiltException("Unknown service"+service);
         }
         catch ( TiltException te )
         {

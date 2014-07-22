@@ -166,7 +166,8 @@ public class TiltPostHandler extends TiltHandler
                 sb.append(request.getServerPort());
             }
             sb.append(request.getRequestURI());
-            sb.append("?");
+            sb.append(Service.IMAGE);
+            sb.append("/?");
             sb.append(Params.DOCID);
             sb.append("=");
             sb.append(Utils.escape((String)props.get("url")));
@@ -190,30 +191,26 @@ public class TiltPostHandler extends TiltHandler
     {
         try
         {
-            String service = Utils.first(urn);
-            if ( service.equals(Service.TILT.toString()) )
+            poster = getIPAddress(request);
+            if (ServletFileUpload.isMultipartContent(request) )
+                parseImportParams( request );
+            else
             {
-                poster = getIPAddress(request);
-                if (ServletFileUpload.isMultipartContent(request) )
-                    parseImportParams( request );
-                else
-                {
-                    picType = ImageType.read(request.getParameter(Params.PICTYPE));
-                    geoJSON = request.getParameter(Params.GEOJSON );
-                    String textParam = request.getParameter( Params.TEXT );
-                    if ( textParam != null )
-                        text = new TextIndex( textParam, "en_GB" );
-                }
-                if ( geoJSON != null )
-                {
-                    PictureRegistry.prune();
-                    String resp = composeResponse( request, geoJSON, picType );
-                    response.setContentType("text/plain;charset=UTF-8");
-                    response.getWriter().println(resp);
-                }
-                else
-                    response.getWriter().println("POST");
+                picType = ImageType.read(request.getParameter(Params.PICTYPE));
+                geoJSON = request.getParameter(Params.GEOJSON );
+                String textParam = request.getParameter( Params.TEXT );
+                if ( textParam != null )
+                    text = new TextIndex( textParam, "en_GB" );
             }
+            if ( geoJSON != null )
+            {
+                PictureRegistry.prune();
+                String resp = composeResponse( request, geoJSON, picType );
+                response.setContentType("text/plain;charset=UTF-8");
+                response.getWriter().println(resp);
+            }
+            else
+                response.getWriter().println("POST");
         }
         catch ( Exception e )
         {
