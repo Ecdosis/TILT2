@@ -9,6 +9,11 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * A convex hull selects only the outermost points in a set, so an 
+ * efficient polygon can be drawn around them.
+ * @author desmond
+ */
 public class FastConvexHull
 {
     /**

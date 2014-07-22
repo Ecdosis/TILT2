@@ -601,7 +601,7 @@ public class Line implements Comparable<Line>
     }
     /**
      * Fill in the pixel widths of each shape in the line
-     * @param widthsthe array to partly fill in
+     * @param widths the array to partly fill in
      * @param start the start index into widths
      * @return the number of entries filled in
      */

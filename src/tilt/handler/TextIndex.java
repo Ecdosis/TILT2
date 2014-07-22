@@ -135,8 +135,6 @@ public class TextIndex
     /**
      * Extract the words from some html
      * @param html the text to strip
-     * @param textIndex records where the individual strings were found
-     * @return the text index (original + stripped plus indices)
      */
     void digest( String html )
     {

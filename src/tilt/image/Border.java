@@ -108,7 +108,7 @@ public class Border
         seenTwoWhite;
     }
     /**
-     * Directions of scan
+     * Directions of scan from the edges inwards
      */
     enum Direction
     {

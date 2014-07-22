@@ -24,16 +24,26 @@ import java.util.ArrayList;
 import java.awt.geom.Area;
 import tilt.Utils;
 /**
- * Remove big black blobs from two-tone pictures.
+ * Remove big black blobs from two-tone pictures. The border
  * @author desmond
  */
 public class RemoveNoise 
 {
+    /** the original image src (B&W) */
     BufferedImage src;
+    /** pixel register of accepted blobs that will be removed*/
     WritableRaster darkRegions;
+    /** pixel register of rejected blobs */
     WritableRaster rejectedRegions;
+    /** the border region, consisting of the outermost thin border, any blobs 
+     * found starting there and any long and large blobs in the inner border */
     Border border;
+    /** blobs that were too small but were in the outermost border */
     ArrayList<Blob> rejects;
+    /**
+     * Create a new RemoveNoise object 
+     * @param src the source B&W image
+     */
     public RemoveNoise( BufferedImage src )
     {
         this.src = src;

@@ -16,20 +16,11 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 
-package tilt.constants;
-
 /**
- * Names of services used in urls
- * @author desmond
+ * This package is provided to allow the AeseSpeller, from the calliope
+ * application, to be used here unmodified. Since it uses JNI the path to 
+ * the class must match the header created by javah. {@link calliope.AeseSpeller}
+ * is a class that allows the aspell library to be accessed from within a
+ * Java application.
  */
-public class Service 
-{
-    /** test java interface */
-    public static final String TEST = "test";
-    /** high-level tilt service name */
-    public static final String TILT = "tilt";
-    /** sub-service within tilt returns gGeoJson representations of an image+text */
-    public static final String GEOJSON = "geojson";
-    /** sub-service that returns a particular type of image */
-    public static final String IMAGE = "image";
-}
+package calliope;

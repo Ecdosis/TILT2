@@ -20,6 +20,10 @@ package tilt.image;
 
 import java.util.Comparator;
 import java.awt.Point;
+/**
+ * Compare method for FastConvexHull
+ * @author desmond
+ */
 class XCompare implements Comparator<Point>
 {
 	@Override
