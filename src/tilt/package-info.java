@@ -67,8 +67,8 @@
  * assemble them into lines. The aligned line-fragments are then assembled
  * into an entire page of lines by the {@link tilt.image.page} package.</p>
  * <h4>Third Stage &ndash; Recognise Words</h4>
- * <p>The lines have been recognised. By following these lines and
- * examining a small region on each side for black pixels, the blobs that
+ * <p>The lines have been recognised. By following them, and
+ * examining a small region on each side, blobs of adjacent black pixels that
  * represent words and parts of words can be identified.</p>
  * <p>Each blob is then surrounded by a polygon, using the {@link
  * tilt.image.FastConvexHull FastConvexHull} algorithm. This assesses the
@@ -78,14 +78,14 @@
  * compute the gaps between polygons.
  * These are then sorted by decreasing size. Next the number of words in
  * the text to be aligned <em>with</em> these blobs is used to determine
- * what the smallest inter-polygon gap designates a word-gap. So a gap is 
- * chosen for, say, 250 words, that ensures approximately 249 gaps will be 
+ * what is the smallest inter-polygon gap that designates a word-gap. So a gap 
+ * chosen for, say, 250 words, ensures that approximately 249 gaps will be 
  * designated as inter-word gaps. All other gaps on the same line are
  * eliminated by merging bobs on either side. {@link
  * tilt.Utils#mergePolygons(java.awt.Polygon, java.awt.Polygon)} performs
  * this task.</p> <p>Finally, having determined the word-shapes, those
- * which are shared by more than one line are moved to the closest line, 
- * via the {@link tilt.image.page.Line#merge} method.</p>
+ * shared by more than one line are moved to the closest line, 
+ * using the {@link tilt.image.page.Line#merge} method.</p>
  * <h4>Fourth Stage &ndash;Linking shapes to text</h4>
  * <p>To link shapes with the text can be achieved automatically by
  * converting the actual words of the known transcription to pixel widths,
@@ -94,7 +94,7 @@
  * known, it is simple to average out the pixel-widths of each letter and
  * so estimate the widths of each word in the text. Then, by adapting a
  * text-alignment algorithm (Ukkonen's famous diagonal diff algorithm from
- * Information and Control 1985)the pixel-widths in the page image can be
+ * Information and Control 1985), the pixel-widths in the page image can be
  * optimally aligned with those represented by the text. This gives us the
  * desired word-text alignment at the word level. However, since many
  * shapes may align with one word, or vice versa, many words may be found
@@ -111,9 +111,8 @@
  * nice hyphenation point, and each half aligned with the correct polygon.</p>
  * <h4>API</h4>
  * <p>TILT is designed as a REST service with some simple GET and POST methods. 
- * The primary TILT service is the context /tilt/.Sending GET or POST requests 
- * to the following URLs will produce the following outputs and require the 
- * following parameters:</p>
+ * The primary TILT service is the context /tilt/. The GET and POST requests 
+ * are handled as follows:</p>
  * <ul><li>GET<ol> <li>test &ndash; this sub-service gets combined with the
  * following path-component to form the name of a class that should be a
  * sub-class of tilt.test.Test. So the path /tilt/test/post will invoke the

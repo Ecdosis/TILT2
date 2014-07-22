@@ -21,4 +21,4 @@ listening on that port.
 
 DOCUMENTATION
 
-The full documentation is in dist/javadoc.
+The full documentation is in dist/javadoc, including the simple API.
