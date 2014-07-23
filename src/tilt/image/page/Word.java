@@ -18,8 +18,6 @@
 
 package tilt.image.page;
 
-import org.json.simple.JSONObject;
-
 /**
  * Maintain word-related information
  * @author desmond
