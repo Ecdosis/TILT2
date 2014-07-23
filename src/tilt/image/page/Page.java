@@ -51,6 +51,7 @@ public class Page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
      * @param numWords number of words on page
+     * @throws Exception
      */
     public Page( ArrayList[] cols, int hScale, int vScale, int numWords ) 
         throws Exception
@@ -512,15 +513,13 @@ public class Page
     /**
      * Align word shapes in image to words in text
      * @param shapeOffsets offsets into the shapes array for each line start
-     * @param wordOffsets actuals offsets into text of each word
-     * @param wordWidths the widths of the words in pixels
+     * @param words the word objects on the page
      * @param alignments and array of alignments, each [0]=shapes,[1]=words
      * @param wr raster of cleaned image
      * @throws AlignException
      */
     public void align( int[][][] alignments, int[] shapeOffsets, 
-        int[] wordOffsets, int[] wordWidths, WritableRaster wr ) 
-        throws AlignException
+        Word[] words, WritableRaster wr ) throws AlignException
     {
         if ( lines.size() > 0 )
         {
@@ -531,53 +530,77 @@ public class Page
             Line l = lines.get(0);
             ArrayList<Merge> merges = new ArrayList<>();
             ArrayList<Split> splits = new ArrayList<>();
-            int i = 0;
-            while ( i < alignments.length )
+            for ( int i=0;i<alignments.length;i++ )
             {
                 int[][] alignment = alignments[i];
-                int[] shapes = alignment[0];
-                int[] words = alignment[1];
+                int[] sIndices = alignment[0];
+                int[] wIndices = alignment[1];
                 if ( !l.hasShape(k) )
                 {
                     l = lines.get(++j);
                     k = 0;
                 }
-                if ( shapes.length == words.length )
+                if ( sIndices.length == wIndices.length )
                 {
-                    l.setShapeOffset( k++, wordOffsets[words[0]] );
+                    l.setShapeOffset( k++, words[wIndices[0]].offset() );
                 }
-                else if ( shapes.length == 1 && words.length > 1 )
+                else if ( sIndices.length == 1 && wIndices.length > 1 )
                 {
-                    int[] offsets = new int[words.length];
-                    int[] widths = new int[words.length];
-                    for ( int m=0;m<words.length;m++ )
-                    {
-                        offsets[m] = wordOffsets[words[m]];
-                        widths[m] = wordWidths[words[m]];
-                    }
-                    splits.add( new Split(l, k, offsets, widths, wr) );
+                    Word[] wObjs = new Word[wIndices.length];
+                    for ( int m=0;m<wIndices.length;m++ )
+                        wObjs[m] = words[wIndices[m]];
+                    splits.add( new Split(l,k,wObjs,wr) );
                 }
-                else if ( shapes.length > 1 && words.length == 1 )
+                else if ( sIndices.length > 1 && wIndices.length == 1 )
                 {
-                    int last = shapes.length-1;
-                    if ( shapes[last] < shapeOffsets[j] )
+                    int last = sIndices.length-1;
+                    if ( j==shapeOffsets.length-1 
+                        || sIndices[last] < shapeOffsets[j+1] )
                     {
-                        merges.add( new Merge(l, shapeOffsets[j], shapes, 
-                            wordOffsets[words[0]]) );
-                        k += shapes.length;
+                        merges.add( new Merge(l, shapeOffsets[j], sIndices, 
+                            words[wIndices[0]].offset()) );
                     }
                     else
                     {
                         // some on one line, some on next
-                        // split alignment
-                        i--;
+                        int index = sIndices.length-1;
+                        while ( sIndices[index] > shapeOffsets[j+1] )
+                            index--;
+                        // shapes at the end of the current line
+                        if ( index > 0 )
+                        {
+                            int[] newSIndices = new int[index+1];
+                            for (int m=0;m<index;m++ )
+                                newSIndices[m] = sIndices[m];
+                            merges.add( new Merge(l,shapeOffsets[j],
+                                newSIndices,words[wIndices[0]].offset() ) );
+                        }
+                        else
+                            l.setShapeOffset( k, words[wIndices[0]].offset() );
+                        // shapes at start of next line
+                        if ( index < sIndices.length-1 )
+                        {
+                            //go onto next lines
+                            l = lines.get(++j);
+                            k = 0;
+                            int[] newSIndices = new int[index+1];
+                            Word w = words[wIndices[0]];
+                            int newOffset = w.offset()+(w.length()/2);
+                            for (int n=0,m=index;m<sIndices.length;m++,n++ )
+                                newSIndices[n] = sIndices[m];
+                            merges.add( new Merge(l,shapeOffsets[j],
+                                newSIndices,newOffset) );
+                        }
+                        else
+                            l.setShapeOffset( k+sIndices.length-1, 
+                                words[wIndices[0]].offset() );
                     }
+                    k += sIndices.length;
                 }
-                else if ( words.length==0 )
+                else if ( wIndices.length==0 )
                     k++;
                 else    // no shape for word
                     continue;
-                i++;
             }
             // now execute the saved merges and splits
             try

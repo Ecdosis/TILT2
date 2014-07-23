@@ -40,6 +40,7 @@ import java.awt.image.WritableRaster;
 import tilt.image.page.Page;
 import tilt.handler.TextIndex;
 import tilt.align.Matchup;
+import tilt.image.page.Word;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -443,10 +444,9 @@ public class Picture {
         {
             int[][][] alignments = m.align();
             int[] shapeOffsets = page.getShapeLineStarts();
-            int[] wordOffsets = text.getTextOffsets();
+            Word[] wordObjs = text.getWords( ppc );
             BufferedImage clean = ImageIO.read(cleaned);
-            page.align( alignments, shapeOffsets, wordOffsets, wordWidths, 
-                clean.getRaster() );
+            page.align( alignments, shapeOffsets, wordObjs, clean.getRaster() );
         }
         catch ( Exception e )
         {

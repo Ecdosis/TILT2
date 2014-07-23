@@ -8,6 +8,7 @@ package tilt.handler;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import calliope.AeseSpeller;
+import tilt.image.page.Word;
 
 /**
  * An index into the uploaded HTML, recording the positions of each plain 
@@ -232,12 +233,33 @@ public class TextIndex
         return chars;
     }
     /**
-     * Get the extracted words
-     * @return an array of Strings
+     * Get the extracted words as an array of objects
+     * @param ppc the average number of pixels per char
+     * @return an array of Word objects
      */
-    public String[] getWords()
+    public Word[] getWords( float ppc )
     {
-        return words;
+        Word[] wordArray = new Word[words.length];
+        for ( int i=0;i<words.length;i++ )
+        {
+            wordArray[i] = new Word( indices[i], words[i], 
+                Math.round((float)words[i].length()*ppc) );
+        }
+        return wordArray;
+    }
+    /**
+     * Just get the word widths, not the word themselves
+     * @param ppc average pixels per character
+     * @return an array of word widths in rounded pixels
+     */
+    public int[] getWordWidths( float ppc )
+    {
+        int[] widths = new int[words.length];
+        for ( int i=0;i<words.length;i++ )
+        {
+            widths[i] = Math.round((float)words[i].length()*ppc );
+        }
+        return widths;
     }
     /**
      * Get the offsets of the words into the original html
@@ -255,29 +277,12 @@ public class TextIndex
     {
         return hyphens;
     }
-    /**
-     * Get the widths of words (including hyphens at the end)
-     * @param ppc the fractional number of pixels per char
-     * @return an array of word widths
-     */
-    public int[] getWordWidths( float ppc )
-    {
-        int[] widths = new int[words.length];
-        for ( int i=0;i<words.length;i++ )
-        {
-            String word = words[i];
-            if ( hyphens[i] == SOFT_HYPHEN || hyphens[i] == HARD_HYPHEN )
-                word += "-";
-            widths[i] = Math.round((float)word.length()*ppc);
-        }
-        return widths;
-    }
     public static void main( String[] args )
     {
         try
         {
             TextIndex ti = new TextIndex( DEROBERTO_1920_HTML, "en_GB" );
-            String[] parole = ti.getWords();
+            Word[] parole = ti.getWords(10.0f);
             int[] offsets = ti.getTextOffsets();
             int[] hyphens = ti.getHyphens();
             for ( int i=0;i<parole.length;i++ )

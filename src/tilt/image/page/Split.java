@@ -25,6 +25,7 @@ import tilt.align.Matchup;
 import tilt.image.FastConvexHull;
 import tilt.exception.*;
 import tilt.Utils;
+import tilt.image.page.Word;
 
 /**
  * Split a polygon in appropriate places
@@ -33,22 +34,19 @@ import tilt.Utils;
 public class Split 
 {
     WritableRaster wr;
-    int[] offsets;
-    int[] widths;
+    Word[] words;
     Polygon shape;
     Line line;
     /**
      * Create a Splitter
      * @param l the line containing the polygon to split
      * @param shape the index of the shape that's too big
-     * @param offsets the word-offsets for the new shapes
-     * @param widths the widths of the &gt; 1 words that belong to shape
+     * @param words th&gt; 1 words belong to the shape to be split
      * @param wr the raster of the cleaned image
      */
-    Split( Line l, int shape, int[] offsets,  int[] widths, WritableRaster wr )
+    Split( Line l, int shape, Word[] words, WritableRaster wr )
     {
-        this.offsets = offsets;
-        this.widths = widths;
+        this.words = words;
         this.wr = wr;
         this.shape = l.getShape(shape);
         this.line = l;
@@ -111,6 +109,9 @@ public class Split
         int[] gapArray = toIntArray( gapWidths );
         try
         {
+            int[] widths = new int[words.length];
+            for ( int i=0;i<widths.length;i++ )
+                widths[i] = words[i].width();
             Matchup m = new Matchup( shapeArray, widths );
             int[][][] matches = m.align();
             ArrayList<Integer> splitArray = new ArrayList<>();
@@ -138,7 +139,7 @@ public class Split
             int i = 0;
             line.removeShape( shape );
             for ( Polygon pg : shapes )
-                line.addShape( shapeIndex, pg, offsets[i++] );
+                line.addShape( shapeIndex, pg, words[i++].offset() );
         }
         catch ( Exception e )
         {
