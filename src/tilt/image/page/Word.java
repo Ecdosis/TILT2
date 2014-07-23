@@ -18,6 +18,8 @@
 
 package tilt.image.page;
 
+import org.json.simple.JSONObject;
+
 /**
  * Maintain word-related information
  * @author desmond
@@ -30,6 +32,8 @@ public class Word
     String text;
     /** pixel-length */
     int width;
+    /** position of character before which to insert soft-hyphen */
+    int softHyphen;
     /**
      * Create a word object
      * @param offset the offset of the word in the HTML
@@ -43,17 +47,17 @@ public class Word
         this.text = text;
     }
     /**
-     * Split a word into two halves
+     * Split off the second half of the word as a new word
      * @param at the position before which to split it
-     * @return the new word (this word is changed)
+     * @return the new word (this word is UNchanged)
      */
     Word split( int at )
     {
         float ppc = (float)this.width/(float)this.text.length();
         Word newWord = new Word( this.offset+at, this.text.substring(at), 
             Math.round(ppc*this.text.length()-at) );
-        this.width = Math.round(ppc*at);
-        this.text = this.text.substring(0,at);
+//        this.width = Math.round(ppc*at);
+//        this.text = this.text.substring(0,at);
         return newWord;
     }
     /**
@@ -87,5 +91,21 @@ public class Word
     public String toString()
     {
         return text;
+    }
+    /**
+     * Set the hyphen position
+     * @param pos the position before which to insert a soft-hyphen
+     */
+    public void setHyphen( int pos )
+    {
+        softHyphen = pos;
+    }
+    /**
+     * Get the hyphen pos 
+     * @return 0 if no hyphen or the character pos before which to hyphenate
+     */
+    public int hyphenPos()
+    {
+        return softHyphen;
     }
 }

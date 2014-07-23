@@ -139,7 +139,7 @@ public class Split
             int i = 0;
             line.removeShape( shape );
             for ( Polygon pg : shapes )
-                line.addShape( shapeIndex, pg, words[i++].offset() );
+                line.addShape( shapeIndex, pg, words[i++] );
         }
         catch ( Exception e )
         {

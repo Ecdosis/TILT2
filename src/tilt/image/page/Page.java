@@ -535,21 +535,26 @@ public class Page
                 int[][] alignment = alignments[i];
                 int[] sIndices = alignment[0];
                 int[] wIndices = alignment[1];
-                if ( !l.hasShape(k) )
+                System.out.println("Processing alignment "+i+" out of "+alignments.length);
+                while ( !l.hasShape(k) )
                 {
                     l = lines.get(++j);
                     k = 0;
                 }
+                if ( i == 208 )
+                    System.out.println("208");
+                if ( sIndices.length>0 && k+shapeOffsets[j] != sIndices[0] )
+                    System.out.println("Out of sync!");
                 if ( sIndices.length == wIndices.length )
                 {
-                    l.setShapeOffset( k++, words[wIndices[0]].offset() );
+                    l.setShapeWord( k++, words[wIndices[0]] );
                 }
                 else if ( sIndices.length == 1 && wIndices.length > 1 )
                 {
                     Word[] wObjs = new Word[wIndices.length];
                     for ( int m=0;m<wIndices.length;m++ )
                         wObjs[m] = words[wIndices[m]];
-                    splits.add( new Split(l,k,wObjs,wr) );
+                    splits.add( new Split(l,k++,wObjs,wr) );
                 }
                 else if ( sIndices.length > 1 && wIndices.length == 1 )
                 {
@@ -558,7 +563,8 @@ public class Page
                         || sIndices[last] < shapeOffsets[j+1] )
                     {
                         merges.add( new Merge(l, shapeOffsets[j], sIndices, 
-                            words[wIndices[0]].offset()) );
+                            words[wIndices[0]]) );
+                        k += sIndices.length;
                     }
                     else
                     {
@@ -566,6 +572,7 @@ public class Page
                         int index = sIndices.length-1;
                         while ( sIndices[index] > shapeOffsets[j+1] )
                             index--;
+                        assert(sIndices[index] == shapeOffsets[j+1]);
                         // shapes at the end of the current line
                         if ( index > 1 )
                         {
@@ -573,29 +580,45 @@ public class Page
                             for (int m=0;m<index;m++ )
                                 newSIndices[m] = sIndices[m];
                             merges.add( new Merge(l,shapeOffsets[j],
-                                newSIndices,words[wIndices[0]].offset() ) );
+                                newSIndices,words[wIndices[0]] ) );
+                            k += newSIndices.length;
                         }
                         else
-                            l.setShapeOffset( k, words[wIndices[0]].offset() );
+                            l.setShapeWord( k++, words[wIndices[0]] );
                         // shapes at start of next line
                         if ( index < sIndices.length-1 )
                         {
-                            //go onto next lines
-                            l = lines.get(++j);
-                            k = 0;
+                            // go onto next lines
+                            while ( !l.hasShape(k) )
+                            {
+                                l = lines.get(++j);
+                                k = 0;
+                            }
                             int[] newSIndices = new int[index+1];
                             Word w = words[wIndices[0]];
-                            int newOffset = w.offset()+(w.length()/2);
                             for ( int n=0,m=index;m<sIndices.length;m++,n++ )
                                 newSIndices[n] = sIndices[m];
+                            // we can't change the words array so this word
+                            // will only exist for attachment to the shape
+                            Word w2 = w.split(w.length()/2);
                             merges.add( new Merge(l,shapeOffsets[j],
-                                newSIndices,newOffset) );
+                                newSIndices,w2) );
+                            k += newSIndices.length;
                         }
                         else
-                            l.setShapeOffset( k+sIndices.length-1, 
-                                words[wIndices[0]].offset() );
+                        {
+                            // get first shape on line
+                            while ( !l.hasShape(k) )
+                            {
+                                l = lines.get(++j);
+                                k = 0;
+                            }
+                            Word w = words[wIndices[0]];
+                            Word w2 = w.split(w.length()/2);
+                            l.setShapeWord( 0, w2 );
+                            k = 1;
+                        }
                     }
-                    k += sIndices.length;
                 }
                 else if ( wIndices.length==0 )
                     k++;

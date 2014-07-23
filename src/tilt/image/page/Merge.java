@@ -31,8 +31,8 @@ public class Merge
 {
     /** store shapes explicitly not by index */
     ArrayList<Polygon> polygons;
-    /** word-offset to be applied to merged shape */
-    int wordOffset;
+    /** word to associate with the merged shape */
+    Word word;
     /** line object where the shapes are stored */
     Line line;
     /**
@@ -40,15 +40,15 @@ public class Merge
      * @param line the line to update
      * @param shapeOffset offset into page-level shapes array for line start
      * @param shapes indices of the shapes
-     * @param wordOffset the offset that the merged shape should have
+     * @param word the word the merged shape should be associated with
      */
-    Merge( Line line, int shapeOffset, int[] shapes, int wordOffset )
+    Merge( Line line, int shapeOffset, int[] shapes, Word word )
     {
         // convert from indices to absolute shapes
         this.polygons = new ArrayList<>();
         for ( int shape : shapes )
             this.polygons.add( line.getShape(shape-shapeOffset) );
-        this.wordOffset = wordOffset;
+        this.word = word;
         this.line = line;
     }
     /**
@@ -79,7 +79,7 @@ public class Merge
         for ( Polygon s : delenda )
             line.removeShape( s );
         if ( first != -1 )
-           line.addShape( first, poly, wordOffset );
+           line.addShape( first, poly, word );
        else
            throw new ImageException( "Merge: couldn't find shape");
     }

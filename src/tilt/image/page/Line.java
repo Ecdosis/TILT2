@@ -48,8 +48,8 @@ public class Line implements Comparable<Line>
     int end;
     /** shapes shared with some other lines */
     HashMap<Line,ArrayList<Polygon>> shared;
-    /** offsets into text alignment, one per shape */
-    ArrayList<Integer> offsets;
+    /** Words in text alignment, one per shape */
+    ArrayList<Word> words;
     /** total number of shapes, shared and non-shared */
     int total;
     /** median y-value */
@@ -61,7 +61,7 @@ public class Line implements Comparable<Line>
     {
         points = new ArrayList<>();
         shapes = new ArrayList<>();
-        offsets = new ArrayList<>();
+        words = new ArrayList<>();
         shared = new HashMap<>();
         open = true;
     }
@@ -562,13 +562,19 @@ public class Line implements Comparable<Line>
             geometry.put( "coordinates", coordinates );
             feature.put( "geometry", geometry );
             // add feature properties like text-offset here
-            if ( offsets.size() >i )
+            if ( words.size() >i )
             {
-                Integer val = offsets.get( i );
+                Word val = words.get( i );
                 JSONArray properties = new JSONArray();
                 JSONObject offset = new JSONObject();
-                offset.put( "offset", val.intValue() );
+                offset.put( "offset", val.offset() );
                 properties.add( offset );
+                if ( val.hyphenPos()>0 )
+                {
+                    JSONObject hyphen = new JSONObject();
+                    hyphen.put( "hyphen", val.hyphenPos());
+                    properties.add( hyphen );
+                }
                 feature.put( "properties", properties );
             }
             features.add( feature );
@@ -626,13 +632,17 @@ public class Line implements Comparable<Line>
     /**
      * Set the word offset of the indexed shape
      * @param index the index of the shape in shapes
-     * @param offset the offset of that word in the text
+     * @param word the word to associate with the shape at this index
      */
-    public void setShapeOffset( int index, int offset ) throws AlignException
+    public void setShapeWord( int index, Word word ) throws AlignException
     {
-        if ( index != offsets.size() )
-            throw new AlignException("Add the offsets in order");
-        offsets.add( offset );
+        if ( index < words.size() )
+            throw new AlignException("Add words in correct order");
+        while ( index > words.size() )
+            words.add( null );
+        if ( index >= shapes.size() )
+            throw new AlignException("More offsets than shapes");
+        words.add( word );
     }
     /**
      * Split one shape into several at the correct places
@@ -654,21 +664,36 @@ public class Line implements Comparable<Line>
     {
         return shapes.get( index );
     }
+    /**
+     * Get the index of the specified shape
+     * @param pg the shape to look for
+     * @return its 0-based index on the line
+     */
     int getShapeIndex( Polygon pg )
     {
         return shapes.indexOf( pg );
     }
+    /**
+     * Remove a shape from the line
+     * @param pg the shape to remove
+     */
     void removeShape( Polygon pg )
     {
         int index = shapes.indexOf(pg);
-        if ( index < offsets.size() )
-            offsets.remove( index );
+        if ( index < words.size() )
+            words.remove( index );
         shapes.remove( index );
     }
-    void addShape( int index, Polygon pg, int wordOffset )
+    /**
+     * Add a shape to the line
+     * @param index the index at which to add (or ==shapes.size() to add)
+     * @param pg the shape to add
+     * @param word the word to associate with it (or null)
+     */
+    void addShape( int index, Polygon pg, Word word )
     {
         shapes.add( index, pg );
-        if ( offsets.size() >= index )
-            offsets.add( index, wordOffset );
+        if ( words.size() >= index )
+            words.add( index, word );
     }
 }
