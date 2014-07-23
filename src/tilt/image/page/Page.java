@@ -567,9 +567,9 @@ public class Page
                         while ( sIndices[index] > shapeOffsets[j+1] )
                             index--;
                         // shapes at the end of the current line
-                        if ( index > 0 )
+                        if ( index > 1 )
                         {
-                            int[] newSIndices = new int[index+1];
+                            int[] newSIndices = new int[index];
                             for (int m=0;m<index;m++ )
                                 newSIndices[m] = sIndices[m];
                             merges.add( new Merge(l,shapeOffsets[j],
@@ -586,7 +586,7 @@ public class Page
                             int[] newSIndices = new int[index+1];
                             Word w = words[wIndices[0]];
                             int newOffset = w.offset()+(w.length()/2);
-                            for (int n=0,m=index;m<sIndices.length;m++,n++ )
+                            for ( int n=0,m=index;m<sIndices.length;m++,n++ )
                                 newSIndices[n] = sIndices[m];
                             merges.add( new Merge(l,shapeOffsets[j],
                                 newSIndices,newOffset) );

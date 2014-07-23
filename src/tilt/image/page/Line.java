@@ -630,7 +630,7 @@ public class Line implements Comparable<Line>
      */
     public void setShapeOffset( int index, int offset ) throws AlignException
     {
-        if ( offset != offsets.size() )
+        if ( index != offsets.size() )
             throw new AlignException("Add the offsets in order");
         offsets.add( offset );
     }
