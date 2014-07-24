@@ -535,14 +535,11 @@ public class Page
                 int[][] alignment = alignments[i];
                 int[] sIndices = alignment[0];
                 int[] wIndices = alignment[1];
-                System.out.println("Processing alignment "+i+" out of "+alignments.length);
                 while ( !l.hasShape(k) )
                 {
                     l = lines.get(++j);
                     k = 0;
                 }
-                if ( i == 208 )
-                    System.out.println("208");
                 if ( sIndices.length>0 && k+shapeOffsets[j] != sIndices[0] )
                     System.out.println("Out of sync!");
                 if ( sIndices.length == wIndices.length )

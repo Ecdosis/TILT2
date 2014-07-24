@@ -25,7 +25,6 @@ import tilt.align.Matchup;
 import tilt.image.FastConvexHull;
 import tilt.exception.*;
 import tilt.Utils;
-import tilt.image.page.Word;
 
 /**
  * Split a polygon in appropriate places
@@ -89,7 +88,7 @@ public class Split
             }
             if ( blackPixels > 0 )
             {
-                if ( gapLen > 0 )
+                if ( shapeLen > 0 && gapLen > 0 )
                 {
                     gapWidths.add( new Integer(gapLen) );
                     gapLen = 0;
@@ -120,7 +119,7 @@ public class Split
             // running counters for all blobs, gaps
             int blob = 0;
             int gap = 0;
-            for ( int i=0;i<matches.length-1;i++ )
+            for ( int i=0;i<matches.length;i++ )
             {
                 int[] blobs = matches[i][1];
                 int blobWidth = 0;
@@ -130,8 +129,13 @@ public class Split
                     if ( j < blobs.length-1 )
                         blobWidth += gapArray[gap++];
                 }
-                splitArray.add( blobWidth + gapArray[gap++]/2 );
+                if ( matches[i][0].length>0 )
+                    splitArray.add( blobWidth + gapArray[gap]/2 );
+                gap++;
             }
+            if ( splitArray.size()<= 1 )
+                throw new SplitException("Not enough break points for split");
+            splitArray.remove(splitArray.size()-1);
             int[] splits = toIntArray( splitArray );
             Polygon[] shapes = split( splits );
             // replace existing shape with split portions
@@ -139,7 +143,7 @@ public class Split
             int i = 0;
             line.removeShape( shape );
             for ( Polygon pg : shapes )
-                line.addShape( shapeIndex, pg, words[i++] );
+                line.addShape( shapeIndex++, pg, words[i++] );
         }
         catch ( Exception e )
         {

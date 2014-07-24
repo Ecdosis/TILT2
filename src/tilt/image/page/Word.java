@@ -86,6 +86,7 @@ public class Word
      * Convert to a string for display
      * @return the text of the word
      */
+    @Override
     public String toString()
     {
         return text;
