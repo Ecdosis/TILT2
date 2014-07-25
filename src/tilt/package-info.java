@@ -154,6 +154,33 @@
  * <li>pictype: the desired pictype for the returned image (optional)</li> 
  * <li>text: the text to align to. This should be in HTML (required).</li> </ul>
  * </li></ul>
+ * <h4>GeoJson response</h4>
+ * <code>{<br>
+ * &nbsp;&nbsp;"type":"FeatureCollection",<br>
+ * &nbsp;&nbsp;"bbox":[0.0,0.0,100.0,100.0],<br>
+ * &nbsp;&nbsp;"features":[<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"type":"FeatureCollection",<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"bbox":[445,65,472,81],<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"name":"Line",<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;"features":[<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"Feature",<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"geometry":<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"type":"Polygon",<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"coordinates":[<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.005,4.9736246E-4],<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.0051123598,4.8982666E-4],<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[0.005,5.727204E-4]<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;]<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;},<br>
+ * &nbsp;&nbsp;....<br>
+ * &nbsp;&nbsp;]<br>
+ * }</code>
  * <h4>TILT Service</h4>
  * <p>TILT runs as a HTTP service on port 8082. The default URL is: 
  * http://localhost:8082/tilt, but this can be simplified to 
