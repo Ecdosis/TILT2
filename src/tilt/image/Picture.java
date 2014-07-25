@@ -546,7 +546,7 @@ public class Picture {
             convertToLinks();
             BufferedImage image = ImageIO.read(words);
             double hScale = coords[2][0].doubleValue()-coords[0][0].doubleValue();
-            double vScale = coords[3][1].doubleValue()-coords[3][1].doubleValue();
+            double vScale = coords[3][1].doubleValue()-coords[1][1].doubleValue();
             return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
                 (int)Math.round(vScale*image.getHeight()) );
         }

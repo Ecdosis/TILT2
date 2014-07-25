@@ -27,7 +27,11 @@ import tilt.exception.*;
 import tilt.Utils;
 
 /**
- * Split a polygon in appropriate places
+ * Split a polygon in appropriate places. It does this not by looking for 
+ * the biggest gaps, but by looking at all contiguous segments of the page 
+ * image within the shape to be split, and then aligning them with the words 
+ * that have been aligned to the shape. The best split-points will then be 
+ * gaps that correspond most closely to word-gaps.
  * @author desmond
  */
 public class Split 

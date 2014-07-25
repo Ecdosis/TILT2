@@ -565,17 +565,20 @@ public class Line implements Comparable<Line>
             if ( words.size() >i )
             {
                 Word val = words.get( i );
-                JSONArray properties = new JSONArray();
-                JSONObject offset = new JSONObject();
-                offset.put( "offset", val.offset() );
-                properties.add( offset );
-                if ( val.hyphenPos()>0 )
+                if ( val != null )
                 {
-                    JSONObject hyphen = new JSONObject();
-                    hyphen.put( "hyphen", val.hyphenPos());
-                    properties.add( hyphen );
+                    JSONArray properties = new JSONArray();
+                    JSONObject offset = new JSONObject();
+                    offset.put( "offset", val.offset() );
+                    properties.add( offset );
+                    if ( val.hyphenPos()>0 )
+                    {
+                        JSONObject hyphen = new JSONObject();
+                        hyphen.put( "hyphen", val.hyphenPos());
+                        properties.add( hyphen );
+                    }
+                    feature.put( "properties", properties );
                 }
-                feature.put( "properties", properties );
             }
             features.add( feature );
         }

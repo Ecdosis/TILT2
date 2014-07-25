@@ -450,6 +450,8 @@ public class Page
     }
     /**
      * Compose the shape information as GeoJson
+     * @param pageWidth the width of the "page" (maybe a part of the image)
+     * @param pageHeight the height of the "page"
      * @return the GeoJson
      */
     public String toGeoJson( int pageWidth, int pageHeight )
