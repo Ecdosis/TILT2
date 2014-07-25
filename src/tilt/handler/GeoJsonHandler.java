@@ -18,12 +18,15 @@
 
 package tilt.handler;
 
+import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONArray;
 import tilt.constants.Params;
 import tilt.exception.TiltException;
 import tilt.image.Picture;
 import tilt.image.PictureRegistry;
+import tilt.exception.ImageException;
 
 /**
  * Handle an Ajax request for geoJson data about a picture
@@ -50,7 +53,15 @@ public class GeoJsonHandler extends TiltHandler
             docid = request.getParameter(Params.DOCID);
             if ( docid != null )
             {
-                Picture p = PictureRegistry.get(docid);
+                Picture p = null;
+                try
+                {
+                    p = PictureRegistry.get(docid);
+                }
+                catch ( ImageException pe )
+                {
+                    throw new TiltException("Please do a POST first");
+                }
                 String geoJson = p.getGeoJson();
                 if ( geoJson != null )
                 {

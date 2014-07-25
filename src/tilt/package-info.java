@@ -132,8 +132,9 @@
  * width="500"&gt;, which will generate a GET request for that
  * image.</li></ul> <li>geojson &ndash; this will call the GeoJsonHandler
  * class and return a GeoJson document containing all the text to image 
- * alignments at the word-level.</li></ol> <li>POST<br>Posting a basic GeoJson 
- * document to
+ * alignments at the word-level. A POST of the image and its text must have 
+ * been done first or a TiltExxception will be raised.</li></ol> 
+ * <li>POST<br>Posting a basic GeoJson document to
  * /tilt/ will load that image, making it available for later linking (via
  * GET). This method will return a HTML &lt;img&gt; element containing a
  * suitable image as confirmation. This can be embedded in the source
