@@ -545,8 +545,8 @@ public class Picture {
             // do this always, because the user will want it redone
             convertToLinks();
             BufferedImage image = ImageIO.read(words);
-            double hScale = coords[2][0].doubleValue()-coords[0][0].doubleValue();
-            double vScale = coords[3][1].doubleValue()-coords[1][1].doubleValue();
+            double hScale = (coords[2][0].doubleValue()-coords[0][0].doubleValue())/100.0;
+            double vScale = (coords[3][1].doubleValue()-coords[1][1].doubleValue())/100.0;
             return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
                 (int)Math.round(vScale*image.getHeight()) );
         }

@@ -116,7 +116,7 @@
  * <ul><li>GET<ol> <li>test &ndash; this sub-service gets combined with the
  * following path-component to form the name of a class that should be a
  * sub-class of tilt.test.Test. So the path /tilt/test/post will invoke the
- * {@link tilt.test.Post#handle} method when a GET request is directed to
+ * tilt.test.Post handle method when a GET request is directed to
  * that URL.</li> <li>image &ndash; this will be directed to the {@link
  * tilt.handler.TiltImageHandler} class. Required parameters are:
  * <ul><li>docid: the URL of a suitable image file</li> <li>pictype: this
@@ -133,7 +133,7 @@
  * image.</li></ul> <li>geojson &ndash; this will call the GeoJsonHandler
  * class and return a GeoJson document containing all the text to image 
  * alignments at the word-level. A POST of the image and its text must have 
- * been done first or a TiltExxception will be raised.</li></ol> 
+ * been done first or a TiltException will be raised.</li></ol> 
  * <li>POST<br>Posting a basic GeoJson document to
  * /tilt/ will load that image, making it available for later linking (via
  * GET). This method will return a HTML &lt;img&gt; element containing a

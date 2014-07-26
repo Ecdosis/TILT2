@@ -62,11 +62,87 @@ function disableAll()
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
 }
+function Point( x, y )
+{
+    this.x = x;
+    this.y = y;
+}
+function scalePoints( coords )
+{
+    var canvas = $("#left canvas");
+    var ht = canvas.height();
+    var wt = canvas.width();
+    var points = new Array();
+    for ( var i=0;i<coords.length;i++ )
+    {
+        points[points.length] = new Point(
+            Math.round(coords[i][0]*wt),
+            Math.round(coords[i][1]*ht)
+        );
+    }
+    return points;
+}
+function Bounds( x, y, width, height )
+{
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+}
+function Polygon( coords, props )
+{
+    if ( props != undefined )
+    {
+        if ( props.offset != undefined )
+        this.offset = props.offset;
+        if ( props.hyphen != undefined )
+            this.hyphen = hyphen;
+    }
+    this.points = scalePoints(coords);
+    var str = "";
+    var x=Number.MAX_VALUE,y=Number.MAX_VALUE;
+    var bot=0,right=0;
+    for ( var i=0;i<points.length;i++ )
+    {
+        if ( points[i].x < x )
+            x = points[i].x;
+        if ( points[i].y < y )
+            y = points[i].y;
+        if ( points[i].x > right )
+            right = points[i].x;
+        if ( points[i].y > bot )
+            bot = points[i].y
+        str += points[i].x+" "+points[i].y+" ";
+    }
+    this.bounds = new Bounds( x, y, right-x, bot-y );
+    alert(str);
+}
+function QuadTree( json )
+{
+    var geoJson = JSON.parse( json );
+    //this.root = QTNode(geoJson.bounds);
+    for ( var i=0;i<geoJson.features.length;i++ )
+    {
+        var line = geoJson.features[i];
+        for ( var j=0;j<line.features.length;j++ )
+        {
+            var poly = line.features[j];
+            if ( poly.type=="Feature" )
+            {
+                var geometry = poly.geometry;
+                if ( geometry.type="Polygon" )
+                {
+                    var p = Polygon(geometry.coordinates,
+                        poly.properties);
+                    //qtStore( p );
+                }
+            }
+        }
+    }
+}
 function bindJsonToImage( json )
 {
-    var img = $("#left img");
-    if ( img == undefined )
-        alert("img is undefined");
+    var jqImg = $("#left img");
     var ht = jqImg.height();
     var wt = jqImg.width();
     var cstr = '<canvas width="'+wt+'" height="'+ht+'"></canvas>';
@@ -77,6 +153,7 @@ function bindJsonToImage( json )
     var img = new Image;
     img.src = src;
     ctx.drawImage( img, 0, 0, wt, ht );
+    quadTree = QuadTree(json);
 }
 $(document).ready(function() {
 disableAll();
