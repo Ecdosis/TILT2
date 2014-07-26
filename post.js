@@ -1,34 +1,34 @@
 function getUrl(geojson)
 {
-var obj = JSON.parse(geojson);
-if ( obj && obj.properties.url )
-	return obj.properties.url;
-else
-	return "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg";
+    var obj = JSON.parse(geojson);
+    if ( obj && obj.properties.url )
+	    return obj.properties.url;
+    else
+	    return "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg";
 }
 function escapeUrl( url )
 {
-var newUrl = "";
-for ( var i=0;i<url.length;i++ )
-{
-	var token = url.charAt(i);
-	switch ( token )
-	{
-	case '/':
-		newUrl += "%2F";
-		break;
-	case ' ':
-		newUrl += '%20';
-		break;
-	case ':':
-		newUrl += '%3A';
-		break;
-	default:
-		newUrl += url.charAt(i);
-		break;
-	}
-}
-return newUrl;
+    var newUrl = "";
+    for ( var i=0;i<url.length;i++ )
+    {
+	    var token = url.charAt(i);
+	    switch ( token )
+	    {
+	    case '/':
+		    newUrl += "%2F";
+		    break;
+	    case ' ':
+		    newUrl += '%20';
+		    break;
+	    case ':':
+		    newUrl += '%3A';
+		    break;
+	    default:
+		    newUrl += url.charAt(i);
+		    break;
+	    }
+    }
+    return newUrl;
 }
 function getUrlFromLoc( pictype )
 {
@@ -61,6 +61,22 @@ function disableAll()
 	$("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
+}
+function bindJsonToImage( json )
+{
+    var img = $("#left img");
+    if ( img == undefined )
+        alert("img is undefined");
+    var ht = jqImg.height();
+    var wt = jqImg.width();
+    var cstr = '<canvas width="'+wt+'" height="'+ht+'"></canvas>';
+    var src = jqImg.attr("src");
+    jqImg.replaceWith(cstr);
+    var canvas = $("#left canvas");
+    var ctx = canvas.get(0).getContext('2d');
+    var img = new Image;
+    img.src = src;
+    ctx.drawImage( img, 0, 0, wt, ht );
 }
 $(document).ready(function() {
 disableAll();
@@ -109,7 +125,7 @@ $("#link").click(function(){
 	$("#left").html('<img width="500" src="'+getUrlFromLoc("link")+'">');
     var gjurl = getGeoJsonUrl();
     $.get( gjurl, function( data ) {
-    alert( data );
+    bindJsonToImage(data);
     });
 });
 $("#selections").change(function(e){

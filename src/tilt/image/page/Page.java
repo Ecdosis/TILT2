@@ -530,6 +530,7 @@ public class Page
             // shape index per line
             int k = 0;
             Line l = lines.get(0);
+            l.reset();
             ArrayList<Merge> merges = new ArrayList<>();
             ArrayList<Split> splits = new ArrayList<>();
             for ( int i=0;i<alignments.length;i++ )
@@ -540,6 +541,7 @@ public class Page
                 while ( !l.hasShape(k) )
                 {
                     l = lines.get(++j);
+                    l.reset();
                     k = 0;
                 }
                 if ( sIndices.length>0 && k+shapeOffsets[j] != sIndices[0] )
@@ -591,6 +593,7 @@ public class Page
                             while ( !l.hasShape(k) )
                             {
                                 l = lines.get(++j);
+                                l.reset();
                                 k = 0;
                             }
                             int[] newSIndices = new int[index+1];
@@ -610,6 +613,7 @@ public class Page
                             while ( !l.hasShape(k) )
                             {
                                 l = lines.get(++j);
+                                l.reset();
                                 k = 0;
                             }
                             Word w = words[wIndices[0]];

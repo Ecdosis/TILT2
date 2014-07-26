@@ -693,4 +693,11 @@ public class Line implements Comparable<Line>
         if ( words.size() >= index )
             words.add( index, word );
     }
+    /**
+     * Reset the words array for a realignment
+     */
+    public void reset()
+    {
+        words.clear();
+    }
 }
