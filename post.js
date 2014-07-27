@@ -133,16 +133,16 @@ function Polygon( coords, props )
     var str = "";
     var x=Number.MAX_VALUE,y=Number.MAX_VALUE;
     var bot=0,right=0;
-    for ( var i=0;i<points.length;i++ )
+    for ( var i=0;i<this.points.length;i++ )
     {
-        if ( points[i].x < x )
-            x = points[i].x;
-        if ( points[i].y < y )
-            y = points[i].y;
-        if ( points[i].x > right )
-            right = points[i].x;
-        if ( points[i].y > bot )
-            bot = points[i].y;
+        if ( this.points[i].x < x )
+            x = this.points[i].x;
+        if ( this.points[i].y < y )
+            y = this.points[i].y;
+        if ( this.points[i].x > right )
+            right = this.points[i].x;
+        if ( this.points[i].y > bot )
+            bot = this.points[i].y;
     }
     this.bounds = new Bounds( x, y, right-x, bot-y );
     this.dot = function(u,v)
@@ -384,7 +384,7 @@ function QuadTree( json )
     var y1 = Math.round(geoJson.bbox[1]*ht);
     var x2 = Math.round(geoJson.bbox[2]*wt);
     var y2 = Math.round(geoJson.bbox[3]*ht);
-    this.root = Quadrant( new Bounds(x1,y1,x2-x1,y2-y1) );
+    this.root = new Quadrant( new Bounds(x1,y1,x2-x1,y2-y1) );
     for ( var i=0;i<geoJson.features.length;i++ )
     {
         var line = geoJson.features[i];
@@ -396,7 +396,7 @@ function QuadTree( json )
                 var geometry = poly.geometry;
                 if ( geometry.type=="Polygon" )
                 {
-                    var p = Polygon(geometry.coordinates,
+                    var p = new Polygon(geometry.coordinates,
                         poly.properties);
                     this.root.add( p );
                 }
