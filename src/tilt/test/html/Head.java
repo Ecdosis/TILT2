@@ -54,6 +54,16 @@ public class Head
         scripts.add( new Script(script) );
     }
     /**
+     * Add a local script file
+     * @param url the file's url or local file name
+     */
+    public void addScriptFile( String url )
+    {
+        Script s = new Script("");
+        s.addAttribute("src",url );
+        scripts.add( s );
+    }
+    /**
      * Add somecss
      * @param text the css to add
      */

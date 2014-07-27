@@ -69,7 +69,7 @@ function Point( x, y )
     this.minus = function(p)
     {
         return new Point(this.x-p.x,this.y-p.y);
-    }
+    };
 }
 function scalePoints( coords )
 {
@@ -98,26 +98,26 @@ function Bounds( x, y, width, height )
             && this.y>=r.y 
             && this.x+this.width<r.x+r.width 
             && this.y+this.height<r.y+r.height;
-    }
+    };
     this.outside = function( r )
     {
-        this.bottom()<r.y
+        return this.bottom()<r.y
         || this.y>=r.bottom()
         || this.right()<r.x
-        || this.x >=r.right()
-    }
+        || this.x >=r.right();
+    };
     this.right = function()
     {
         return this.x+this.width;
-    }
+    };
     this.bottom = function()
     {
         return this.y+this.height;
-    }
-    this.hasPt( x, y )
+    };
+    this.hasPt = function( x, y )
     {
         return x>=this.x&&y>=this.y&&y<this.bottom&&x<this.right();
-    }
+    };
 }
 function Polygon( coords, props )
 {
@@ -142,17 +142,17 @@ function Polygon( coords, props )
         if ( points[i].x > right )
             right = points[i].x;
         if ( points[i].y > bot )
-            bot = points[i].y
+            bot = points[i].y;
     }
     this.bounds = new Bounds( x, y, right-x, bot-y );
     this.dot = function(u,v)
     {
-        return ((u).x * (v).x + (u).y * (v).y)
-    }
+        return ((u).x * (v).x + (u).y * (v).y);
+    };
     this.perp = function(u,v)  
     {
         return ((u).x * (v).y - (u).y * (v).x);
-    }
+    };
     this.cn_PnPoly = function( P, V, n )
     {
         var cn = 0;
@@ -167,7 +167,7 @@ function Polygon( coords, props )
             }
         }
         return cn&1;
-    }
+    };
     this.intersectsLine = function( p0, p1 )
     {
         if ( p0 == p1 )      
@@ -210,7 +210,7 @@ function Polygon( coords, props )
             }
         }
         return true;
-    }
+    };
     this.overlaps = function( bounds )
     {
         if (this.bounds.within(bounds) )
@@ -228,7 +228,7 @@ function Polygon( coords, props )
                 || this.intersectsLine(p2,p3)
                 || this.intersectsLine(p0,p2);
         }
-    }
+    };
     this.fill = function( ctx )
     {
          ctx.moveTo(points[0].x,points[0].y);
@@ -240,7 +240,7 @@ function Polygon( coords, props )
          ctx.closePath();
          ctx.fill();
          ctx.stroke();
-    }
+    };
 }
 function Quadrant( bounds )
 {
@@ -269,7 +269,7 @@ function Quadrant( bounds )
                 this.children = true;
             }
         }
-    }
+    };
     this.setTopLeft = function( poly )
     {
         if ( this.tl == undefined )
@@ -288,7 +288,7 @@ function Quadrant( bounds )
         }
         else
             this.tl.add( poly );
-    }
+    };
     this.setTopRight = function( poly )
     {
         if ( this.tl == undefined )
@@ -308,7 +308,7 @@ function Quadrant( bounds )
         }
         else
             this.tr.add( poly );
-    }
+    };
     this.setBotLeft = function( poly )
     {
         if ( this.bl == undefined )
@@ -328,7 +328,7 @@ function Quadrant( bounds )
         }
         else
             this.bl.add( poly );
-    }
+    };
     this.setBotRight = function( poly )
     {
         if ( this.br == undefined )
@@ -349,7 +349,7 @@ function Quadrant( bounds )
         }
         else
             this.br.add( poly );
-    }
+    };
     this.find = function( x, y )
     {
         if ( this.bounds.hasPt(x,y) )
@@ -372,7 +372,7 @@ function Quadrant( bounds )
         }
         else
             return undefined;
-    }
+    };
 }
 function QuadTree( json )
 {
@@ -380,10 +380,10 @@ function QuadTree( json )
     var canvas = $("#left canvas");
     var ht = canvas.height();
     var wt = canvas.width();
-    var x1 = Math.round(geoJson.bounds[0]*wt);
-    var y1 = Math.round(geojson.bounds[1]*ht);
-    var x2 = Math.round(geoJson.bounds[2]*wt);
-    var y2 = Math.round(geojson.bounds[3]*ht);
+    var x1 = Math.round(geoJson.bbox[0]*wt);
+    var y1 = Math.round(geoJson.bbox[1]*ht);
+    var x2 = Math.round(geoJson.bbox[2]*wt);
+    var y2 = Math.round(geoJson.bbox[3]*ht);
     this.root = Quadrant( new Bounds(x1,y1,x2-x1,y2-y1) );
     for ( var i=0;i<geoJson.features.length;i++ )
     {
@@ -394,7 +394,7 @@ function QuadTree( json )
             if ( poly.type=="Feature" )
             {
                 var geometry = poly.geometry;
-                if ( geometry.type="Polygon" )
+                if ( geometry.type=="Polygon" )
                 {
                     var p = Polygon(geometry.coordinates,
                         poly.properties);
@@ -406,7 +406,7 @@ function QuadTree( json )
     this.find = function( x, y )
     {
         return this.root.find( x, y );
-    }
+    };
 }
 function bindJsonToImage( json )
 {
@@ -419,7 +419,7 @@ function bindJsonToImage( json )
     var canvas = $("#left canvas");
     canvas.mousemove(function(e){
         var c = $("#left canvas");
-        var x = e.clientX - c.offset().x,
+        var x = e.clientX - c.offset().x;
         var y = e.clientY - c.offset().y;
         var poly = quadTree.find(x,y);
         if ( poly != undefined )
@@ -429,10 +429,10 @@ function bindJsonToImage( json )
         }
     });
     var ctx = canvas.get(0).getContext('2d');
+    quadTree = new QuadTree(json);
     quadTree.img = new Image;
     img.src = src;
     ctx.drawImage( quadTree.img, 0, 0, wt, ht );
-    quadTree = QuadTree(json);
 }
 $(document).ready(function() {
 disableAll();

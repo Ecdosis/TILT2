@@ -462,8 +462,8 @@ public class Page
         // assume one bounding box for now, witout rotation
         bounds.add(new Double(0.0) );
         bounds.add(new Double(0.0) );
-        bounds.add(new Double(100.0) );
-        bounds.add(new Double(100.0) );
+        bounds.add(new Double(1.0) );
+        bounds.add(new Double(1.0) );
         image.put( "bbox", bounds );
         JSONArray features = new JSONArray();
         for ( int i=0;i<lines.size();i++ )

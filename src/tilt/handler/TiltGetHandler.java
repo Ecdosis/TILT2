@@ -38,16 +38,23 @@ public class TiltGetHandler extends TiltHandler {
             if (service.equals(Service.TEST.toString())) {
                 try {
                     String second = Utils.second(urn);
-                    if (second == null || second.length() == 0) {
-                        second = "Post";
-                    } else if (second.length() > 0) {
-                        second = Character.toUpperCase(second.charAt(0))
-                            + second.substring(1);
+                    if ( second.contains(".") )
+                    {
+                        new TiltFileHandler().handle(request,response, second );
                     }
-                    String className = "tilt.test." + second;
-                    Class tClass = Class.forName(className);
-                    Test t = (Test) tClass.newInstance();
-                    t.handle(request, response, Utils.pop(urn));
+                    else
+                    {
+                        if (second == null || second.length() == 0) {
+                            second = "Post";
+                        } else if (second.length() > 0) {
+                            second = Character.toUpperCase(second.charAt(0))
+                                + second.substring(1);
+                        }
+                        String className = "tilt.test." + second;
+                        Class tClass = Class.forName(className);
+                        Test t = (Test) tClass.newInstance();
+                        t.handle(request, response, Utils.pop(urn));
+                    }
                 } catch (Exception e) {
                     throw new TiltException(e);
                 }

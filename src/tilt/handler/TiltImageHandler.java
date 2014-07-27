@@ -34,7 +34,7 @@ import tilt.image.PictureRegistry;
  * Handles requests for various image types, including linked images
  * @author desmond
  */
-public class TiltImageHandler  extends TiltHandler 
+public class TiltImageHandler extends TiltHandler 
 {
     String docid;
     ImageType imageType;
