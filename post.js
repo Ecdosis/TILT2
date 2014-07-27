@@ -229,6 +229,18 @@ function Polygon( coords, props )
                 || this.intersectsLine(p0,p2);
         }
     }
+    this.fill = function( ctx )
+    {
+         ctx.moveTo(points[0].x,points[0].y);
+         for (var i=1;i<points.length; i++) 
+         {
+             ctx.lineTo(points[i].x,points[i].y);
+         }
+         ctx.fillStyle = "red";
+         ctx.closePath();
+         ctx.fill();
+         ctx.stroke();
+    }
 }
 function Quadrant( bounds )
 {
@@ -405,10 +417,21 @@ function bindJsonToImage( json )
     var src = jqImg.attr("src");
     jqImg.replaceWith(cstr);
     var canvas = $("#left canvas");
+    canvas.mousemove(function(e){
+        var c = $("#left canvas");
+        var x = e.clientX - c.offset().x,
+        var y = e.clientY - c.offset().y;
+        var poly = quadTree.find(x,y);
+        if ( poly != undefined )
+        {
+            ctx.drawImage(quadTree.img, 0, 0, c.width, c.height );
+            poly.fill(ctx);
+        }
+    });
     var ctx = canvas.get(0).getContext('2d');
-    var img = new Image;
+    quadTree.img = new Image;
     img.src = src;
-    ctx.drawImage( img, 0, 0, wt, ht );
+    ctx.drawImage( quadTree.img, 0, 0, wt, ht );
     quadTree = QuadTree(json);
 }
 $(document).ready(function() {
