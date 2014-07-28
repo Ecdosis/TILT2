@@ -18,10 +18,10 @@
 
 package tilt.image.page;
 import java.awt.Polygon;
-import java.awt.Point;
+import java.util.Iterator;
 import java.util.ArrayList;
-import tilt.Utils;
-import tilt.image.FastConvexHull;
+import java.awt.geom.PathIterator;
+import tilt.image.convexhull.*;
 import tilt.exception.ImageException;
 /**
  * Store and merge two or more shapes
@@ -59,28 +59,48 @@ public class Merge
     {
         int first = -1;
         // gather points from all shapes
-        ArrayList<Point> pts = new ArrayList<>();
+        ArrayList<Point2D> points = new ArrayList<>();
         for ( Polygon shape : polygons )
         {
             if ( first == -1 )
                 first = line.getShapeIndex(shape);
-            ArrayList<Point> points = Utils.polygonToPoints( shape );
-            pts.addAll( points );
+            PathIterator iter = shape.getPathIterator(null);
+            float[] coords = new float[6];
+            while ( !iter.isDone())
+            {
+                int step = iter.currentSegment(coords);
+                switch ( step )
+                {
+                    case PathIterator.SEG_CLOSE: case PathIterator.SEG_LINETO:
+                        case PathIterator.SEG_MOVETO:
+                        points.add( new Point2D(coords[0],coords[1]));
+                        break;
+                    default:
+                        break;
+                }
+                iter.next();
+            }
         }
+        Point2D[] array = new Point2D[points.size()];
+        points.toArray( array );
         // create merged polygon
-        ArrayList<Point> pg = FastConvexHull.execute( pts );
+        GrahamScan gs = new GrahamScan( array );
+        Iterable<Point2D> pg = gs.hull();
         Polygon poly = new Polygon();
-        for ( Point pt : pg )
-            poly.addPoint( pt.x, pt.y );
-        // update list
+        Iterator<Point2D> iter = pg.iterator();
+        while ( iter.hasNext() )
+        {
+            Point2D pt = iter.next();
+            poly.addPoint( (int)Math.round(pt.x()), (int)Math.round(pt.y()) );
+        }
         ArrayList<Polygon> delenda = new ArrayList<>();
         for ( Polygon shape : polygons )
             delenda.add( shape );
         for ( Polygon s : delenda )
             line.removeShape( s );
         if ( first != -1 )
-           line.addShape( first, poly, word );
-       else
-           throw new ImageException( "Merge: couldn't find shape");
+            line.addShape( first, poly, word );
+        else
+            throw new ImageException( "Merge: couldn't find shape");
     }
 }

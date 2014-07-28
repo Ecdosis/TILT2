@@ -17,6 +17,7 @@
  */
 package tilt;
 import java.awt.image.WritableRaster;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.awt.Point;
 import java.awt.geom.PathIterator;
@@ -28,7 +29,7 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import static tilt.Utils.dist2;
-import tilt.image.FastConvexHull;
+import tilt.image.convexhull.*;
 
 /**
  * Some routines that need sharing by all
@@ -241,10 +242,10 @@ public class Utils
      * @param w the second point
      * @return the distance between v and w squared
      */
-    static float dist2( Point v, Point w ) 
+    static double dist2( Point2D v, Point2D w ) 
     { 
-        int xDiff = v.x - w.x;
-        int yDiff = v.y - w.y;
+        double xDiff = v.x() - w.x();
+        double yDiff = v.y() - w.y();
         return xDiff*xDiff + yDiff*yDiff;
     }
     /**
@@ -254,18 +255,18 @@ public class Utils
      * @param w the 2nd point of the segment
      * @return the distance as a float
      */
-    static float distToSegmentSquared( Point p, Point v, Point w) 
+    static double distToSegmentSquared( Point2D p, Point2D v, Point2D w) 
     {
-        float l2 = dist2(v, w);
+        double l2 = dist2(v, w);
         if (l2 == 0.0f) 
             return dist2(p, v);
-        float t = ((p.x-v.x)*(w.x-v.x)+(p.y-v.y)*(w.y-v.y))/l2;
+        double t = ((p.x()-v.x())*(w.x()-v.x())+(p.y()-v.y())*(w.y()-v.y()))/l2;
         if (t < 0) 
             return dist2(p, v);
         if (t > 1) 
             return dist2(p, w);
-        Point q = new Point(v.x+Math.round(t*(w.x-v.x)),v.y
-            +Math.round(t*(w.y-v.y)));
+        Point2D q = new Point2D(v.x()+t*(w.x()-v.x()),v.y()
+            +Math.round(t*(w.y()-v.y())));
         return dist2( p, q );
     }
     /**
@@ -275,10 +276,10 @@ public class Utils
      * @param w second point of the line
      * @return the distance as a float
      */
-    public static float distanceToSegment( Point p, Point v, Point w )
+    public static double distanceToSegment( Point2D p, Point2D v, Point2D w )
     {
-        float squared = distToSegmentSquared(p,v,w);
-        return (float)Math.sqrt(squared);
+        double squared = distToSegmentSquared(p,v,w);
+        return Math.sqrt(squared);
     }
     /**
      * Get the minimal separation between two polygons
@@ -286,20 +287,20 @@ public class Utils
      * @param Q the second polygon
      * @return the smallest distance between segments or vertices of P, Q
      */
-    public static int distanceBetween( Polygon P, Polygon Q )
+    public static double distanceBetween( Polygon P, Polygon Q )
     {
-        float minDist = Float.MAX_VALUE;
-        ArrayList<Point> points1 = polygonToPoints(P);
-        ArrayList<Point> points2 = polygonToPoints(Q);
-        Point last1=null,last2=null;
-        for ( int i=0;i<points1.size();i++ )
+        double minDist = Double.MAX_VALUE;
+        Point2D[] points1 = polygonToPoints(P);
+        Point2D[] points2 = polygonToPoints(Q);
+        Point2D last1=null,last2=null;
+        for ( int i=0;i<points1.length;i++ )
         {
-            Point p1 = points1.get(i);
-            for ( int j=0;j<points2.size();j++ )
+            Point2D p1 = points1[i];
+            for ( int j=0;j<points2.length;j++ )
             {
-                Point p2 = points2.get(j);
-                int x = Math.abs(p1.x-p2.x);
-                int y = Math.abs(p1.y-p2.y);
+                Point2D p2 = points2[j];
+                double x = Math.abs(p1.x()-p2.x());
+                double y = Math.abs(p1.y()-p2.y());
                 // distance between vertices
                 float dist = Math.round(Math.hypot(x,y));
                 if ( dist < minDist )
@@ -307,14 +308,14 @@ public class Utils
                 // distance between p1 and a segment of Q
                 if ( last2 != null )
                 {
-                    float fDist2 = distanceToSegment( p1, last2, p2 );
+                    double fDist2 = distanceToSegment( p1, last2, p2 );
                     if ( fDist2 < minDist )
                         minDist = fDist2;
                 }
                 // distance between p2 and a segment of P
                 if ( last1 != null )
                 {
-                    float fDist1 = distanceToSegment( p2, last1, p1 );
+                    double fDist1 = distanceToSegment( p2, last1, p1 );
                     if ( fDist1 < minDist )
                         minDist = fDist1;
                 }
@@ -322,47 +323,50 @@ public class Utils
             }
             last1 = p1;
         } 
-        return Math.round(minDist);
+        return minDist;
     }
     /**
      * Convert a polygon to an array of points
      * @param pg the poly
-     * @return an arraylist of type Point
+     * @return an arraylist of type Point2D (a la Sedgewick)
      */
-    public static ArrayList<Point> polygonToPoints( Polygon pg )
+    public static Point2D[] polygonToPoints( Polygon pg )
     {
-        ArrayList<Point> points = new ArrayList<>();
+        ArrayList<Point2D> points = new ArrayList<>();
         PathIterator iter = pg.getPathIterator(null);
         float[] coords = new float[6];
-        while ( !iter.isDone())
+        int i = 0;
+        while ( !iter.isDone() )
         {
             int step = iter.currentSegment(coords);
             switch ( step )
             {
                 case PathIterator.SEG_CLOSE: case PathIterator.SEG_LINETO:
                     case PathIterator.SEG_MOVETO:
-                    points.add( new Point(Math.round(coords[0]),
-                        Math.round(coords[1])) );
+                    points.add( new Point2D(coords[0],coords[1]) );
                     break;
                 default:
                     break;
             }
             iter.next();
         }
-        return points;
+        Point2D[] array = new Point2D[points.size()];
+        points.toArray( array );
+        return array;
     }
     /**
      * Convert an array of points to a polygon
-     * @param points the arraylist of points
+     * @param points an iterable set of points
      * @return a Polygon
      */
-    public static Polygon pointsToPolygon( ArrayList<Point> points )
+    public static Polygon pointsToPolygon( Iterable<Point2D> points )
     {
         Polygon pg = new Polygon();
-        for ( int i=0;i<points.size();i++ )
+        Iterator<Point2D> iter = points.iterator();
+        while ( iter.hasNext() )
         {
-            Point pt = points.get(i);
-            pg.addPoint( pt.x, pt.y );
+            Point2D pt = iter.next();
+            pg.addPoint( (int)Math.round(pt.x()), (int)Math.round(pt.y()) );
         }
         return pg;
     }
@@ -374,10 +378,13 @@ public class Utils
      */
     public static Polygon mergePolygons( Polygon pg1, Polygon pg2 )
     {
-        ArrayList<Point> points1 = polygonToPoints(pg1);
-        ArrayList<Point> points2 = polygonToPoints(pg2);
-        points1.addAll(points2);
-        ArrayList<Point> points3 = FastConvexHull.execute(points1);
-        return pointsToPolygon( points3 );
+        Point2D[] points1 = polygonToPoints(pg1);
+        Point2D[] points2 = polygonToPoints(pg2);
+        Point2D[] points3 = new Point2D[points1.length+points2.length];
+        System.arraycopy( points1, 0, points3, 0, points1.length );
+        System.arraycopy( points2, 0, points3, points1.length, points2.length );
+        GrahamScan gs = new GrahamScan( points3 );
+        Iterable<Point2D> points4 = gs.hull();
+        return pointsToPolygon( points4 );
     }
 }

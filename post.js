@@ -124,7 +124,7 @@ function Polygon( coords, props )
     if ( props != undefined )
     {
         if ( props.offset != undefined )
-        this.offset = props.offset;
+            this.offset = props.offset;
         if ( props.hyphen != undefined )
             this.hyphen = hyphen;
     }
@@ -177,12 +177,12 @@ function Polygon( coords, props )
         var t, N, D;
         var dS = p1.minus(p0);
         var e; 
-        for ( var i=0; i<this.points.length; i++)
+        for ( var i=0; i<this.points.length-1; i++)
         {
             e = this.points[i+1].minus(this.points[i]);
-            N = perp(e, p0.minus(this.points[i]));
-            D = -perp(e, dS);
-            if (Math.abs(D) < SMALL_NUM) 
+            N = this.perp(e, p0.minus(this.points[i]));
+            D = -this.perp(e, dS);
+            if (Math.abs(D) < this.SMALL_NUM) 
             {
                 if (N < 0)
                      return false;
@@ -222,7 +222,7 @@ function Polygon( coords, props )
             var p0 = new Point(bounds.x,bounds.y);
             var p1 = new Point(bounds.right(),bounds.y);
             var p2 = new Point(bounds.x,bounds.bottom());
-            var p3 = new Point(bounds.right().bounds.bottom());
+            var p3 = new Point(bounds.right(),bounds.bottom());
             return this.intersectsLine(p0,p1)
                 || this.intersectsLine(p1,p3)
                 || this.intersectsLine(p2,p3)
@@ -253,18 +253,18 @@ function Quadrant( bounds )
                 this.poly = poly;
             else
             {
-                setTopLeft(poly);
+                this.setTopLeft(poly);
                 if ( this.poly != undefined )
-                    setTopLeft(this.poly);
-                setTopRight(poly);
+                    this.setTopLeft(this.poly);
+                this.setTopRight(poly);
                 if ( this.poly != undefined )
-                    setTopRight(this.poly);
-                setBotLeft(poly);
+                    this.setTopRight(this.poly);
+                this.setBotLeft(poly);
                 if ( this.poly != undefined )
-                    setBotLeft(this.poly);
-                setBotRight(poly);
+                    this.setBotLeft(this.poly);
+                this.setBotRight(poly);
                 if ( this.poly != undefined )
-                    setBotRight(this.poly);
+                    this.setBotRight(this.poly);
                 this.poly = undefined;
                 this.children = true;
             }
@@ -275,7 +275,7 @@ function Quadrant( bounds )
         if ( this.tl == undefined )
         {
             var b = new Bounds(
-                this.bound.x,
+                this.bounds.x,
                 this.bounds.y,
                 Math.round(this.bounds.width/2),
                 Math.round(this.bounds.height/2)
@@ -291,7 +291,7 @@ function Quadrant( bounds )
     };
     this.setTopRight = function( poly )
     {
-        if ( this.tl == undefined )
+        if ( this.tr == undefined )
         {
             var newX = this.bounds.x+this.bounds.width/2;
             var b = new Bounds(
@@ -315,7 +315,7 @@ function Quadrant( bounds )
         {
             var newY = this.bounds.y+this.bounds.height/2;
             var b = new Bounds(
-                this.bound.x,
+                this.bounds.x,
                 newY,
                 Math.round(this.bounds.width/2),
                 Math.round(this.bounds.bottom()-newY)
@@ -421,18 +421,18 @@ function bindJsonToImage( json )
         var c = $("#left canvas");
         var x = e.clientX - c.offset().x;
         var y = e.clientY - c.offset().y;
-        var poly = quadTree.find(x,y);
+        var poly = tree.find(x,y);
         if ( poly != undefined )
         {
-            ctx.drawImage(quadTree.img, 0, 0, c.width, c.height );
+            ctx.drawImage(tree.img, 0, 0, c.width, c.height );
             poly.fill(ctx);
         }
     });
     var ctx = canvas.get(0).getContext('2d');
-    quadTree = new QuadTree(json);
-    quadTree.img = new Image;
-    img.src = src;
-    ctx.drawImage( quadTree.img, 0, 0, wt, ht );
+    tree = new QuadTree(json);
+    tree.img = new Image;
+    tree.img.src = src;
+    ctx.drawImage( tree.img, 0, 0, wt, ht );
 }
 $(document).ready(function() {
 disableAll();

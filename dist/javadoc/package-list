@@ -5,6 +5,7 @@ tilt.constants
 tilt.exception
 tilt.handler
 tilt.image
+tilt.image.convexhull
 tilt.image.matchup
 tilt.image.page
 tilt.test

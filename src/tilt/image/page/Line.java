@@ -33,6 +33,7 @@ import org.json.simple.*;
 import java.awt.geom.Area;
 import tilt.Utils;
 import tilt.exception.AlignException;
+import tilt.image.convexhull.Point2D;
 /**
  * Represent a discovered line in an image
  * @author desmond
@@ -116,8 +117,8 @@ public class Line implements Comparable<Line>
             Polygon pg = shapes.get(i);
             if ( prev != null )
             {
-                int gap = Utils.distanceBetween( prev, pg );
-                Integer key = new Integer(gap);
+                double gap = Utils.distanceBetween( prev, pg );
+                Integer key = new Integer((int)Math.round(gap));
                 int current = 0;
                 if ( map.containsKey(key) )
                     current = map.get(key).intValue();
@@ -270,7 +271,7 @@ public class Line implements Comparable<Line>
         }
         else
         {
-            list = new ArrayList<Shape>();
+            list = new ArrayList<>();
             list.add( s );
             shared.put( other, list );
         }
@@ -363,7 +364,7 @@ public class Line implements Comparable<Line>
     {
         if ( medianY == 0 )
         {
-            ArrayList<Integer> yValues = new ArrayList<Integer>();
+            ArrayList<Integer> yValues = new ArrayList<>();
             for ( int i=0;i<points.size();i++ )
             {
                 yValues.add( new Integer(points.get(i).y) );
@@ -407,7 +408,7 @@ public class Line implements Comparable<Line>
             if ( prev != null )
             {
                 // gaps will have changed due to merging
-                int current = Utils.distanceBetween( prev, pg );
+                int current = (int)Math.round(Utils.distanceBetween(prev,pg) );
                 if ( current <= minWordGap  )
                 {
                     prev = Utils.mergePolygons(prev,pg);
@@ -548,17 +549,19 @@ public class Line implements Comparable<Line>
         {
             JSONObject feature = new JSONObject();
             feature.put("type","Feature");
-            ArrayList<Point> pts = Utils.polygonToPoints(shapes.get(i));
+            Point2D[] pts = Utils.polygonToPoints(shapes.get(i));
             JSONObject geometry = new JSONObject();
             JSONArray coordinates = new JSONArray();
-            for ( int j=0;j<pts.size();j++ )
+            for ( int j=0;j<pts.length;j++ )
             {
                 geometry.put("type","Polygon");
                 JSONArray point = new JSONArray();
-                point.add( (float)pts.get(j).x/(float)pageWidth );
-                point.add( (float)pts.get(j).y/(float)pageHeight );
+                point.add( pts[j].x()/(double)pageWidth );
+                point.add( pts[j].y()/(double)pageHeight );
                 coordinates.add( point );
             }
+            if ( pts.length>0 && !pts[0].equals(pts[pts.length-1]) )
+                coordinates.add( coordinates.get(0) );
             geometry.put( "coordinates", coordinates );
             feature.put( "geometry", geometry );
             // add feature properties like text-offset here

@@ -17,12 +17,12 @@
  */        
 
 package tilt.image.page;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
+import java.util.Iterator;
 import tilt.align.Matchup;
-import tilt.image.FastConvexHull;
+import tilt.image.convexhull.*;
 import tilt.exception.*;
 import tilt.Utils;
 
@@ -123,18 +123,18 @@ public class Split
             // running counters for all blobs, gaps
             int blob = 0;
             int gap = 0;
+            int splitPos = shape.getBounds().x;
             for ( int i=0;i<matches.length;i++ )
             {
                 int[] blobs = matches[i][1];
-                int blobWidth = 0;
                 for ( int j=0;j<blobs.length;j++ )
                 {
-                    blobWidth += shapeArray[blob++];
+                    splitPos += shapeArray[blob++];
                     if ( j < blobs.length-1 )
-                        blobWidth += gapArray[gap++];
+                        splitPos += gapArray[gap++];
                 }
                 if ( matches[i][0].length>0 )
-                    splitArray.add( blobWidth + gapArray[gap]/2 );
+                    splitArray.add( splitPos + gapArray[gap]/2 );
                 gap++;
             }
             if ( splitArray.size()<= 1 )
@@ -162,14 +162,14 @@ public class Split
      */
     public Polygon[] split( int[] splits ) throws SplitException
     {
-        ArrayList<Point>[] newPolys = new ArrayList[splits.length+1];
-        ArrayList<Point> points = Utils.polygonToPoints( shape );
+        ArrayList<Point2D>[] newPolys = new ArrayList[splits.length+1];
+        Point2D[] points = Utils.polygonToPoints( shape );
         for ( int i=0;i<newPolys.length;i++ )
             newPolys[i] = new ArrayList<>();
         // examine each original point
-        for ( int i=0;i<points.size();i++ )
+        for ( int i=0;i<points.length;i++ )
         {
-            Point p = points.get( i );
+            Point2D p = points[i];
             // determine which shape it falls into
             for ( int j=0;j<=splits.length;j++ )
             {
@@ -185,26 +185,34 @@ public class Split
                     rightSplit = splits[j];
                 }
                 // determine where p goes
-                if ( p.x < rightSplit || (rightSplit==-1 && j==splits.length) )
+                if ( p.x() < rightSplit || (rightSplit==-1 && j==splits.length) )
                 {
                     // so p belongs within shapes[j]
                     if ( i > 0 )
                     {
                         // examine previous point
-                        Point q = points.get( i-1 );
-                        if ( q.x < leftSplit )
+                        Point2D q = points[i-1];
+                        if ( q.x() < leftSplit )
                             newPolys[j].add( getDiagonalPoint(q,p,leftSplit) );
-                        else if ( rightSplit!=-1 && q.x >= rightSplit )
+                        else if ( rightSplit!=-1 && q.x() >= rightSplit )
                             newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
                     }
                     newPolys[j].add( p );
-                    if ( i < points.size()-1 )
+                    if ( i < points.length-1 )
                     {
-                        Point q = points.get( i+1 );
-                        if ( q.x < leftSplit )
-                            newPolys[j].add(getDiagonalPoint(q,p,leftSplit));
-                        else if ( rightSplit!=-1 && q.x >= rightSplit )
-                            newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
+                        Point2D q = points[i+1];
+                        if ( q.x() < leftSplit )
+                        {
+                            Point2D s = getDiagonalPoint(q,p,leftSplit);
+                            newPolys[j].add(s);
+                            newPolys[j-1].add(new Point2D(s.x()-5,s.y()));
+                        }
+                        else if ( rightSplit!=-1 && q.x() >= rightSplit )
+                        {
+                            Point2D s = getDiagonalPoint(p,q,rightSplit);
+                            newPolys[j].add(s );
+                            newPolys[j+1].add(new Point2D(s.x()+5,s.y()));
+                        }
                     }
                     break;
                 }
@@ -213,13 +221,13 @@ public class Split
         // now close the generated shapes
         for ( int i=0;i<newPolys.length;i++ )
         {
-            ArrayList<Point> r = newPolys[i];
+            ArrayList<Point2D> r = newPolys[i];
             if ( r.size()>0 )
             {
-                Point p = r.get(0);
-                Point q = r.get(r.size()-1);
+                Point2D p = r.get(0);
+                Point2D q = r.get(r.size()-1);
                 if ( !p.equals(q) )
-                    r.add( new Point(p.x,p.y) );
+                    r.add( new Point2D(p.x(),p.y()) );
             }
         }
         // convert to polygons
@@ -227,9 +235,17 @@ public class Split
         for ( int i=0;i<polys.length;i++ )
         {
             polys[i] = new Polygon();
-            ArrayList<Point> trimmedPts = FastConvexHull.execute(newPolys[i]);
-            for ( Point pt : trimmedPts )
-                polys[i].addPoint( pt.x, pt.y );
+            Point2D[] newPolyArray = new Point2D[newPolys[i].size()];
+            newPolys[i].toArray(newPolyArray);
+            GrahamScan gs = new GrahamScan( newPolyArray );
+            Iterable<Point2D> trimmedPts = gs.hull();
+            Iterator<Point2D> iter = trimmedPts.iterator();
+            while ( iter.hasNext() )
+            {
+                Point2D pt = iter.next();
+                polys[i].addPoint( (int)Math.round(pt.x()), 
+                    (int)Math.round(pt.y()) );
+            }
         }
         return polys;
     }
@@ -239,17 +255,17 @@ public class Split
      * @param q the right point
      * @param split the split x-position
      */
-    private Point getDiagonalPoint( Point p, Point q, int split ) 
+    private Point2D getDiagonalPoint( Point2D p, Point2D q, int split ) 
         throws SplitException
     {
-        Point u = null;
-        if ( p.x < q.x && split > p.x )
+        Point2D u = null;
+        if ( p.x() < q.x() && split > p.x() )
         {
-            float deltaSplitX = (float)(split-p.x);
-            float deltaX = (float)(q.x-p.x);
-            float ratio = deltaSplitX/deltaX;
-            float deltaY = (float)(q.y-p.y);
-            u = new Point( split, p.y+Math.round(ratio*deltaY) );
+            double deltaSplitX = (float)(split-p.x());
+            double deltaX = (float)(q.x()-p.x());
+            double ratio = deltaSplitX/deltaX;
+            double deltaY = (q.y()-p.y());
+            u = new Point2D( split, p.y()+(ratio*deltaY) );
         }
         else
             throw new SplitException("p.x >= q.x during split");

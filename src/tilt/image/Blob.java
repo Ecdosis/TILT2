@@ -27,6 +27,7 @@ import java.util.Stack;
 import java.util.ArrayList;
 import tilt.Utils;
 import tilt.handler.TextIndex;
+import tilt.image.convexhull.*;
 import org.json.simple.*;
 
 /**
@@ -395,9 +396,15 @@ public class Blob
         {
             if ( hull == null )
                 expandArea( dirt, firstBlackPixel );
-            Polygon pg = new Polygon();
-            ArrayList<Point> cv = FastConvexHull.execute(hull);
-            return Utils.pointsToPolygon(cv);
+            Point2D[] points = new Point2D[hull.size()];
+            for ( int i=0;i<hull.size();i++ )
+            {
+                Point p = hull.get(i);
+                points[i] = new Point2D( p.x, p.y );
+            }
+            GrahamScan gc = new GrahamScan( points );
+            Iterable<Point2D> pts = gc.hull();
+            return Utils.pointsToPolygon(pts);
         }
         else
             return null;
