@@ -66,10 +66,6 @@ function Point( x, y )
 {
     this.x = x;
     this.y = y;
-    this.minus = function(p)
-    {
-        return new Point(this.x-p.x,this.y-p.y);
-    };
 }
 function scalePoints( coords )
 {
@@ -92,20 +88,6 @@ function Bounds( x, y, width, height )
     this.y = y;
     this.width = width;
     this.height = height;
-    this.within = function( r )
-    {
-        return this.x>=r.x 
-            && this.y>=r.y 
-            && this.x+this.width<r.x+r.width 
-            && this.y+this.height<r.y+r.height;
-    };
-    this.outside = function( r )
-    {
-        return this.bottom()<r.y
-        || this.y>=r.bottom()
-        || this.right()<r.x
-        || this.x >=r.right();
-    };
     this.right = function()
     {
         return this.x+this.width;
@@ -113,10 +95,6 @@ function Bounds( x, y, width, height )
     this.bottom = function()
     {
         return this.y+this.height;
-    };
-    this.hasPt = function( x, y )
-    {
-        return x>=this.x&&y>=this.y&&y<this.bottom&&x<this.right();
     };
 }
 function Polygon( coords, props )
@@ -129,8 +107,6 @@ function Polygon( coords, props )
             this.hyphen = hyphen;
     }
     this.points = scalePoints(coords);
-    this.SMALL_NUM = 0.00000001;
-    var str = "";
     var x=Number.MAX_VALUE,y=Number.MAX_VALUE;
     var bot=0,right=0;
     for ( var i=0;i<this.points.length;i++ )
@@ -145,18 +121,11 @@ function Polygon( coords, props )
             bot = this.points[i].y;
     }
     this.bounds = new Bounds( x, y, right-x, bot-y );
-    this.dot = function(u,v)
-    {
-        return ((u).x * (v).x + (u).y * (v).y);
-    };
-    this.perp = function(u,v)  
-    {
-        return ((u).x * (v).y - (u).y * (v).x);
-    };
-    this.cn_PnPoly = function( P, V, n )
+    this.containsPoint = function( P )
     {
         var cn = 0;
-        for (var i=0; i<n; i++) 
+        var V = this.points;
+        for (var i=0; i<V.length-1; i++) 
         {
             if (((V[i].y <= P.y) && (V[i+1].y > P.y))
             || ((V[i].y > P.y) && (V[i+1].y <=  P.y))) 
@@ -168,73 +137,12 @@ function Polygon( coords, props )
         }
         return cn&1;
     };
-    this.intersectsLine = function( p0, p1 )
-    {
-        if ( p0 == p1 )      
-            return cn_PnPoly( p0, V, n );
-        var tE = 0;
-        var tL = 1;
-        var t, N, D;
-        var dS = p1.minus(p0);
-        var e; 
-        for ( var i=0; i<this.points.length-1; i++)
-        {
-            e = this.points[i+1].minus(this.points[i]);
-            N = this.perp(e, p0.minus(this.points[i]));
-            D = -this.perp(e, dS);
-            if (Math.abs(D) < this.SMALL_NUM) 
-            {
-                if (N < 0)
-                     return false;
-                else
-                     continue;
-            }
-            t = N / D;
-            if (D < 0) 
-            {
-                if (t > tE) 
-                {
-                     tE = t;
-                     if (tE > tL)
-                         return false;
-                }
-            }
-            else 
-            {
-                if (t < tL) 
-                {
-                     tL = t;
-                     if (tL < tE)
-                         return false;
-                }
-            }
-        }
-        return true;
-    };
-    this.overlaps = function( bounds )
-    {
-        if (this.bounds.within(bounds) )
-           return true;
-        else if ( this.bounds.outside(bounds) )
-            return false;
-        else 
-        {
-            var p0 = new Point(bounds.x,bounds.y);
-            var p1 = new Point(bounds.right(),bounds.y);
-            var p2 = new Point(bounds.x,bounds.bottom());
-            var p3 = new Point(bounds.right(),bounds.bottom());
-            return this.intersectsLine(p0,p1)
-                || this.intersectsLine(p1,p3)
-                || this.intersectsLine(p2,p3)
-                || this.intersectsLine(p0,p2);
-        }
-    };
     this.fill = function( ctx )
     {
-         ctx.moveTo(points[0].x,points[0].y);
-         for (var i=1;i<points.length; i++) 
+         ctx.moveTo(this.points[0].x,this.points[0].y);
+         for (var i=1;i<this.points.length; i++)
          {
-             ctx.lineTo(points[i].x,points[i].y);
+             ctx.lineTo(this.points[i].x,this.points[i].y);
          }
          ctx.fillStyle = "red";
          ctx.closePath();
@@ -242,139 +150,29 @@ function Polygon( coords, props )
          ctx.stroke();
     };
 }
-function Quadrant( bounds )
+function Bucket( p )
 {
-    this.bounds = bounds;
-    this.add = function( poly )
+    this.poly = p;
+    this.append = function( p )
     {
-        if ( poly.overlaps(this.bounds) )
-        {
-            if ( this.children == undefined && this.poly == undefined )
-                this.poly = poly;
-            else
-            {
-                this.setTopLeft(poly);
-                if ( this.poly != undefined )
-                    this.setTopLeft(this.poly);
-                this.setTopRight(poly);
-                if ( this.poly != undefined )
-                    this.setTopRight(this.poly);
-                this.setBotLeft(poly);
-                if ( this.poly != undefined )
-                    this.setBotLeft(this.poly);
-                this.setBotRight(poly);
-                if ( this.poly != undefined )
-                    this.setBotRight(this.poly);
-                this.poly = undefined;
-                this.children = true;
-            }
-        }
+        var temp = this;
+        while ( temp.next != undefined )
+            temp = temp.next;
+        temp.next = new Bucket(p);
     };
-    this.setTopLeft = function( poly )
+    this.getAll = function()
     {
-        if ( this.tl == undefined )
+        var all = new Array();
+        var temp = this;
+        while ( temp != undefined )
         {
-            var b = new Bounds(
-                this.bounds.x,
-                this.bounds.y,
-                Math.round(this.bounds.width/2),
-                Math.round(this.bounds.height/2)
-            );
-            if ( poly.overlaps(b) )
-            {
-                this.tl = new Quadrant(b);
-                this.tl.poly = poly;
-            }
+            all[all.length] = temp.poly;
+            temp = temp.next;
         }
-        else
-            this.tl.add( poly );
-    };
-    this.setTopRight = function( poly )
-    {
-        if ( this.tr == undefined )
-        {
-            var newX = this.bounds.x+this.bounds.width/2;
-            var b = new Bounds(
-                newX, 
-                this.bounds.y,
-                Math.round(this.bounds.right()-newX),
-                Math.round(this.bounds.height/2)
-            );
-            if ( poly.overlaps(b) )
-            {
-                this.tr = new Quadrant(b);
-                this.tr.poly = poly;
-            }
-        }
-        else
-            this.tr.add( poly );
-    };
-    this.setBotLeft = function( poly )
-    {
-        if ( this.bl == undefined )
-        {
-            var newY = this.bounds.y+this.bounds.height/2;
-            var b = new Bounds(
-                this.bounds.x,
-                newY,
-                Math.round(this.bounds.width/2),
-                Math.round(this.bounds.bottom()-newY)
-            );
-            if ( poly.overlaps(b) )
-            {
-                this.bl = new Quadrant(b);
-                this.bl.poly = poly;
-            }
-        }
-        else
-            this.bl.add( poly );
-    };
-    this.setBotRight = function( poly )
-    {
-        if ( this.br == undefined )
-        {
-            var newX = this.bounds.x+this.bounds.width/2;
-            var newY = this.bounds.y+this.bounds.height/2;
-            var b = new Bounds(
-                newX,
-                newY,
-                Math.round(this.bounds.right()-newX),
-                Math.round(this.bounds.bottom()-newY)
-            );
-            if ( poly.overlaps(b) )
-            {
-                this.br = new Quadrant(b);
-                this.br.poly = poly;
-            }
-        }
-        else
-            this.br.add( poly );
-    };
-    this.find = function( x, y )
-    {
-        if ( this.bounds.hasPt(x,y) )
-        { 
-            if ( !this.children && this.poly != undefined )
-                return this.poly;
-            else
-            {
-                var poly = undefined;
-                if ( this.tl != undefined )
-                    poly = this.tl.find(x,y);
-                if ( poly==undefined && this.tr != undefined )
-                    poly = this.tr.find(x,y);
-                if ( poly==undefined && this.bl != undefined )
-                    poly = this.bl.find(x,y);
-                if ( poly==undefined && this.br != undefined )
-                    poly = this.br.find(x,y);
-                return poly;
-            }
-        }
-        else
-            return undefined;
+        return all;
     };
 }
-function QuadTree( json )
+function Hash2DTree( json )
 {
     var geoJson = JSON.parse( json );
     var canvas = $("#left canvas");
@@ -384,10 +182,33 @@ function QuadTree( json )
     var y1 = Math.round(geoJson.bbox[1]*ht);
     var x2 = Math.round(geoJson.bbox[2]*wt);
     var y2 = Math.round(geoJson.bbox[3]*ht);
-    this.root = new Quadrant( new Bounds(x1,y1,x2-x1,y2-y1) );
+    var width = x2-x1;
+    var height = y2-y1;
+    this.hBuckets = Math.round((width<height)?50:75);
+    this.hUnit = Math.floor(width/this.hBuckets);
+    this.vBuckets = Math.round((width<height)?75:50);
+    this.vUnit = Math.floor(height/this.vBuckets);
+    this.buckets = new Array();
+    this.getIndices = function( p )
+    {
+        var b = p.bounds;
+        var firstX = Math.floor(b.x/this.hUnit);
+        var lastX = Math.floor(b.right()/this.hUnit);
+        var firstY = Math.floor(b.y/this.vUnit);
+        var lastY = Math.floor(b.bottom()/this.vUnit);
+        var indices = new Array();
+        var i = 0;
+        for ( var x=firstX;x<=lastX;x++ )
+        {
+            for ( var y=firstY;y<=lastY;y++ )
+                indices[i++] = x*128 + y;
+        }
+        return indices;
+    };
     for ( var i=0;i<geoJson.features.length;i++ )
     {
         var line = geoJson.features[i];
+        polygon = 0;
         for ( var j=0;j<line.features.length;j++ )
         {
             var poly = line.features[j];
@@ -398,14 +219,30 @@ function QuadTree( json )
                 {
                     var p = new Polygon(geometry.coordinates,
                         poly.properties);
-                    this.root.add( p );
+                    var indices = this.getIndices(p);
+                    for ( var k=0;k<indices.length;k++ )
+                    {
+                       var index = indices[k];
+                       if ( this.buckets[index] == undefined )
+                           this.buckets[index] = new Bucket(p);
+                       else
+                           this.buckets[index].append(p);
+                    }
                 }
             }
         }
     }
     this.find = function( x, y )
     {
-        return this.root.find( x, y );
+        var indX = Math.floor(x/this.hUnit);
+        var indY = Math.floor(y/this.vUnit);
+        var index = indX*128 + indY;
+        var pindex = index;
+        var b = this.buckets[index];
+        if ( b == undefined )
+            return undefined;
+        else 
+            return b.getAll();
     };
 }
 function bindJsonToImage( json )
@@ -419,17 +256,23 @@ function bindJsonToImage( json )
     var canvas = $("#left canvas");
     canvas.mousemove(function(e){
         var c = $("#left canvas");
-        var x = e.clientX - c.offset().x;
-        var y = e.clientY - c.offset().y;
-        var poly = tree.find(x,y);
-        if ( poly != undefined )
+        var r = c.get(0).getBoundingClientRect();
+        var x = e.clientX - r.left;
+        var y = e.clientY - r.top;
+        var polys = tree.find(x,y);
+        if ( polys != undefined )
         {
             ctx.drawImage(tree.img, 0, 0, c.width, c.height );
-            poly.fill(ctx);
+            var p = new Point(x,y);
+            for ( var i=0;i<polys.length;i++ )
+            {
+                if ( polys[i].containsPoint(p) )
+                    polys[i].fill(ctx);
+            }
         }
     });
     var ctx = canvas.get(0).getContext('2d');
-    tree = new QuadTree(json);
+    tree = new Hash2DTree(json);
     tree.img = new Image;
     tree.img.src = src;
     ctx.drawImage( tree.img, 0, 0, wt, ht );
