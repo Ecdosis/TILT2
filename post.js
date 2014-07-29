@@ -139,16 +139,28 @@ function Polygon( coords, props )
     };
     this.fill = function( ctx )
     {
+         var b = this.bounds;
+         this.savedImageData = ctx.getImageData( b.x, b.y, b.width, b.height ); 
+         ctx.save();
+         ctx.beginPath();
          ctx.moveTo(this.points[0].x,this.points[0].y);
          for (var i=1;i<this.points.length; i++)
          {
              ctx.lineTo(this.points[i].x,this.points[i].y);
          }
-         ctx.fillStyle = "red";
+         ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
          ctx.closePath();
          ctx.fill();
-         ctx.stroke();
+         ctx.restore();
     };
+    this.restore = function(ctx)
+    {
+        var b = this.bounds;
+        if ( this.savedImageData != undefined )
+        {
+            ctx.putImageData( this.savedImageData, b.x, b.y );
+        }
+    }
 }
 function Bucket( p )
 {
@@ -250,10 +262,11 @@ function bindJsonToImage( json )
     var jqImg = $("#left img");
     var ht = jqImg.height();
     var wt = jqImg.width();
-    var cstr = '<canvas width="'+wt+'" height="'+ht+'"></canvas>';
+    var cstr = '<canvas width="'+wt+'" height="'+ht+'">No HTML5!</canvas>';
     var src = jqImg.attr("src");
     jqImg.replaceWith(cstr);
     var canvas = $("#left canvas");
+    currentPoly = undefined;
     canvas.mousemove(function(e){
         var c = $("#left canvas");
         var r = c.get(0).getBoundingClientRect();
@@ -262,12 +275,17 @@ function bindJsonToImage( json )
         var polys = tree.find(x,y);
         if ( polys != undefined )
         {
-            ctx.drawImage(tree.img, 0, 0, c.width, c.height );
             var p = new Point(x,y);
             for ( var i=0;i<polys.length;i++ )
             {
                 if ( polys[i].containsPoint(p) )
+                {
+                    if ( currentPoly != undefined )
+                        currentPoly.restore(ctx);
                     polys[i].fill(ctx);
+                    currentPoly = polys[i];
+                    break;
+                }
             }
         }
     });
