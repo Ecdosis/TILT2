@@ -24,7 +24,6 @@ import tilt.align.Matchup;
 import tilt.image.convexhull.*;
 import tilt.exception.*;
 import tilt.Utils;
-import java.awt.Rectangle;
 
 /**
  * Split a polygon in appropriate places. It does this not by looking for 
@@ -67,6 +66,48 @@ public class Split
         return array;
     }
     /**
+     * Check that the array of shapes is at least as long as that of the words
+     * @param shapeArray an array of shape widths
+     * @param widths an array of word-widths
+     * @return an new array of shape widths or the same one
+     */
+    private int[] checkShapeArray( int[] shapeArray, int[] widths )
+    {
+        if ( shapeArray.length >= widths.length )
+            return shapeArray;
+        else
+        {
+            double total = 0;
+            int[] newShapes = new int[widths.length];
+            for ( int i=0;i<widths.length;i++ )
+                total += widths[i];
+            double scale = (double)shape.getBounds().width/total;
+            for ( int i=0;i<newShapes.length;i++ )
+                newShapes[i] = (int)Math.round(widths[i]*scale);
+            return newShapes;
+        }
+    }
+    /**
+     * The gap array has to match the spape array. It should be 1 less.
+     * @param gapArray the gap array as it is
+     * @param shapeArray the shape array already adjusted
+     * @return the remodeled gap array
+     */
+    private int[] checkGapArray( int[] gapArray, int [] shapeArray )
+    {
+        if ( gapArray.length >= shapeArray.length )
+            return gapArray;
+        else
+        {
+            int[] newGapArray = new int[shapeArray.length];
+            for ( int i=0;i<gapArray.length;i++ )
+                newGapArray[i] = gapArray[i];
+            for ( int i=gapArray.length;i<newGapArray.length;i++ )
+                newGapArray[i] = 2;
+            return newGapArray;
+        }
+    }
+    /**
      * Actually split the designated shape, storing the result directly in 
      * the line's shapes array.
      */
@@ -82,9 +123,9 @@ public class Split
         for ( int i=0;i<shapeWidth;i++ )
         {
             int blackPixels = 0;
+            int x = i+shape.getBounds().x;
             for ( int j=0;j<shapeHeight;j++ )
             {
-                int x = i+shape.getBounds().x;
                 int y = j+shape.getBounds().y;
                 wr.getPixel( x, y, iArray );
                 if ( iArray[0] == 0 )
@@ -115,6 +156,8 @@ public class Split
             int[] widths = new int[words.length];
             for ( int i=0;i<widths.length;i++ )
                 widths[i] = words[i].width();
+            shapeArray = checkShapeArray( shapeArray, widths );
+            gapArray = checkGapArray( gapArray, shapeArray );
             Matchup m = new Matchup( shapeArray, widths );
             int[][][] matches = m.align();
             ArrayList<Integer> splitArray = new ArrayList<>();
@@ -134,7 +177,11 @@ public class Split
                         splitPos += gapArray[gap++];
                 }
                 if ( matches[i][0].length>0 )
-                    splitArray.add( splitPos + gapArray[gap]/2 );
+                {
+                    if ( gap < gapArray.length )
+                        splitPos += gapArray[gap]/2;
+                    splitArray.add( splitPos );
+                }
                 gap++;
             }
             if ( splitArray.size()<= 1 )

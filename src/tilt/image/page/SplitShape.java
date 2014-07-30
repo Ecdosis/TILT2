@@ -222,8 +222,6 @@ public class SplitShape
                 pg.addPoint( (int)Math.round(pt.x()), 
                     (int)Math.round(pt.y()) );
             }
-            if ( pg.getBounds().width > 500 )
-                System.out.println("500!");
             return pg;
         }
         else
