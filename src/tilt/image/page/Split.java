@@ -88,7 +88,7 @@ public class Split
         }
     }
     /**
-     * The gap array has to match the spape array. It should be 1 less.
+     * The gap array has to match the shape array. It should be the same.
      * @param gapArray the gap array as it is
      * @param shapeArray the shape array already adjusted
      * @return the remodeled gap array
@@ -184,9 +184,9 @@ public class Split
                 }
                 gap++;
             }
-            if ( splitArray.size()<= 1 )
-                throw new SplitException("Not enough break points for split");
-            splitArray.remove(splitArray.size()-1);
+            // need at least 1 split
+            if ( splitArray.size()> 1 )
+                splitArray.remove(splitArray.size()-1);
             int[] splits = toIntArray( splitArray );
             Polygon[] shapes = split( splits );
             // replace existing shape with split portions

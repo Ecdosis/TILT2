@@ -513,6 +513,34 @@ public class Page
         return widths;
     }
     /**
+     * Count the number of syllables needed for words split over lines
+     * @param nShapes number of shapes consumed by one word
+     * @param k offset in current line
+     * @param j index into lineStarts
+     * @param lineStarts the linestarts (shapeOffsets) array
+     * @return number of syllables to divide word into
+     */
+    private int countSyllables( int nShapes, int k, int j, int[] lineStarts )
+    {
+        int nSyl = 0;
+        while ( nShapes > 0 && j<lineStarts.length-1 )
+        {
+            int lineLen = lineStarts[j+1]-lineStarts[j];
+            int oldK = k;
+            while ( nShapes>0 && k < lineLen )
+            {
+                nShapes--;
+                k++;
+            }
+            // found at least one shape on line
+            if ( oldK < k )
+                nSyl++;
+            j++;
+            k = 0;
+        }
+        return nSyl;
+    }
+    /**
      * Align word shapes in image to words in text
      * @param shapeOffsets offsets into the shapes array for each line start
      * @param words the word objects on the page
@@ -563,63 +591,39 @@ public class Page
                     if ( j==shapeOffsets.length-1 
                         || sIndices[last] < shapeOffsets[j+1] )
                     {
+                        // all fit one line
                         merges.add( new Merge(l, shapeOffsets[j], sIndices, 
                             words[wIndices[0]]) );
                         k += sIndices.length;
                     }
                     else
                     {
-                        // some on one line, some on next
-                        int index = sIndices.length-1;
-                        while ( sIndices[index] > shapeOffsets[j+1] )
-                            index--;
-                        assert(sIndices[index] == shapeOffsets[j+1]);
-                        // shapes at the end of the current line
-                        if ( index > 1 )
+                        // more than one line
+                        // m is index into sIndices
+                        int m = 0;
+                        // s is index into syllables
+                        int s = 0;
+                        // count number of syllables
+                        int nSyl = countSyllables(sIndices.length,k,j,shapeOffsets);
+                        Word[] syllables = words[wIndices[m]].spitInto(nSyl);
+                        while ( m<sIndices.length )
                         {
-                            int[] newSIndices = new int[index];
-                            for (int m=0;m<index;m++ )
-                                newSIndices[m] = sIndices[m];
-                            merges.add( new Merge(l,shapeOffsets[j],
-                                newSIndices,words[wIndices[0]] ) );
-                            k += newSIndices.length;
-                        }
-                        else
-                            l.setShapeWord( k++, words[wIndices[0]] );
-                        // shapes at start of next line
-                        if ( index < sIndices.length-1 )
-                        {
-                            // go onto next lines
-                            while ( !l.hasShape(k) )
+                            int chunk = Math.min(l.countShapes()-k,sIndices.length-m);
+                            if ( chunk == 0 )
                             {
                                 l = lines.get(++j);
                                 l.reset();
                                 k = 0;
                             }
-                            int[] newSIndices = new int[sIndices.length-index];
-                            Word w = words[wIndices[0]];
-                            for ( int n=0,m=index;m<sIndices.length;m++,n++ )
-                                newSIndices[n] = sIndices[m];
-                            // we can't change the words array so this word
-                            // will only exist for attachment to the shape
-                            Word w2 = w.split(w.length()/2);
-                            merges.add( new Merge(l,shapeOffsets[j],
-                                newSIndices,w2) );
-                            k += newSIndices.length;
-                        }
-                        else
-                        {
-                            // get first shape on line
-                            while ( !l.hasShape(k) )
+                            else
                             {
-                                l = lines.get(++j);
-                                l.reset();
-                                k = 0;
+                                int [] slice = new int[chunk];
+                                for ( int n=0;n<chunk;n++ )
+                                    slice[n] = sIndices[m++];
+                                merges.add( new Merge(l, shapeOffsets[j], slice, 
+                                    syllables[s++]) );
+                                k += chunk;
                             }
-                            Word w = words[wIndices[0]];
-                            Word w2 = w.split(w.length()/2);
-                            l.setShapeWord( 0, w2 );
-                            k = 1;
                         }
                     }
                 }

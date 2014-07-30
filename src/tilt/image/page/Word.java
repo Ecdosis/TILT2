@@ -59,6 +59,29 @@ public class Word
         return newWord;
     }
     /**
+     * Split into the given number of syllables. Simple implementation for now.
+     * @param nSyl number of syllables
+     * @return an array of nSyl syllables
+     */
+    Word[] spitInto( int nSyl )
+    {
+        Word[] syllables = new Word[nSyl];
+        int sylLen = text.length()/nSyl;
+        int off = this.offset;
+        int pos = 0;
+        float charLen = this.width/text.length();
+        for ( int i=0;i<nSyl;i++ )
+        {
+            int sylWidth = Math.round(charLen*sylLen);
+            syllables[i] = new Word(off, text.substring(pos,pos+sylLen),sylWidth);
+            off += sylLen;
+            pos += sylLen;
+            if ( i==nSyl-1 )
+                sylLen = text.length()-off;
+        }
+        return syllables;
+    }
+    /**
      * Get this word's pixel width
      * @return its estimated width in pixels
      */
