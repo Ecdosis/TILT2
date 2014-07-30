@@ -60,6 +60,7 @@ public class Picture {
     File words;
     Double[][] coords;
     TextIndex text;
+    boolean linked;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
@@ -434,6 +435,11 @@ public class Picture {
      */
     void convertToLinks() throws ImageException
     {
+        if ( this.linked )
+        {
+            page.resetShapes();
+            words = null;
+        }
         if ( words == null )
             convertToWords();
         float ppc = page.pixelsPerChar( text.numChars() );
@@ -447,6 +453,7 @@ public class Picture {
             Word[] wordObjs = text.getWords( ppc );
             BufferedImage clean = ImageIO.read(cleaned);
             page.align( alignments, shapeOffsets, wordObjs, clean.getRaster() );
+            this.linked = true;
         }
         catch ( Exception e )
         {

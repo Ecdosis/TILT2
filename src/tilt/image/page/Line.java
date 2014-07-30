@@ -697,10 +697,14 @@ public class Line implements Comparable<Line>
             words.add( index, word );
     }
     /**
-     * Reset the words array for a realignment
+     * Reset the words and shapes arrays for a realignment
      */
     public void reset()
     {
         words.clear();
+    }
+    public void resetShapes()
+    {
+        shapes.clear();
     }
 }

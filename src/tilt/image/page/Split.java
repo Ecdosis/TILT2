@@ -20,11 +20,11 @@ package tilt.image.page;
 import java.awt.Polygon;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.Iterator;
 import tilt.align.Matchup;
 import tilt.image.convexhull.*;
 import tilt.exception.*;
 import tilt.Utils;
+import java.awt.Rectangle;
 
 /**
  * Split a polygon in appropriate places. It does this not by looking for 
@@ -162,113 +162,54 @@ public class Split
      */
     public Polygon[] split( int[] splits ) throws SplitException
     {
-        ArrayList<Point2D>[] newPolys = new ArrayList[splits.length+1];
+        SplitShape[] newShapes = new SplitShape[splits.length+1];
         Point2D[] points = Utils.polygonToPoints( shape );
-        for ( int i=0;i<newPolys.length;i++ )
-            newPolys[i] = new ArrayList<>();
-        // examine each original point
+        // create new shapes to generate split polygons
+        int shapeRight = shape.getBounds().width+shape.getBounds().x;
+        for ( int start=shape.getBounds().x,i=0;i<newShapes.length;i++ )
+        {
+            int splitPt = (i<splits.length)?splits[i]:shapeRight;
+            newShapes[i] = new SplitShape(start,splitPt);
+            start = splitPt;
+        }
+        // distribute points among shapes
         for ( int i=0;i<points.length;i++ )
         {
             Point2D p = points[i];
+            int x = (int)Math.round(p.x());
             // determine which shape it falls into
-            for ( int j=0;j<=splits.length;j++ )
+            for ( int j=0;j<newShapes.length;j++ )
             {
-                int leftSplit = -1;
-                int rightSplit = -1;
-                if ( j==splits.length )
-                    leftSplit = splits[j-1];
-                else if ( j==0 )
-                    rightSplit = splits[0];
-                else
-                {
-                    leftSplit = splits[j-1];
-                    rightSplit = splits[j];
-                }
                 // determine where p goes
-                if ( p.x() < rightSplit || (rightSplit==-1 && j==splits.length) )
+                if ( newShapes[j].wants(x) )
                 {
-                    // so p belongs within shapes[j]
-                    if ( i > 0 )
-                    {
-                        // examine previous point
-                        Point2D q = points[i-1];
-                        if ( q.x() < leftSplit )
-                            newPolys[j].add( getDiagonalPoint(q,p,leftSplit) );
-                        else if ( rightSplit!=-1 && q.x() >= rightSplit )
-                            newPolys[j].add(getDiagonalPoint(p,q,rightSplit) );
-                    }
-                    newPolys[j].add( p );
-                    if ( i < points.length-1 )
-                    {
-                        Point2D q = points[i+1];
-                        if ( q.x() < leftSplit )
-                        {
-                            Point2D s = getDiagonalPoint(q,p,leftSplit);
-                            newPolys[j].add(s);
-                            newPolys[j-1].add(new Point2D(s.x()-5,s.y()));
-                        }
-                        else if ( rightSplit!=-1 && q.x() >= rightSplit )
-                        {
-                            Point2D s = getDiagonalPoint(p,q,rightSplit);
-                            newPolys[j].add(s );
-                            newPolys[j+1].add(new Point2D(s.x()+5,s.y()));
-                        }
-                    }
+                    newShapes[j].add( p );
                     break;
                 }
             }
         }
-        // now close the generated shapes
-        for ( int i=0;i<newPolys.length;i++ )
+        // add split points
+        for ( int i=0;i<newShapes.length;i++ )
         {
-            ArrayList<Point2D> r = newPolys[i];
-            if ( r.size()>0 )
+            if ( i==0 )
+                newShapes[i].addRightIntersectPoints(this.shape);
+            else if ( i == newShapes.length-1 )
+                newShapes[i].addLeftIntersectPoints(this.shape);
+            else
             {
-                Point2D p = r.get(0);
-                Point2D q = r.get(r.size()-1);
-                if ( !p.equals(q) )
-                    r.add( new Point2D(p.x(),p.y()) );
+                newShapes[i].addRightIntersectPoints(this.shape);
+                newShapes[i].addLeftIntersectPoints(this.shape);
             }
         }
         // convert to polygons
-        Polygon[] polys = new Polygon[newPolys.length];
-        for ( int i=0;i<polys.length;i++ )
+        ArrayList<Polygon> polys = new ArrayList<>();
+        for  ( int i=0;i<newShapes.length;i++ )
         {
-            polys[i] = new Polygon();
-            Point2D[] newPolyArray = new Point2D[newPolys[i].size()];
-            newPolys[i].toArray(newPolyArray);
-            GrahamScan gs = new GrahamScan( newPolyArray );
-            Iterable<Point2D> trimmedPts = gs.hull();
-            Iterator<Point2D> iter = trimmedPts.iterator();
-            while ( iter.hasNext() )
-            {
-                Point2D pt = iter.next();
-                polys[i].addPoint( (int)Math.round(pt.x()), 
-                    (int)Math.round(pt.y()) );
-            }
+            if ( newShapes[i].numPoints()> 3)
+                polys.add( newShapes[i].getPoly() );
         }
-        return polys;
-    }
-    /**
-     * Add a new point at the given x-offset between 2 points
-     * @param p the left point
-     * @param q the right point
-     * @param split the split x-position
-     */
-    private Point2D getDiagonalPoint( Point2D p, Point2D q, int split ) 
-        throws SplitException
-    {
-        Point2D u = null;
-        if ( p.x() < q.x() && split > p.x() )
-        {
-            double deltaSplitX = (float)(split-p.x());
-            double deltaX = (float)(q.x()-p.x());
-            double ratio = deltaSplitX/deltaX;
-            double deltaY = (q.y()-p.y());
-            u = new Point2D( split, p.y()+(ratio*deltaY) );
-        }
-        else
-            throw new SplitException("p.x >= q.x during split");
-        return u;
+        Polygon[] array = new Polygon[polys.size()];
+        polys.toArray(array );
+        return array;
     }
 }

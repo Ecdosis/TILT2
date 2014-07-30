@@ -17,8 +17,8 @@ public class Point2D implements Comparable<Point2D> {
     public final Comparator<Point2D> ATAN2_ORDER = new Atan2Order();
     public final Comparator<Point2D> DISTANCE_TO_ORDER = new DistanceToOrder();
 
-    private final double x; // x coordinate
-    private final double y; // y coordinate
+    public double x; // x coordinate
+    public double y; // y coordinate
 
     // create a new point (x, y)
     public Point2D(double x, double y) {
@@ -172,6 +172,10 @@ public class Point2D implements Comparable<Point2D> {
     // convert to string
     public String toString() {
         return "(" + x + ", " + y + ")";
+    }
+    public Point2D minus( Point2D p )
+    {
+        return new Point2D(this.x-p.x,this.y-p.y);
     }
 
 //    // plot using StdDraw

@@ -596,7 +596,7 @@ public class Page
                                 l.reset();
                                 k = 0;
                             }
-                            int[] newSIndices = new int[index+1];
+                            int[] newSIndices = new int[sIndices.length-index];
                             Word w = words[wIndices[0]];
                             for ( int n=0,m=index;m<sIndices.length;m++,n++ )
                                 newSIndices[n] = sIndices[m];
@@ -657,5 +657,10 @@ public class Page
             total += l.shapes.size();
         }
         return starts;
+    }
+    public void resetShapes()
+    {
+        for ( int i=0;i<lines.size();i++ )
+            lines.get(i).resetShapes();
     }
 }
