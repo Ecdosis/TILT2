@@ -173,7 +173,7 @@ public class Split
                 for ( int j=0;j<blobs.length;j++ )
                 {
                     splitPos += shapeArray[blob++];
-                    if ( j < blobs.length-1 )
+                    if ( j < blobs.length-1&&gap<gapArray.length )
                         splitPos += gapArray[gap++];
                 }
                 if ( matches[i][0].length>0 )
