@@ -257,14 +257,21 @@ function Hash2DTree( json )
             return b.getAll();
     };
 }
+function appendCanvas()
+{
+    var container = $("#container");
+    var jqImg = $("#left img");
+    if ( jqImg != undefined )
+    {
+        var ht = jqImg.height();
+        var wt = jqImg.width();
+        var cstr = '<canvas width="'+wt+'" height="'+ht+'">No HTML5!</canvas>';
+        container.append(cstr);
+    }
+}
 function bindJsonToImage( json )
 {
-    var jqImg = $("#left img");
-    var ht = jqImg.height();
-    var wt = jqImg.width();
-    var cstr = '<canvas width="'+wt+'" height="'+ht+'">No HTML5!</canvas>';
-    var src = jqImg.attr("src");
-    jqImg.replaceWith(cstr);
+    appendCanvas();
     var canvas = $("#left canvas");
     currentPoly = undefined;
     canvas.mousemove(function(e){
@@ -291,55 +298,59 @@ function bindJsonToImage( json )
     });
     var ctx = canvas.get(0).getContext('2d');
     tree = new Hash2DTree(json);
-    tree.img = new Image;
-    tree.img.src = src;
-    ctx.drawImage( tree.img, 0, 0, wt, ht );
 }
 $(document).ready(function() {
 disableAll();
 $("#upload").click(function(e){
 	var localurl = "http://"+location.hostname+"/tilt/";
 	$.post( localurl, $("#main").serialize(), function( data ) {
-	$("#left").empty();
-	$("#left").html(data);
-	enableAll();
+	$("#container").empty();
+	$("#container").html(data);
+	appendCanvas();
+    enableAll();
 	},"text").fail(function(xhr, status, error){
 	alert(status);
 	disableAll();
 	});
 });
 $("#original").click(function(){
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("original")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("original")+'">');
+    appendCanvas();
 });
 $("#greyscale").click(function(){
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("greyscale")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("greyscale")+'">');
+    appendCanvas();
 });
 $("#twotone").click(function(){
 	var url = escapeUrl(getUrlFromLoc("twotone"));
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("twotone")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("twotone")+'">');
+    appendCanvas();
 });
 $("#cleaned").click(function(){
 	var url = escapeUrl(getUrlFromLoc("cleaned"));
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("cleaned")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("cleaned")+'">');
+    appendCanvas();
 });
 $("#baselines").click(function(){
 	var url = escapeUrl(getUrlFromLoc("baselines"));
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("baselines")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("baselines")+'">');
+    appendCanvas();
 });
 $("#words").click(function(){
 	var url = escapeUrl(getUrlFromLoc("words"));
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("words")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("words")+'">');
+    appendCanvas();
 });
 $("#link").click(function(){
 	var url = escapeUrl(getUrlFromLoc("link"));
-	$("#left").empty();
-	$("#left").html('<img width="500" src="'+getUrlFromLoc("link")+'">');
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("link")+'">');
     var gjurl = getGeoJsonUrl();
     $.get( gjurl, function( data ) {
     bindJsonToImage(data);

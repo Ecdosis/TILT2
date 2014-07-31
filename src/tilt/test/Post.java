@@ -39,8 +39,13 @@ public class Post extends Test
     +"#content p { font-size:small}\n"
     +"#content table tr td ul { margin: 0 }\n"
     +".hidden { display: none}\n"
-    + "textarea { display: none }\n"
-    + "#title { font-weight: bold}";
+    +"textarea { display: none }\n"
+    +"#title { font-weight: bold}\n"
+    +"#container{ display-inline-block;\n"
+    +"margin 0 auto;\n"
+    +"position: relative; }\n"
+    +"img{position:absolute;z-index:1;}\n"
+    +"canvas{position:relative;z-index:2}";
     /**
      * Create a hidden div (of class "hidden")
      * @param id the id of the div
@@ -121,6 +126,9 @@ public class Post extends Test
             // now add the two sides
             Element lhs = new Element("div");
             lhs.addAttribute("id","left");
+            Element container = new Element("div");
+            container.addAttribute("id","container");
+            lhs.addElement(container);
             doc.addElement( lhs );
             Element rhs = new Element("div");
             rhs.addAttribute("id","right");

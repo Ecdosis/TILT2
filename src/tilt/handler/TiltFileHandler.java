@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URLConnection;
 import javax.servlet.ServletOutputStream;
 
 /**
@@ -39,7 +40,8 @@ public class TiltFileHandler extends TiltHandler
             FileInputStream fis = new FileInputStream(f);
             byte[] data = new byte[(int)f.length()];
             fis.read(data);
-            response.setContentType("text/plain");
+            String mimeType = URLConnection.guessContentTypeFromStream(fis);
+            response.setContentType(mimeType);
             ServletOutputStream sos = response.getOutputStream();
             sos.write( data );
             sos.close();

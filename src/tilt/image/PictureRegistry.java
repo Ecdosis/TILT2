@@ -33,7 +33,7 @@ import tilt.exception.DoSException;
  */
 public class PictureRegistry 
 {
-    static long FORGET_TIME = 20000;
+    static long FORGET_TIME = 30000;
     static String PREFIX = "TMP";
     static String SUFFIX = ".tmp";
     static TreeMap<Long,Picture> map;
