@@ -32,9 +32,9 @@ public class Post extends Test
 {
     static String POST_CSS =
     "#left {float:left;margin:10px}\n"
-    +"#right {float:left;margin:10px}\n"
+    +"#right {float:left;margin:10px;}\n"
     +"#toolbar {clear:both}\n"
-    +"#content { width: 500px }\n"
+    +"#content { width: 500px;}\n"
     +"#content table tr td { font-size:small}\n"
     +"#content p { font-size:small}\n"
     +"#content table tr td ul { margin: 0 }\n"
@@ -45,7 +45,8 @@ public class Post extends Test
     +"margin 0 auto;\n"
     +"position: relative; }\n"
     +"img{position:absolute;z-index:1;}\n"
-    +"canvas{position:relative;z-index:2}";
+    +"canvas{position:relative;z-index:2}\n"
+    +".highlight{background-color: #FFFF88;}\n";
     /**
      * Create a hidden div (of class "hidden")
      * @param id the id of the div
@@ -75,6 +76,7 @@ public class Post extends Test
             doc = new HTML();
             doc.getHead().addEncoding("text/html; charset=UTF-8");
             doc.getHead().addJQuery("1.9.0");
+            doc.getHead().addScriptFile( "jquery.highlight.js" );
             doc.getHead().addScriptFile( "post.js" );
             doc.getHead().addCss(POST_CSS);
             HashMap<String,String> selections = new HashMap<>();

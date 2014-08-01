@@ -336,24 +336,36 @@ function bindJsonToImage( json )
                 if ( polys[i].containsPoint(p) )
                 {
                     if ( currentPoly != undefined )
+                    {
                         currentPoly.restore(ctx);
+                        $("#"+currentPoly.id).unhighlight();
+                    }
                     polys[i].fill(ctx);
                     currentPoly = polys[i];
+                    var target = $("#"+currentPoly.id);
+                    target.highlight(target.text());
                     break;
                 }
             }
         }
     });
-    $(".word").mousemove(function(e) {
-        var id = this.attr("id");
-        if ( id != undefined )
-        {
-            var poly = tree.reverseIndex[id];
-            poly.fill(ctx);
-        }
-    });
     var ctx = canvas.get(0).getContext('2d');
     tree = new Hash2DTree(json);
+    $(".word").mousemove(function(e) {
+        var id = $(this).attr("id");
+        if ( id != undefined )
+        {
+            if ( currentPoly != undefined )
+            {
+                currentPoly.restore(ctx);
+                $("#"+currentPoly.id).unhighlight();
+            }
+            var poly = tree.reverseIndex[id];
+            poly.fill(ctx);
+            currentPoly = poly;
+            $(this).highlight($(this).text());
+        }
+    });
 }
 $(document).ready(function() {
 disableAll();
