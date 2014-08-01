@@ -103,6 +103,8 @@ function Polygon( coords, props )
     {
         if ( props.offset != undefined )
             this.offset = props.offset;
+        else
+            this.offset = -1;
         if ( props.hyphen != undefined )
             this.hyphen = hyphen;
     }
@@ -201,6 +203,7 @@ function Hash2DTree( json )
     this.vBuckets = Math.round((width<height)?75:50);
     this.vUnit = Math.floor(height/this.vBuckets);
     this.buckets = new Array();
+    this.reverseIndex = new Array();
     this.getIndices = function( p )
     {
         var b = p.bounds;
@@ -217,10 +220,10 @@ function Hash2DTree( json )
         }
         return indices;
     };
+    var polyList = new Array();
     for ( var i=0;i<geoJson.features.length;i++ )
     {
         var line = geoJson.features[i];
-        polygon = 0;
         for ( var j=0;j<line.features.length;j++ )
         {
             var poly = line.features[j];
@@ -240,10 +243,55 @@ function Hash2DTree( json )
                        else
                            this.buckets[index].append(p);
                     }
+                    polyList[polyList.length] = p;
+                    if ( p.offset != undefined )
+                    {
+                        p.id = "O_"+p.offset;
+                        this.reverseIndex[p.id] = p;
+                    }
                 }
             }
         }
     }
+    this.shellsort = function(a)
+    {
+	    for (var h = a.length; h = parseInt(h/2);) {
+            for (var i = h; i < a.length; i++) {
+                var k = a[i];
+                for (var j=i;j>=h && k.offset<a[j-h].offset; j-=h)
+                    a[j] = a[j-h];
+                a[j] = k;
+            }
+        }
+        return a;
+    }
+    this.processPolys = function( parray )
+    {
+        this.shellsort(parray);
+        var text = $("#content").html();
+        for ( var i=parray.length-1;i>=0;i-- )
+        {
+            var poly = parray[i];
+            if ( poly.offset != undefined )
+            {
+                var spacePos = text.indexOf(" ",poly.offset);
+                var brPos = text.indexOf("<",poly.offset);
+                var end = Math.min(spacePos,brPos);
+                if ( brPos == -1 && spacePos == -1 )
+                     end = text.length;
+                else if ( brPos == -1 )
+                    end = spacePos;
+                else if ( spacePos == -1 )
+                    end = brPos;
+                var prev = text.slice(0,poly.offset);
+                var word = text.slice(poly.offset,end);
+                var tail = text.slice(end);
+                text = prev.concat('<span class="word" id="'+poly.id+'">',word,"</span>",tail);
+            }
+        }
+        $("#content").html(text);
+    }
+    this.processPolys( polyList );
     this.find = function( x, y )
     {
         var indX = Math.floor(x/this.hUnit);
@@ -294,6 +342,14 @@ function bindJsonToImage( json )
                     break;
                 }
             }
+        }
+    });
+    $(".word").mousemove(function(e) {
+        var id = this.attr("id");
+        if ( id != undefined )
+        {
+            var poly = tree.reverseIndex[id];
+            poly.fill(ctx);
         }
     });
     var ctx = canvas.get(0).getContext('2d');

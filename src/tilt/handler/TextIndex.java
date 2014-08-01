@@ -105,7 +105,7 @@ public class TextIndex
     {
         speller = new AeseSpeller( lang );
         this.dict = lang;
-        digest( html );
+        digest( html.replaceAll("\n","") );
         speller.cleanup();
     }
     /**

@@ -523,9 +523,13 @@ public class Page
     private int countSyllables( int nShapes, int k, int j, int[] lineStarts )
     {
         int nSyl = 0;
-        while ( nShapes > 0 && j<lineStarts.length-1 )
+        while ( nShapes > 0 && j<lineStarts.length )
         {
-            int lineLen = lineStarts[j+1]-lineStarts[j];
+            int lineLen;
+            if ( j < lineStarts.length-1 )
+                lineLen = lineStarts[j+1]-lineStarts[j];
+            else
+                lineLen = lines.get(j).countShapes();
             int oldK = k;
             while ( nShapes>0 && k < lineLen )
             {
@@ -566,6 +570,8 @@ public class Page
                 int[][] alignment = alignments[i];
                 int[] sIndices = alignment[0];
                 int[] wIndices = alignment[1];
+                if ( i == 212 )
+                    System.out.println("212");
                 while ( !l.hasShape(k) )
                 {
                     l = lines.get(++j);
