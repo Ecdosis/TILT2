@@ -32,21 +32,21 @@ public class Post extends Test
 {
     static String POST_CSS =
     "#left {float:left;margin:10px}\n"
-    +"#right {float:left;margin:10px;}\n"
+    +"#right {float:left;margin:10px}\n"
     +"#toolbar {clear:both}\n"
-    +"#content { width: 500px;}\n"
+    +"#content { width: 500px}\n"
     +"#content table tr td { font-size:small}\n"
     +"#content p { font-size:small}\n"
     +"#content table tr td ul { margin: 0 }\n"
     +".hidden { display: none}\n"
     +"textarea { display: none }\n"
     +"#title { font-weight: bold}\n"
-    +"#container{ display-inline-block;\n"
-    +"margin 0 auto;\n"
-    +"position: relative; }\n"
-    +"img{position:absolute;z-index:1;}\n"
+    +"#container{ display:inline-block;\n"
+    +"margin: 0 auto;\n"
+    +"position: relative }\n"
+    +"img{position:absolute;z-index:1}\n"
     +"canvas{position:relative;z-index:2}\n"
-    +".highlight{background-color: #FFFF88;}\n";
+    +".highlight{background-color: #FFFF88}\n";
     /**
      * Create a hidden div (of class "hidden")
      * @param id the id of the div

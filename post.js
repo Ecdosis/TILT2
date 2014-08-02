@@ -268,7 +268,7 @@ function Hash2DTree( json )
     this.processPolys = function( parray )
     {
         this.shellsort(parray);
-        var text = $("#content").html();
+        var text = $("#text").val();
         for ( var i=parray.length-1;i>=0;i-- )
         {
             var poly = parray[i];
@@ -314,6 +314,8 @@ function appendCanvas()
         var ht = jqImg.height();
         var wt = jqImg.width();
         var cstr = '<canvas width="'+wt+'" height="'+ht+'">No HTML5!</canvas>';
+        if ( $("#container").has("canvas"))
+            $("#container canvas").remove();
         container.append(cstr);
     }
 }
@@ -374,17 +376,17 @@ $("#upload").click(function(e){
 	$.post( localurl, $("#main").serialize(), function( data ) {
 	$("#container").empty();
 	$("#container").html(data);
-	appendCanvas();
+    appendCanvas();
     enableAll();
 	},"text").fail(function(xhr, status, error){
-	alert(status);
-	disableAll();
+	    alert(status);
+	    disableAll();
 	});
 });
 $("#original").click(function(){
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getUrlFromLoc("original")+'">');
-    appendCanvas();
+    appendCanvas()
 });
 $("#greyscale").click(function(){
 	$("#container").empty();
