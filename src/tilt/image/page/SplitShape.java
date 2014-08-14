@@ -17,7 +17,6 @@
  */   
 
 package tilt.image.page;
-import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Iterator;
 import tilt.exception.SplitException;

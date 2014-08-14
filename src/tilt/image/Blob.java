@@ -18,7 +18,7 @@
 
 package tilt.image;
 import java.awt.Point;
-import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.net.InetAddress;
@@ -29,6 +29,8 @@ import tilt.Utils;
 import tilt.handler.TextIndex;
 import tilt.image.convexhull.*;
 import org.json.simple.*;
+import tilt.image.page.Polygon;
+
 
 /**
  * An amorphous region of connected black pixels in an image
@@ -105,21 +107,28 @@ public class Blob
      */
     public static float setToWhite( WritableRaster wr )
     {
-        int blackPixels = 0;
         int width = wr.getWidth();
         int height = wr.getHeight();
+        Rectangle r = new Rectangle( 0, 0, width, height );
+        return setToWhite( wr, r );
+    }
+    public static float setToWhite( WritableRaster wr, Rectangle bounds )
+    {
+        int blackPixels = 0;
+        int yEnd = bounds.height+bounds.y;
+        int xEnd = bounds.width+bounds.x;
         // set all to white
-        int[] iArray = new int[width];
-        int[] dirty = new int[width];
-        for ( int x=0;x<width;x++ )
+        int[] iArray = new int[bounds.width];
+        int[] dirty = new int[bounds.width];
+        for ( int x=0;x<bounds.width;x++ )
             iArray[x] = 255;
-        for ( int y=0;y<height;y++ )
+        for ( int y=bounds.y;y<yEnd;y++ )
         {
-            wr.getPixels(0,y,width,1,dirty);
-            for ( int i=0;i<width;i++ )
+            wr.getPixels(bounds.x,y,bounds.width,1,dirty);
+            for ( int i=0;i<dirty.length;i++ )
                 if ( dirty[i]==0 )
                     blackPixels++;
-            wr.setPixels(0,y,width,1,iArray);
+            wr.setPixels(bounds.x,y,bounds.width,1,iArray);
         }
         return (float)blackPixels/(float)(wr.getWidth()*wr.getHeight());
     }

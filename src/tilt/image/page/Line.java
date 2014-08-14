@@ -25,7 +25,6 @@ import java.util.Set;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.Rectangle;
-import java.awt.Polygon;
 import java.awt.Color;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
@@ -277,23 +276,16 @@ public class Line implements Comparable<Line>
         }
         total++;
     }
-    /** 
-     * Do almost all the shapes of this line belong elsewhere?
-     * @return true if these shapes are made for walkin'
+    /**
+     * Get the centroids for the line
+     * @return an array of centroids for all the polygons on the line
      */
-    boolean wantsMerge()
+    Point[] getCentroids()
     {
-        float proportion = Math.round(SHARED_RATIO*total);
-        Set<Line> keys = shared.keySet();
-        Iterator<Line> iter = keys.iterator();
-        while ( iter.hasNext() )
-        {
-            Line l = iter.next();
-            ArrayList<Polygon> list = shared.get( l );
-            if ( list.size() >= proportion )
-                return true;
-        }
-        return false;
+        Point[] centroids = new Point[shapes.size()];
+        for ( int i=0;i<centroids.length;i++ )
+            centroids[i] = shapes.get(i).getCentroid();
+        return centroids;
     }
     /**
      * Merge this line with its most similar colleague
@@ -330,8 +322,13 @@ public class Line implements Comparable<Line>
      */
     public void print( Graphics g, WritableRaster wr, int n )
     {
-        Color tRed = new Color(255, 0,0, 128 );
-        Color tBlue = new Color(0, 255,0, 128 );
+        Color tColour;
+        if ( n%3==0 )
+            tColour = new Color( 255, 0, 0, 128 );
+        else if ( n%3==1 )
+            tColour = new Color( 0, 255,0,128);
+        else
+            tColour = new Color(0,0,255,128);
         Color old = g.getColor();
         if ( shapes.size()>0 )
         {
@@ -342,10 +339,7 @@ public class Line implements Comparable<Line>
         for ( int i=0;i<shapes.size();i++ )
         {
             Shape s = shapes.get(i);
-            if ( i%2==1)
-                g.setColor( tRed );
-            else
-                g.setColor( tBlue );
+            g.setColor( tColour );
             if ( s instanceof Polygon )
                 g.fillPolygon( (Polygon)s );
             else if ( s instanceof Rectangle )
@@ -516,7 +510,7 @@ public class Line implements Comparable<Line>
      * Get the overall bounding box of this line
      * @return a rectangle
      */
-    private Rectangle getBounds()
+    public Rectangle getBounds()
     {
         Area region = new Area();
         for ( int i=0;i<shapes.size();i++ )
@@ -601,7 +595,7 @@ public class Line implements Comparable<Line>
      * Get the number of shapes on a line
      * @return an int
      */
-    int countShapes()
+    public int countShapes()
     {
         return shapes.size();
     }

@@ -17,7 +17,6 @@
  */        
 
 package tilt.image.page;
-import java.awt.Polygon;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.awt.geom.PathIterator;

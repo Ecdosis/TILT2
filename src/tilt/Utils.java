@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.awt.Point;
 import java.awt.geom.PathIterator;
-import java.awt.Polygon;
 import java.awt.image.Raster;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -30,6 +29,7 @@ import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 import static tilt.Utils.dist2;
 import tilt.image.convexhull.*;
+import tilt.image.page.Polygon;
 
 /**
  * Some routines that need sharing by all

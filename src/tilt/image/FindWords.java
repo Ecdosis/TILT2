@@ -22,7 +22,7 @@ import java.awt.image.WritableRaster;
 import tilt.image.page.*;
 import java.util.ArrayList;
 import java.awt.Point;
-import java.awt.Polygon;
+import tilt.image.page.Polygon;
 import java.awt.Rectangle;
 /**
  * Using the lines lists search for words
@@ -59,19 +59,24 @@ public class FindWords
                 {
                     for ( int k=0;k<s.length;k++ )
                     {
-                        Line inLine = page.contains(s[k]);
-                        if ( inLine == null )
-                        {
-                            line.add( s[k] );
-                            page.addShape( s[k], line );
-                        }
-                        else if ( inLine != line )
-                            line.addShared( inLine, s[k] );
+                        line.add( s[k] );
+                        page.addShape( s[k], line );
                     }
                 }
             }
+            Rectangle bounds = line.getBounds();
+            // clear the relevant portion of dirty so we can recognise the 
+            // same shapes on subsequent lines and later merge them
+            // onto the correct line
+            Blob.setToWhite( dirty, bounds );
         }
         page.mergeLines();
+//        for ( int i=0;i<lines.size();i++ )
+//        {
+//            Line l = lines.get(i);
+//            if ( l.countShapes()==0 )
+//                System.out.println("0");
+//        }
         page.getWordGap(); 
         page.joinWords();
     }

@@ -45,7 +45,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images//00000005.jpg\"\n\t}\n}\n"},
+    //+"\t\"url\": \"http://ecdosis.net/images//00000005.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images//00000005.jpg\"\n\t}\n}\n"},
     {"CAPUANA","Capuana example",
     "<h3>Al lettore.</h3>\n<p>Quando l’autore e l’editore di quest"
     +"i due frammenti mi\npregarono di scrivere due parole di pref"
@@ -70,7 +71,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
+    //+"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
+    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\"\n"
     +"\t}\n}\n"},
     {"DEROBERTO_V2","De Roberto V2",
     "<p align=\"center\">51</p>\n<p>re, e a don Blasco il quale gl"
@@ -112,7 +114,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n\t}\n}\n"},
+    //+"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/V2-69.jpg\"\n\t}\n}\n"},
     {"DEROBERTO_1920", "De Roberto 1920 edition",
     "<p align=\"center\">– 8 –</p>\n<p>che passo, non distinguendo"
     +" nulla pel buio; ma la voce\ndella principessa Margherita li"
@@ -148,7 +151,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
+    //+"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
+    +"\t\"url\": \"http://localhost/images/DR_1920_008.jpg\"\n\t"
     +"}\n}\n"},
     {"SONNETS", "Harpur Sonnets",
     "<h3 align=\"center\">VII"
@@ -172,13 +176,14 @@ public class Texts
     +"iced, nor Woman; in the guess<br>\nAnd careful feel of his m"
     +"ere Selfishness<br>\nMore mathematic than a Spider;——hence,<"
     +"br>\nAlthough in Look unsightly as an Elf,<br>\nNor favoured"
-    +" otherwise, and aught but clever,<br>\nNothing but Death shn"
+    +" otherwise, and aught but clever,<br>\nNothing but Death sha"
     +"ll cut him short of pelf!<br>\nThe instinct of the Brute may"
     +" err; but never<br>\nMight even Passion from its object seve"
     +"r<br>\nA thorough Worldling's providence for Self.<br></p>\n",
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/00000013.jpg\"\n\t"
+    //+"\t\"url\": \"http://ecdosis.net/images/00000013.jpg\"\n\t"
+    +"\t\"url\": \"http://localhost/images/00000013.jpg\"\n\t"
     +"}\n}\n"}};
 }

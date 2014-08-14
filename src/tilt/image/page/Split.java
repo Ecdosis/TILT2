@@ -17,7 +17,6 @@
  */        
 
 package tilt.image.page;
-import java.awt.Polygon;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import tilt.align.Matchup;
