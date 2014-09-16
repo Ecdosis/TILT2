@@ -27,7 +27,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
-import static tilt.Utils.dist2;
 import tilt.image.convexhull.*;
 import tilt.image.page.Polygon;
 

@@ -254,7 +254,6 @@ public class Page
      */
     public void mergeLines()
     {
-        long start = System.currentTimeMillis();
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
@@ -393,8 +392,6 @@ public class Page
                 }
             }
         }
-        long end = System.currentTimeMillis();
-        System.out.println("time taken="+(end-start));
     }
      /**
      * Print the word shapes over the top of the original image
@@ -592,7 +589,7 @@ public class Page
         JSONObject image=new JSONObject();
         image.put("type","FeatureCollection");
         JSONArray bounds = new JSONArray();
-        // assume one bounding box for now, witout rotation
+        // assume one bounding box for now, without rotation
         bounds.add(new Double(0.0) );
         bounds.add(new Double(0.0) );
         bounds.add(new Double(1.0) );

@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.handler.TiltHandler;
 import tilt.exception.TiltException;
-import tilt.test.html.*;
+import html.*;
 
 /**
  * Abstract Test handler

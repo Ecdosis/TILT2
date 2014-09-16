@@ -48,6 +48,28 @@ public class TiltPostHandler extends TiltHandler
         picType = ImageType.original;
     }
     /**
+     * Guess the format of some text (plain text or HTML)
+     * @param text the text to test
+     * @return TextIndex.HTML if 1st non-space is &lt; else TextIndex.TEXT
+     */
+    private int guessFormat( String text )
+    {
+        int format = TextIndex.TEXT;
+        for ( int i=0;i<text.length();i++ )
+        {
+            char token = text.charAt(i);
+            if ( !Character.isWhitespace(token) )
+            {
+                if ( token=='<' )
+                    format = TextIndex.HTML;
+                else
+                    format = TextIndex.TEXT;
+                break;
+            }
+        }
+        return format;
+    }
+    /**
      * Parse the import params from the request
      * @param request the http request
      */
@@ -81,9 +103,17 @@ public class TiltPostHandler extends TiltHandler
                         {
                             picType = ImageType.read(item.getString());
                         }
-                        else if ( fieldName.equals(Params.TEXT) )
+                        else if ( fieldName.equals(Params.TEXT)
+                            || fieldName.equals(Params.HTML) )
                         {
-                            text = new TextIndex( item.getString(), "en_GB" );
+                            int format = guessFormat( item.getString() );
+                            text = new TextIndex( format, 
+                                item.getString(), "en_GB" );
+                        }
+                        else if ( fieldName.equals(Params.PLAINTEXT) )
+                        {
+                            text = new TextIndex( TextIndex.TEXT, 
+                                item.getString(), "en_GB" );
                         }
                     }
                 }
@@ -142,7 +172,6 @@ public class TiltPostHandler extends TiltHandler
         Object obj=JSONValue.parse(json);
         if ( obj instanceof JSONObject )
         {
-            long numWords = 250;
             JSONObject g = (JSONObject)obj;
             JSONObject props = (JSONObject)g.get("properties");
             JSONObject geometry = (JSONObject)g.get("geometry");
@@ -150,7 +179,6 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
-                // System.out.println("numWords="+numWords);
                 // create the picture and store it in the picture registry
                 Picture p = new Picture( (String)props.get("url"), 
                     cc, text, poster );
@@ -200,7 +228,8 @@ public class TiltPostHandler extends TiltHandler
                 geoJSON = request.getParameter(Params.GEOJSON );
                 String textParam = request.getParameter( Params.TEXT );
                 if ( textParam != null )
-                    text = new TextIndex( textParam, "en_GB" );
+                    text = new TextIndex( guessFormat(textParam), 
+                        textParam, "en_GB" );
             }
             if ( geoJSON != null )
             {

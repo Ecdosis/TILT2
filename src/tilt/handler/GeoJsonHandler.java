@@ -18,10 +18,8 @@
 
 package tilt.handler;
 
-import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.simple.JSONArray;
 import tilt.constants.Params;
 import tilt.exception.TiltException;
 import tilt.image.Picture;
@@ -73,7 +71,9 @@ public class GeoJsonHandler extends TiltHandler
                     response.getOutputStream().println("<p>docid "+
                         docid+" not found</p>");
                 }
-            }     
+            }
+            else
+                throw new Exception("Need a docid param: an image url!");
         }
         catch ( Exception e )
         {

@@ -23,10 +23,9 @@ import calliope.AeseSpeller;
 import tilt.image.page.Word;
 
 /**
- * An index into the uploaded HTML, recording the positions of each plain 
- * text word, number of words etc. Also we record the position and type of 
- * hyphens that precede newlines. To do this we need to lookup the
- * language.
+ * An index into the uploaded HTML or TEXT, recording the positions of each  
+ * word, number of words etc. Also we record the position and type of 
+ * hyphens that precede newlines. To do this we need to lookup the language.
  * @author desmond
  */
 public class TextIndex 
@@ -44,6 +43,7 @@ public class TextIndex
     int htmlIndex;
     AeseSpeller speller;
     String dict;
+    int kind;
     private static String CAPUANA_HTML = 
     "<h3>Al lettore.</h3>\n<p>Quando l’autore e l’editore di quest"
     +"i due frammenti mi\npregarono di scrivere due parole di pref"
@@ -101,11 +101,24 @@ public class TextIndex
     +" vicino alla signorina.</p>\n<p>– «Povera Lucrezia! Che disg"
     +"razia!... Avete ra-\ngione!... Ma fatevi animo!... Coraggio!"
     +"...»</p>\n</body>\n</html>\n";
-    public TextIndex( String html, String lang ) throws Exception
+    public static final int TEXT = 2;
+    public static final int HTML = 1;
+    /**
+     * Create a new TextIndex
+     * @param kind
+     * @param text
+     * @param lang
+     * @throws Exception 
+     */
+    public TextIndex( int kind, String text, String lang ) throws Exception
     {
+        this.kind = kind;
         speller = new AeseSpeller( lang );
         this.dict = lang;
-        digest( html.replaceAll("\n","") );
+        if ( kind == HTML )
+            digestHTML( text.replaceAll("\n","") );
+        else
+            digestText( text );
         speller.cleanup();
     }
     /**
@@ -146,10 +159,40 @@ public class TextIndex
         }
     }
     /**
+     * Extract the words from some plain text
+     * @param text the text to index
+     */
+    void digestText( String text )
+    {
+        StringTokenizer st = new StringTokenizer(text," \n\t",true);
+        wordList = new ArrayList<>();
+        indexList = new ArrayList<>();
+        hyphenList = new ArrayList<>();
+        while ( st.hasMoreTokens() )
+        {
+            String token = st.nextToken();
+            if ( token.length() > 1 
+               || !Character.isWhitespace(token.charAt(0)) )
+            {
+                if ( token.endsWith("-") && token.length()>1 )
+                {
+                    String hWord = token.substring(0,token.length()-1);
+                    addWord( hWord, NO_HYPHEN );
+                    addWord( "-", SOFT_HYPHEN);
+                }
+                else 
+                    addWord( token, NO_HYPHEN );
+            }
+        }
+        hyphens = intArray( hyphenList );
+        indices = intArray( indexList );
+        words = strArray( wordList );
+    }
+    /**
      * Extract the words from some html
      * @param html the text to strip
      */
-    void digest( String html )
+    void digestHTML( String html )
     {
         StringTokenizer st = new StringTokenizer(html,"<> \n\t",true);
         int state = 0;
@@ -210,6 +253,11 @@ public class TextIndex
         indices = intArray( indexList );
         words = strArray( wordList );
     }
+    /**
+     * Convert a list of integers to an int array
+     * @param list the arraylist of Integers
+     * @return the array
+     */
     private int[] intArray( ArrayList<Integer> list )
     {
         int[] array = new int[list.size()];    
@@ -217,6 +265,11 @@ public class TextIndex
             array[i] = list.get(i).intValue();
         return array;
     }
+    /**
+     * Convert an arraylist of strings to an array
+     * @param list the arraylist
+     * @return and array of strings
+     */
     private String[] strArray( ArrayList<String> list )
     {
         String[] array = new String[list.size()];    
@@ -293,7 +346,7 @@ public class TextIndex
     {
         try
         {
-            TextIndex ti = new TextIndex( DEROBERTO_1920_HTML, "en_GB" );
+            TextIndex ti = new TextIndex( HTML, DEROBERTO_1920_HTML, "en_GB" );
             Word[] parole = ti.getWords(10.0f);
             int[] offsets = ti.getTextOffsets();
             int[] hyphens = ti.getHyphens();

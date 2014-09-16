@@ -19,6 +19,7 @@
  * These classes handle the various types of REST request (PUT,DELETE,GET,POST)
  * and also specific services, such as returning images referred to on HTMLpages
  * ({@link tilt.handler.TiltImageHandler}) and GeoJson 
- * ({@link tilt.handler.GeoJsonHandler}).
+ * ({@link tilt.handler.GeoJsonHandler}). Text can be posted in PLAIN and HTML
+ * formats.
  */
 package tilt.handler;

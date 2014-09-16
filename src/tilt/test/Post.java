@@ -18,7 +18,7 @@
 
 package tilt.test;
 
-import tilt.test.html.*;
+import html.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
@@ -44,7 +44,7 @@ public class Post extends Test
     +"#container{ display:inline-block;\n"
     +"margin: 0 auto;\n"
     +"position: relative }\n"
-    +"img{position:absolute;z-index:1}\n"
+    +"img{position:absolute;z-index:1;border:1px solid black}\n"
     +"canvas{position:relative;z-index:2}\n"
     +".highlight{background-color: #FFFF88}\n";
     /**

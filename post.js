@@ -373,6 +373,7 @@ $(document).ready(function() {
 disableAll();
 $("#upload").click(function(e){
 	var localurl = "http://"+location.hostname+"/tilt/";
+        console.log(localurl);
 	$.post( localurl, $("#main").serialize(), function( data ) {
 	$("#container").empty();
 	$("#container").html(data);

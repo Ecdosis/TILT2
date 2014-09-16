@@ -29,6 +29,9 @@ import tilt.exception.TiltException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
 import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.Graphics2D;
+import java.awt.Color;
 
 import java.util.Iterator;
 import javax.imageio.ImageIO;
@@ -133,6 +136,61 @@ public class Picture {
         }
     }
     /**
+     * Do the coordinates cover the entire picture or only part of it?
+     * @return true if the coords cover the entire picture area
+     */
+    boolean isWholePicture()
+    {
+        boolean whole = true;
+        // top-left
+        if ( coords[0][0].doubleValue() > 0.0 )
+            whole = false;
+        if ( coords[0][1].doubleValue() > 0.0 )
+            whole = false;
+        // top-right
+        if ( coords[1][0].doubleValue() < 100.0 )
+            whole = false;
+        if ( coords[1][1].doubleValue() > 0.0 )
+            whole = false;
+        // bot-right
+        if ( coords[2][0].doubleValue() < 100.0 )
+            whole = false;
+        if ( coords[2][1].doubleValue() < 100.0 )
+            whole = false;
+        // bot-left
+        if ( coords[3][0].doubleValue() > 0.0 )
+            whole = false;
+        if ( coords[3][1].doubleValue() < 100.0 )
+            whole = false;
+        return whole;
+    }
+    /**
+     * Crop the original if needed
+     */
+    Rectangle getCropRect() throws IOException
+    {
+        int x,y,width,height;
+        BufferedImage bi = ImageIO.read(orig);
+        if ( !isWholePicture() )
+        {
+            x = (int)Math.round(bi.getWidth()*coords[0][0].doubleValue()/100.0);
+            y = (int)Math.round(bi.getHeight()*coords[0][1].doubleValue()/100.0);
+            width = (int)Math.round(bi.getWidth()
+                *(coords[1][0].doubleValue()-coords[0][0].doubleValue())/100.0);
+            height = (int)Math.round(bi.getHeight()
+                *(coords[3][1].doubleValue()-coords[0][1].doubleValue())/100.0);
+        }
+        else
+        {
+            x = 0;
+            y = 0;
+            width = bi.getWidth();
+            height = bi.getHeight();
+        }
+        return new Rectangle( x, y, width, height );
+
+    }
+    /**
      * Get the original Picture data
      * @return the raw picture byte array
      */
@@ -195,6 +253,10 @@ public class Picture {
             throw new ImageException(e);
         }
     }
+    int getPropVal( Double prop, int value )
+    {
+        return (int)Math.round(prop.doubleValue()*value/100.0);
+    }
     /**
      * Convert from the original png file to greyscale png. Save original.
      * @throws ImageException 
@@ -204,11 +266,39 @@ public class Picture {
         try
         {
             BufferedImage png = ImageIO.read(orig);
-            BufferedImage grey = new BufferedImage(png.getWidth(), png.getHeight(),  
-                BufferedImage.TYPE_BYTE_GRAY);  
+            BufferedImage grey = new BufferedImage(png.getWidth(), 
+                png.getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
             Graphics g = grey.getGraphics();  
             g.drawImage( png, 0, 0, null );  
             g.dispose();
+            if ( !isWholePicture() )
+            {
+                // clear excluded regions
+                Graphics2D g2d = grey.createGraphics();
+                g2d.setColor(Color.white);
+                if ( coords[0][0].doubleValue()>0.0 )
+                {
+                    int w = grey.getWidth();
+                    int h = grey.getHeight();
+                    g2d.fillRect(0,0,getPropVal(coords[0][0],w),h);
+                }
+                if ( coords[1][0].doubleValue()<100.0 )
+                {
+                    int x = getPropVal(coords[1][0],grey.getWidth());
+                    g2d.fillRect(x,0,grey.getWidth()-x,grey.getHeight());
+                }
+                if ( coords[2][1].doubleValue()<100.0 )
+                {
+                    int y = getPropVal(coords[2][1],grey.getHeight());
+                    g2d.fillRect(0,y,grey.getWidth(),grey.getHeight()-y);
+                }
+                if ( coords[0][1].doubleValue()>0.0 )
+                {
+                    int y = getPropVal(coords[0][1],grey.getHeight());
+                    g2d.fillRect(0,0,grey.getWidth(),y);
+                }
+                g2d.dispose();
+            }
             greyscale = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( grey, "png", greyscale );
@@ -405,6 +495,7 @@ public class Picture {
         {
             throw new ImageException(e);
         }
+        
     }
     /**
      * Convert to show identified words
@@ -554,8 +645,9 @@ public class Picture {
             BufferedImage image = ImageIO.read(words);
             double hScale = (coords[2][0].doubleValue()-coords[0][0].doubleValue())/100.0;
             double vScale = (coords[3][1].doubleValue()-coords[1][1].doubleValue())/100.0;
-            return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
-                (int)Math.round(vScale*image.getHeight()) );
+//            return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
+//                (int)Math.round(vScale*image.getHeight()) );
+            return page.toGeoJson( image.getWidth(),image.getHeight() );
         }
         catch ( Exception e )
         {

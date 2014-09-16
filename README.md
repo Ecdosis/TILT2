@@ -22,3 +22,6 @@ listening on that port.
 DOCUMENTATION
 
 The full documentation is in dist/javadoc, including the simple API.
+
+TILT requires the HTML 5 library provided by the HTML project in this 
+repository space.
