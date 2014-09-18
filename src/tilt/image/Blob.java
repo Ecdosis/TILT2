@@ -332,7 +332,7 @@ public class Blob
             Object obj=JSONValue.parse(s);
             JSONArray coords=(JSONArray)obj;
             Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
-                new TextIndex(TextIndex.HTML,"",""), 
+                new TextIndex("",""), 
                 InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);

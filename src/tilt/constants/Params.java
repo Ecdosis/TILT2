@@ -28,6 +28,4 @@ public class Params
     public static String GEOJSON="geojson";
     public static String PICTYPE="pictype";
     public static String TEXT="text";
-    public static String HTML="html";
-    public static String PLAINTEXT="plaintext";
 }

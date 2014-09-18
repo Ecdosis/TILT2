@@ -19,6 +19,7 @@
 package tilt.test;
 
 import html.*;
+import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
@@ -47,6 +48,8 @@ public class Post extends Test
     +"img{position:absolute;z-index:1;border:1px solid black}\n"
     +"canvas{position:relative;z-index:2}\n"
     +".highlight{background-color: #FFFF88}\n";
+    static int TEXT = 1;
+    static int HTML = 2;
     /**
      * Create a hidden div (of class "hidden")
      * @param id the id of the div
@@ -60,6 +63,54 @@ public class Post extends Test
         div.addAttribute("id", id );
         div.addText( contents );
         return div;
+    }
+    /**
+    * Guess the format of some text (plain text or HTML)
+    * @param text the text to test
+    * @return TextIndex.HTML if 1st non-space is &lt; else TextIndex.TEXT
+    */
+    private int guessFormat( String text )
+    {
+       int format = Post.TEXT;
+       for ( int i=0;i<text.length();i++ )
+       {
+           char token = text.charAt(i);
+           if ( !Character.isWhitespace(token) )
+           {
+               if ( token=='<' )
+                   format = Post.HTML;
+               else
+                   format = Post.TEXT;
+               break;
+           }
+       }
+       return format;
+    }
+    String toHTML(String text)
+    {
+        StringBuilder sb = new StringBuilder();
+        StringTokenizer st = new StringTokenizer( text, "\n" );
+        int lastParaStart = 0;
+        while ( st.hasMoreTokens() )
+        {
+            String token = st.nextToken();
+            if ( token.length()== 0 )
+            {
+                sb.insert(lastParaStart,"<p>");
+                sb.append("</p>");
+                lastParaStart = sb.length();
+            }
+            else
+            {
+                if ( sb.length()>0 )
+                    sb.append("<br>");
+                sb.append(token);
+            }
+        }
+        if ( lastParaStart == 0 )
+            sb.insert(0,"<p>");
+        sb.append("</p>");
+        return sb.toString();
     }
     /**
      * Display the test GUI
@@ -85,6 +136,8 @@ public class Post extends Test
                 String id = Texts.samples[i][0];
                 String name = Texts.samples[i][1];
                 String text = Texts.samples[i][2];
+                if ( guessFormat(text) == TEXT )
+                    text = toHTML( text );
                 String json = Texts.samples[i][3];
                 selections.put(name,id);
                 doc.addElement( hiddenDiv(id+"_TEXT",text) );

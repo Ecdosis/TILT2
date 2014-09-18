@@ -43,10 +43,10 @@ public class Texts
     +"x x</p>\n<p align=\"right\">C.W. Salier</p>\n<p align=\"righ"
     +"t\">29 November 1945</p>\n",
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
-    +"ygon\",\n\t\"coordinates\": [\n\t[ [10.0, 20.0], [100.0, 20.0],"
-    +" [100.0, 90.0], [10.0, 90.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/00000005.jpg\"\n\t}\n}\n"},
-    //"\t\"url\": \"http://localhost/images/00000005.jpg\"\n\t}\n}\n"},
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [15.0, 25.0], [97.0, 25.0],"
+    +" [97.0, 87.0], [15.0, 87.0] ]\n\t]\n},\n\"properties\": {\n"
+    //"\t\"url\": \"http://ecdosis.net/images/00000005.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/00000005.jpg\"\n\t}\n}\n"},
     {"CAPUANA","Capuana example",
     "<h3>Al lettore.</h3>\n<p>Quando l’autore e l’editore di quest"
     +"i due frammenti mi\npregarono di scrivere due parole di pref"
@@ -71,8 +71,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
-    //"\t\"url\": \"http://localhost/images/frontispiece3.jpg\"\n"
+    //"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
+    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\"\n"
     +"\t}\n}\n"},
     {"DEROBERTO_V2","De Roberto V2",
     "<p align=\"center\">51</p>\n<p>re, e a don Blasco il quale gl"
@@ -114,8 +114,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n\t}\n}\n"},
-    //"\t\"url\": \"http://localhost/images/V2-69.jpg\"\n\t}\n}\n"},
+    //"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/V2-69.jpg\"\n\t}\n}\n"},
     {"DEROBERTO_1920", "De Roberto 1920 edition",
     "<p align=\"center\">– 8 –</p>\n<p>che passo, non distinguendo"
     +" nulla pel buio; ma la voce\ndella principessa Margherita li"
@@ -151,8 +151,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
-    //+"\t\"url\": \"http://localhost/images/DR_1920_008.jpg\"\n\t"
+    //"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
+    +"\t\"url\": \"http://localhost/images/DR_1920_008.jpg\"\n\t"
     +"}\n}\n"},
     {"SONNETS", "Harpur Sonnets",
     "<h3 align=\"center\">VII"
@@ -183,6 +183,98 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://ecdosis.net/images/00000013.jpg\"\n\t"
+    //"\t\"url\": \"http://ecdosis.net/images/00000013.jpg\"\n\t"
+    +"\t\"url\": \"http://localhost/images/00000013.jpg\"\n\t"
     +"}\n}\n"}};
 }
+/*,
+    {"Biodiversity1","First Biodiversity example",
+    "Concord, Massachusetts.\n1886\nMay 9\nClear and cool with hig"
+    +"h N. W. wind.\nA glorious day as bracing as October yet with"
+    +"\nthe country wreathed in flowers.\nIn the forenoon I drove "
+    +"C. to Sudbury\nThe roads are lonely and little used, after\n"
+    +"passing through woodland, occasionally skirting\nbroad meado"
+    +"ws. The Apple Orchards were at their\nhighest perfection wit"
+    +"h patches of white. Birds were\nnumerous, but I saw nothing "
+    +"of any particular\ninterest. Meadow Larks were common, one o"
+    +"r\nmore being seen or heard in every meadow.\nBluebirds were"
+    +" frequently seen along the road-\nside, and Orioles occurred"
+    +" about the orchard\nand Elm. Shaded farmhouses in apparently"
+    +" un-\ndiminished numbers. I neither saw nor heard\nany Bobol"
+    +"inks, although we passed many places\nin every way suited to"
+    +" their habits.\nIn the afternoon I rowed up the Assabet with"
+    +"\nD. C. French. While midway of the straight reach\nabove th"
+    +"e Hemlocks, my companion asked \"is that\na Yellow Warbler?\""
+    +", pointing out a small bird hop-\nping about in some drift-"
+    +"wood caught in the\nlower branches of the black willows lini"
+    +"ng the\nwest bank. After looking at it intently for a \nmome"
+    +"nt, I was amazed to recognize my old\nMt. Carmel friend, the"
+    +" Prothonotary Warbler.\nWe had no gun, but it did not take l"
+    +"ong to\nwhirl the boat around and start back for one.\nRetur"
+    +"ning in about three quarters of an hour\nwe found our little"
+    +" stranger gone, but presently\nI heard him chirp and then si"
+    +"ng in an undertone\nnear at hand. At length he emerged from\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/43746022.jpg\"\n\t"
+    +"}\n}\n"},
+    {"Biodiversity2","Second Biodiversity example",
+    "VI\n1886\nApril 27\nConcord, Massachusetts.\nWe moved to Conc"
+    +"ord this morning, having\ntaken the Old Manse for the Summer"
+    +". I was\nobliged to return to Cambridge in the afternoon\nho"
+    +"wever, and to spend the remainder of the week\nthere\nDuring"
+    +" the short time I was able to spend\nalong the river bank an"
+    +"d in the orchard this\nmorning, I saw several Dendroica coro"
+    +"nata\nand a little company of Gold finches. In the \nold Elm"
+    +" near the bridge a Nuthailes [Sitta carolinensis]\nwas cork "
+    +"screwing about and hawking loudly, a\npair of Downy Woodpeck"
+    +"ers were also hammering\non the dead limbs. in the boathouse"
+    +", a pair of\nPuvers had a finished but empty nest, a Musk\nr"
+    +"at was swimming from place to place uttering\nhis peculiar w"
+    +"hining cry. Red wings were singing\nover the green meadows a"
+    +"nd Bluebirds warbling\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/43746036.jpg\"\n\t"
+    +"}\n}\n"},
+    {"Biodiversity3","Third Biodiversity example",
+    "1886\nMay 2\nConcord, Massachusetts.\nI came to Concord last "
+    +"night to spend\nSunday only, my business in Cambridge and\nB"
+    +"oston being still uncompleted\nSunday\nEarl"
+    +"y this morning there was a grand\nchorus of bird voices such"
+    +" as we used to hear\nin Cambridge before the wretched sparro"
+    +"ws\ncame. Robins, Song Sparrows, Bluebirds,\nPurple Finches,"
+    +" Grass Finches etc. made the air\nring. About a Martin box w"
+    +"hich was put up\nonly yesterday several pairs of Hirundo bic"
+    +"olor\nand one pair of Progne purpuria held high \ncarnival.\n"
+    +"Early in the forenoon I went down to the \nboathouse and sp"
+    +"ent an hour sitting on its\nsunny western wall. Red Wings si"
+    +"nging in all \ndirections, a Meadow Lark whistling over by t"
+    +"he \nrailroad station, the Pervers occasionially coming\nto "
+    +"see that their nest on a rafter inside the\nboathouse still "
+    +"held its two rosy eggs. In the\nwater beneath, several speci"
+    +"es of fishes were\nfeeding or playing. I compared them to bo"
+    +"ats;\nthe red perch long, narrow, swift of movement,\nresemb"
+    +"led a steam launch; the bream, deep\nbroad and yet graceful,"
+    +" a roomy schooner;\nwhile a great clumsy horned perch rootin"
+    +"g along\nthe bottom, recalled a mud-scow. The monitors\nof c"
+    +"ourse were the mud-turtles of which there\nwere dozens in si"
+    +"ght, all of the red banded\n(\"soldier turtle\") species. On"
+    +"e came along\npast me feeding. It would raise it's head a-\n"
+    +"bove the water, look warily about for a moment,\nthen sink a"
+    +"nd walk along the bottom exploring it\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/43746034.jpg\"\n\t"
+    +"}\n}\n"},
+    {"Biodiversity4","Fourth Biodiversity example",
+    "the manner of the first. It dove righted and \nbegan to swim "
+    +"and when the steamer approached\nflew a little way feebly.\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [10.0, 12.0], [85.0, 12.0],"
+    +" [85.0, 22.0], [10.0, 22.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://ecdosis.net/images/44690726.jpg\"\n\t"
+    +"}\n}\n"}*/

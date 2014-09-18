@@ -17,7 +17,7 @@
  */
 package tilt.handler;
 import java.util.List;
-
+import java.util.StringTokenizer;
 import tilt.exception.*;
 import tilt.image.*;
 import tilt.Utils;
@@ -46,28 +46,6 @@ public class TiltPostHandler extends TiltHandler
     {
         encoding = "UTF-8";
         picType = ImageType.original;
-    }
-    /**
-     * Guess the format of some text (plain text or HTML)
-     * @param text the text to test
-     * @return TextIndex.HTML if 1st non-space is &lt; else TextIndex.TEXT
-     */
-    private int guessFormat( String text )
-    {
-        int format = TextIndex.TEXT;
-        for ( int i=0;i<text.length();i++ )
-        {
-            char token = text.charAt(i);
-            if ( !Character.isWhitespace(token) )
-            {
-                if ( token=='<' )
-                    format = TextIndex.HTML;
-                else
-                    format = TextIndex.TEXT;
-                break;
-            }
-        }
-        return format;
     }
     /**
      * Parse the import params from the request
@@ -103,17 +81,9 @@ public class TiltPostHandler extends TiltHandler
                         {
                             picType = ImageType.read(item.getString());
                         }
-                        else if ( fieldName.equals(Params.TEXT)
-                            || fieldName.equals(Params.HTML) )
+                        else if ( fieldName.equals(Params.TEXT))
                         {
-                            int format = guessFormat( item.getString() );
-                            text = new TextIndex( format, 
-                                item.getString(), "en_GB" );
-                        }
-                        else if ( fieldName.equals(Params.PLAINTEXT) )
-                        {
-                            text = new TextIndex( TextIndex.TEXT, 
-                                item.getString(), "en_GB" );
+                            text = new TextIndex( item.getString(), "en_GB" );
                         }
                     }
                 }
@@ -228,8 +198,7 @@ public class TiltPostHandler extends TiltHandler
                 geoJSON = request.getParameter(Params.GEOJSON );
                 String textParam = request.getParameter( Params.TEXT );
                 if ( textParam != null )
-                    text = new TextIndex( guessFormat(textParam), 
-                        textParam, "en_GB" );
+                    text = new TextIndex( textParam, "en_GB" );
             }
             if ( geoJSON != null )
             {
