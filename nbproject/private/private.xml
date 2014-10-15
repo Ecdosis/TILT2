@@ -24,9 +24,12 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltPutHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/ImageException.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindLinesBlurred.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/GaussianFilter.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Border.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/nbproject/build-impl.xml</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltImageHandler.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/ImageMath.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/convexhull/Point2D.java</file>
@@ -34,10 +37,12 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltGetHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/JettyServerThread.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/TiltException.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/PixelUtils.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/RemoveNoise.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/align/Score.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/SplitShape.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Picture.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/ConvolveFilter.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/Texts.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/Move.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltHandler.java</file>
@@ -51,7 +56,9 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/SplitException.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/calliope/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/ImageType.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/AbstractBufferedImageOp.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/convexhull/GrahamScan.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/BlurImage.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/Service.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/Params.java</file>

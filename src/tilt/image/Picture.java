@@ -60,6 +60,7 @@ public class Picture {
     File twotone;
     File cleaned;
     File baselines;
+    File blurred;
     File words;
     Double[][] coords;
     TextIndex text;
@@ -474,6 +475,28 @@ public class Picture {
         }
     }
     /**
+     * Convert to cleaned from twotone
+     * @throws Exception 
+     */
+    void convertToBlurred() throws ImageException 
+    {
+        try
+        {
+            if ( cleaned == null )
+                convertToCleaned();
+            BufferedImage tt = ImageIO.read(cleaned);
+            BlurImage bi = new BlurImage( tt );
+            BufferedImage out = bi.blur();
+            blurred = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( out, "png", blurred );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
      * Convert to show lines from cleaned
      * @throws ImageException 
      */
@@ -481,10 +504,10 @@ public class Picture {
     {
         try
         {
-            if ( cleaned == null )
-                convertToCleaned();
-            BufferedImage withLines = ImageIO.read(cleaned);
-            FindLines fl = new FindLines( withLines, text.numWords() );
+            if ( blurred == null )
+                convertToBlurred();
+            BufferedImage withLines = ImageIO.read(blurred);
+            FindLinesBlurred fl = new FindLinesBlurred( withLines, text.numWords() );
             page = fl.getPage();
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,
@@ -577,6 +600,12 @@ public class Picture {
     public byte[] getOrigData() throws ImageException
     {
         return getPicData( orig );
+    }
+    public byte[] getBlurredData() throws ImageException
+    {
+        if ( blurred == null )
+            convertToBlurred();
+        return getPicData( blurred );
     }
     /**
      * Read the cleaned image 

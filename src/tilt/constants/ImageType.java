@@ -32,6 +32,8 @@ public enum ImageType
     twotone,
     /** same as twotone, which borders and large blobs removed */
     cleaned,
+    /** two-tone image with Gaussian blur for line-recognition */
+    blurred,
     /** cleaned image with lines draw over the top */
     baselines,
     /** original image with word shapes in alternating colours */

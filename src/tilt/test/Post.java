@@ -168,6 +168,7 @@ public class Post extends Test
             p.addElement( new Input("greyscale","button","greyscale",false) );
             p.addElement( new Input("twotone","button","two tone",false) );
             p.addElement( new Input("cleaned","button","cleaned",false) );
+            p.addElement( new Input("blurred","button","blurred",false) );
             p.addElement( new Input("baselines","button","baselines",false) );
             p.addElement( new Input("words","button","words",false) );
             p.addElement( new Input("link","button","link",false) );

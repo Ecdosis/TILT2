@@ -449,7 +449,7 @@ public class Page
         vGaps.toArray( vArray );
         Arrays.sort( vArray );
         medianLineDepth = (vArray.length<=1)?0:vArray[vArray.length/2].intValue();
-        sortLines();
+        //sortLines();
         joinBrokenLines();
     }
     /**
