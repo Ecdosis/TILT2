@@ -28,16 +28,29 @@ import tilt.image.page.Page;
  * @author desmond
  */
 public class FindLinesBlurred {
+    /** width of vertical strips */
     static float H_SCALE_RATIO = 0.04f;
+    /** the shade to reduce the blackness to */
     static int LIGHT_SHADE = 128;
+    /** range of moving average smoothing +- N*/
     static int SMOOTH_N = 9;
     BufferedImage src;
+    /** average image pixel density*/
     float average;
+    /** width of image in hscale units */
     int width;
+    /** array of arraylists of black pixel peaks */
     ArrayList[] peaks;
+    /** the page object where we store and draw the lines */
     Page page;
-    /** number of vertical or horizontal pixels to combine */
+    /** number of horizontal pixels to combine */
     int hScale;
+    /**
+     * Detect lines n the basis of an already blurred image
+     * @param src the source blurred image
+     * @param numWords the number of words on the page (needed by page object)
+     * @throws Exception 
+     */
     public FindLinesBlurred( BufferedImage src, int numWords ) throws Exception
     {
         this.src = src;
@@ -77,7 +90,7 @@ public class FindLinesBlurred {
         }
     }
     /**
-     * Compute the average pixel intensity across the whole image
+     * Compute the average pixel intensity across the whole image (expensive)
      * @return the averages a float
      */
     private float computeAverage( WritableRaster wr )
@@ -104,78 +117,63 @@ public class FindLinesBlurred {
      */
     private ArrayList findPeaks( WritableRaster wr, int strip )
     {
-        try
+        int stripWidth = ((strip+1)*hScale<wr.getWidth())?hScale:wr.getWidth()
+            -(strip*hScale);
+        int xStart = strip*hScale;
+        int xEnd = xStart+stripWidth;
+        float[] totals = new float[wr.getHeight()];
+        int[] iArray = new int[1];
+        for ( int y=0;y<wr.getHeight();y++ )
         {
-            int stripWidth = ((strip+1)*hScale<wr.getWidth())?hScale:wr.getWidth()
-                -(strip*hScale);
-            int xStart = strip*hScale;
-            int xEnd = xStart+stripWidth;
-            float[] totals = new float[wr.getHeight()];
-            int[] iArray = new int[1];
-            for ( int y=0;y<wr.getHeight();y++ )
+            for ( int x=xStart;x<xEnd;x++ )
             {
-                for ( int x=xStart;x<xEnd;x++ )
-                {
-                    wr.getPixel(x,y,iArray);
-                    totals[y]+=iArray[0];
-                }
-                totals[y] /= stripWidth;
+                wr.getPixel(x,y,iArray);
+                totals[y]+=iArray[0];
             }
-            float old_slope;
-            float slope = 0.0f;
-            ArrayList<Integer> list= new ArrayList<>();
-            totals = smooth( totals );
-            for ( int y=SMOOTH_N;y<wr.getHeight();y++ )
-            {
-                float dy = (totals[y]-totals[y-SMOOTH_N]);
-                float dx = (float)SMOOTH_N;
-                old_slope = slope;
-                slope = dy/dx;
-                if ( slope >0.0f && old_slope <= 0.0f )
-                {
-                    int peak = y-(SMOOTH_N/2);
-                    if ( totals[peak] < average )
-                        list.add(new Integer(peak));
-                }
-            }
-            return list;
+            totals[y] /= stripWidth;
         }
-        catch ( Exception e )
+        float old_slope;
+        float slope = 0.0f;
+        ArrayList<Integer> list= new ArrayList<>();
+        totals = smooth( totals );
+        for ( int y=SMOOTH_N;y<wr.getHeight();y++ )
         {
-            System.out.println("findPeaks:"+e.getMessage());
-            return null;
+            float dy = (totals[y]-totals[y-SMOOTH_N]);
+            float dx = (float)SMOOTH_N;
+            old_slope = slope;
+            slope = dy/dx;
+            if ( slope >0.0f && old_slope <= 0.0f )
+            {
+                int peak = y-(SMOOTH_N/2);
+                if ( totals[peak] < average )
+                    list.add(new Integer(peak));
+            }
         }
+        return list;
     }
     /**
      * Smooth the array using a moving average
      * ys(i)=1/(2N+1)(y(i+N)+y(i+N−1)+...+y(i−N))
-     * @param data the array to smooth
+     * @param data the array to smooth, unchanged
+     * @return the smoothed version of the original data
      */
     private float[] smooth( float[] data )
     {
-        try
+        int limit = data.length-SMOOTH_N;
+        float[] copy = new float[data.length];
+        // just copy the ends over without smoothing
+        for ( int i=0;i<SMOOTH_N;i++ )
+            copy[i]= data[i];
+        for ( int i=data.length-1;i>data.length-SMOOTH_N;i-- )
+            copy[i] = data[i];
+        for ( int i=SMOOTH_N;i<limit;i++ )
         {
-            int limit = data.length-SMOOTH_N;
-            float[] copy = new float[data.length];
-            // just copy the ends over without smoothing
-            for ( int i=0;i<SMOOTH_N;i++ )
-                copy[i]= data[i];
-            for ( int i=data.length-1;i>data.length-SMOOTH_N;i-- )
-                copy[i] = data[i];
-            for ( int i=SMOOTH_N;i<limit;i++ )
-            {
-                int sum = 0;
-                for ( int j=i-SMOOTH_N;j<=i+SMOOTH_N;j++ )
-                    sum += data[j];
-                copy[i] = sum/(2*SMOOTH_N+1);
-            }
-            return copy;
+            int sum = 0;
+            for ( int j=i-SMOOTH_N;j<=i+SMOOTH_N;j++ )
+                sum += data[j];
+            copy[i] = sum/(2*SMOOTH_N+1);
         }
-        catch ( Exception e )
-        {
-            System.out.println("smooth:"+e.getMessage());
-            return null;
-        }
+        return copy;
     }
     /**
      * Get the completed page object
