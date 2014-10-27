@@ -128,7 +128,7 @@ public class Page
             Line l = lines.get(i);
             l.draw( g );
         }
-        System.out.println("drew "+lines.size()+" lines");
+        //System.out.println("drew "+lines.size()+" lines");
     }
     /**
      * Align a new point to an existing line, or create one
@@ -204,7 +204,7 @@ public class Page
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
-            l.refineLeft( wr, hScale, vScale, black );
+            l.refineLeft( wr, hScale, 10, black );
         }
     }
     /**
@@ -219,7 +219,7 @@ public class Page
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
-            l.refineRight( wr, hScale, vScale, black );
+            l.refineRight( wr, hScale, 10, black );
         }
     }
     /**
@@ -677,9 +677,9 @@ public class Page
     }
     /**
      * Align word shapes in image to words in text
+     * @param alignments an array of alignments, each [0]=shapes,[1]=words
      * @param shapeOffsets offsets into the shapes array for each line start
      * @param words the word objects on the page
-     * @param alignments and array of alignments, each [0]=shapes,[1]=words
      * @param wr raster of cleaned image
      * @throws AlignException
      */
@@ -703,6 +703,11 @@ public class Page
                 int[] wIndices = alignment[1];
                 while ( !l.hasShape(k) )
                 {
+                    if ( j+1==lines.size() )
+                    {
+                        System.out.println("tried to get missing line");
+                        break;
+                    }
                     l = lines.get(++j);
                     l.reset();
                     k = 0;

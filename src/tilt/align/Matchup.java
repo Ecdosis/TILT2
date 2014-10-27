@@ -78,10 +78,10 @@ public class Matchup
     }
     /**
      * Set up the master object
-     * @param A the first array of ints to matchup
-     * @param B the second array
+     * @param A the word-widths
+     * @param B the shape-widths
      */
-    public Matchup( int[] A, int [] B )
+    public Matchup( int[] A, int[] B )
     {
         this.A = A;
         this.B = B;

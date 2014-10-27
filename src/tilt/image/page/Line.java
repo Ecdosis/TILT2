@@ -208,8 +208,8 @@ public class Line implements Comparable<Line>
         {
             int[] iArray = new int[1];
             Point rightMost= points.get(points.size()-1);
-            int top = rightMost.y;
-            int bottom = top+vScale;
+            int top = rightMost.y-(vScale/2);
+            int bottom = top+(vScale/2);
             int right = rightMost.x;
             int left = (rightMost.x-hScale>0)?rightMost.x-hScale:0;
             int nPixels = 0;

@@ -44,6 +44,7 @@ public class ReduceLines
      */
     public ReduceLines( BufferedImage src, Page page, int blur )
     {
+        Point pt =new Point();
         this.page = page;
         this.src = src;
         WritableRaster wr = src.getRaster();
@@ -70,7 +71,7 @@ public class ReduceLines
                     boolean hasNewBlobs = false;
                     for ( int x=last.x;x<curr.x;x++ )
                     {
-                        int y = last.y + Math.round((last.x-x)*dy_dx);
+                        int y = last.y + Math.round((x-last.x)*dy_dx);
                         dirty.getPixel(x,y,iArray);
                         if ( iArray[0] != 0 )
                         {
@@ -85,13 +86,20 @@ public class ReduceLines
                     {
                         delPoints.add( last );
                         if ( j==points.length-1 )
+                        {
                             delPoints.add( curr );
+                            pt.x = curr.x;
+                            pt.y = curr.y;
+                        }
                     }
                 }
                 if ( delPoints.size()==points.length )
                     removals.add( l );
-                else
+                else if ( removals.size()>0 )
+                {
                     l.removePoints(delPoints);
+                    System.out.println("removed "+removals.size()+" points");
+                }
             }
             else
                 removals.add(l);
@@ -101,7 +109,7 @@ public class ReduceLines
         System.out.println("removed "+removals.size()+" lines");
         page.sortLines();
         page.joinLines();
-        page.draw( src.getGraphics() );
+        page.draw( src.getGraphics() ); 
     }
     /**
      * I see a grey pixel and I want it painted black ... black.
