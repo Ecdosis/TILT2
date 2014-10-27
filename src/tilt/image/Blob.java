@@ -331,7 +331,10 @@ public class Blob
             String s="[[0.0,0.0],[100.0,0.0],[100.0,100.0],[0.0,100.0]]";
             Object obj=JSONValue.parse(s);
             JSONArray coords=(JSONArray)obj;
-            Picture p = new Picture( "http://ecdosis.net/test.png", coords, 
+            JSONObject opts = new JSONObject();
+            opts.put("coords",coords);
+            opts.put("blur",0);
+            Picture p = new Picture( "http://ecdosis.net/test.png", opts, 
                 new TextIndex("",""), 
                 InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();

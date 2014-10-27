@@ -49,6 +49,7 @@ function enableAll()
 	$("#twotone").prop('disabled', false);
 	$("#cleaned").prop('disabled', false);
 	$("#blurred").prop('disabled', false);
+        $("#reduced").prop('disabled', false);
 	$("#baselines").prop('disabled', false);
 	$("#words").prop('disabled', false); 
     $("#link").prop('disabled', false); 
@@ -60,6 +61,7 @@ function disableAll()
 	$("#twotone").prop('disabled', true);
 	$("#cleaned").prop('disabled', true);
 	$("#blurred").prop('disabled', true);
+        $("#reduced").prop('disabled', true);
 	$("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
@@ -412,6 +414,12 @@ $("#blurred").click(function(){
 	var url = escapeUrl(getUrlFromLoc("blurred"));
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getUrlFromLoc("blurred")+'">');
+    appendCanvas();
+});
+$("#reduced").click(function(){
+	var url = escapeUrl(getUrlFromLoc("reduced"));
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("reduced")+'">');
     appendCanvas();
 });
 $("#baselines").click(function(){

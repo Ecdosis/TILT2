@@ -379,13 +379,10 @@ public class Line implements Comparable<Line>
      */
     public int getAverageY()
     {
-        if ( averageY == 0 )
-        {
-            int total = 0;
-            for ( int i=0;i<points.size();i++ )
-                total += points.get(i).y;
-            averageY = total/points.size();
-        }
+        int ltotal = 0;
+        for ( int i=0;i<points.size();i++ )
+            ltotal += points.get(i).y;
+        averageY = ltotal/points.size();
         return averageY;
     }
     /**
@@ -599,6 +596,10 @@ public class Line implements Comparable<Line>
     {
         return shapes.size();
     }
+    public int countPoints()
+    {
+        return this.points.size();
+    }
     /**
      * Fill in the pixel widths of each shape in the line
      * @param widths the array to partly fill in
@@ -701,4 +702,18 @@ public class Line implements Comparable<Line>
     {
         shapes.clear();
     }
+    /**
+     * Remove some points from the line. Must be before we recognise words
+     * @param removals the points to cull
+     */
+    public void removePoints( ArrayList<Point>removals )
+    {
+        for ( Point p: removals )
+            points.remove( p );
+    }
+    public void mergeWith( Line other )
+    {
+        points.addAll(other.points);
+        sortPoints();
+    }       
 }

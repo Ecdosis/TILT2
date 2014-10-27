@@ -17,7 +17,6 @@
  */
 package tilt.handler;
 import java.util.List;
-import java.util.StringTokenizer;
 import tilt.exception.*;
 import tilt.image.*;
 import tilt.Utils;
@@ -149,9 +148,18 @@ public class TiltPostHandler extends TiltHandler
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
+                Number blurOpt= (Number) props.get("blur");
+                int blur;
+                if ( blurOpt != null )
+                    blur = blurOpt.intValue();
+                else
+                    blur = 0;
+                JSONObject opts= new JSONObject();
+                opts.put("coords",cc);
+                opts.put("blur",blur);
                 // create the picture and store it in the picture registry
                 Picture p = new Picture( (String)props.get("url"), 
-                    cc, text, poster );
+                    opts, text, poster );
                 PictureRegistry.update( (String)props.get("url"), p );
                 // it will be identified later by its docid during GET
             }

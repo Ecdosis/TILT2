@@ -110,6 +110,33 @@ public class FindLinesBlurred {
         return (float)total/(float)(h*w);
     }
     /**
+     * Ensure that the peak really is the darkest point of the peak
+     * @param totals the total pixel intensities in the strip
+     * @param peak the approximate peak position
+     * @return the precise peak
+     */
+    private int refinePeak( float[] totals, int peak )
+    {
+        int best = peak;
+        int left = peak-1;
+        while ( left >=0 && totals[left] < totals[peak] )
+            left--;
+        int right = peak+1;
+        while ( right < totals.length && totals[right] < totals[peak] )
+            right++;
+        if ( left >= 0 )
+        {
+            if ( totals[left] < totals[peak] )
+                best = left;
+        }
+        if ( right < totals.length )
+        {
+            if ( totals[right] < totals[best] )
+                best = right;
+        }
+        return best;
+    }
+    /**
      * Collapse the pixels in a vertical strip horizontally, look for peaks
      * @param wr the entire raster
      * @param the index of the strip of at most hScale pixels
@@ -144,7 +171,7 @@ public class FindLinesBlurred {
             slope = dy/dx;
             if ( slope >0.0f && old_slope <= 0.0f )
             {
-                int peak = y-(SMOOTH_N/2);
+                int peak = refinePeak(totals,y-(SMOOTH_N/2));
                 if ( totals[peak] < average )
                     list.add(new Integer(peak));
             }

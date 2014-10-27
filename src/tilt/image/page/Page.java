@@ -68,11 +68,11 @@ public class Page
             listToIntArray(col1,list1);
             listToIntArray(col2,list2);
             Matrix m = new Matrix( list1, list2 );
-            ArrayList moves = m.traceBack();
+            Move[] moves = m.traceBack();
             int x2,z2;
-            for ( int y1=0,y2=0,j=0;j<moves.size();j++ )
+            for ( int y1=0,y2=0,j=0;j<moves.length;j++ )
             {
-                Move move = (Move)moves.get(j);
+                Move move = (Move)moves[j];
                 switch ( move )
                 {
                     case exch:
@@ -128,6 +128,7 @@ public class Page
             Line l = lines.get(i);
             l.draw( g );
         }
+        System.out.println("drew "+lines.size()+" lines");
     }
     /**
      * Align a new point to an existing line, or create one
@@ -409,7 +410,7 @@ public class Page
     /**
      * Sort all lines based on their medianY position
      */
-    void sortLines()
+    public void sortLines()
     {
         int i, j, k, h; 
         Line v;
@@ -800,5 +801,41 @@ public class Page
     {
         for ( int i=0;i<lines.size();i++ )
             lines.get(i).resetShapes();
+    }
+    public void joinLines()
+    {
+        ArrayList<Line> merges= new ArrayList<>();
+        for ( int i=1;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            Line p = lines.get(i-1);
+            // is l to the left of p?
+            int end = l.points.get(l.points.size()-1).x;
+            int start = p.points.get(0).x;
+            if ( end <= start )
+            {
+                int lY = l.points.get(l.points.size()-1).y;
+                int pY = p.points.get(0).y;
+                if ( Math.abs(lY-pY) <= medianLineDepth/2 )
+                    merges.add(l);
+            }
+            //is p to the left of l?
+            end = p.points.get(p.points.size()-1).x;
+            start = l.points.get(0).x;
+            if ( end <= start )
+            {
+                int pY = p.points.get(p.points.size()-1).y;
+                int lY = l.points.get(0).y;
+                if ( Math.abs(lY-pY) <= medianLineDepth/2 )
+                    merges.add(l);
+            }
+        }
+        for ( int i=0;i<merges.size();i++ )
+        {
+            Line l = merges.get(i);
+            int index = lines.indexOf(l);
+            l.mergeWith( lines.get(index-1) );
+            lines.remove(index-1);
+        }
     }
 }

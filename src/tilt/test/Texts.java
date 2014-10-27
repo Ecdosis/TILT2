@@ -72,7 +72,7 @@ public class Texts
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     //"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
-    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\"\n"
+    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\",\n\t\"blur\":10\n"
     +"\t}\n}\n"},
     {"DEROBERTO_V2","De Roberto V2",
     "<p align=\"center\">51</p>\n<p>re, e a don Blasco il quale gl"

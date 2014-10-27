@@ -60,20 +60,22 @@ public class Picture {
     File twotone;
     File cleaned;
     File baselines;
+    File reduced;
     File blurred;
     File words;
+    int blur;
     Double[][] coords;
     TextIndex text;
     boolean linked;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param urlStr the remote picture url as a string
-     * @param coords coordinates for the picture from the geoJSON file
+     * @param options options from the geoJSON file
      * @param text the text to align with
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
-    public Picture( String urlStr, JSONArray coords, TextIndex text, 
+    public Picture( String urlStr, JSONObject options, TextIndex text, 
         InetAddress poster ) throws TiltException
     {
         try
@@ -95,7 +97,9 @@ public class Picture {
             String mimeType = getFormatName();
             if ( !mimeType.equals(PNG_TYPE) )
                 convertToPng();
+            this.blur = ((Number)options.get("blur")).intValue();
             this.coords = new Double[4][2];
+            JSONArray coords = (JSONArray)options.get("coords");
             JSONArray array = (JSONArray)coords.get(0);
             for ( int i=0;i<4;i++ )
             {
@@ -485,7 +489,7 @@ public class Picture {
             if ( cleaned == null )
                 convertToCleaned();
             BufferedImage tt = ImageIO.read(cleaned);
-            BlurImage bi = new BlurImage( tt );
+            BlurImage bi = new BlurImage( tt, this.blur );
             BufferedImage out = bi.blur();
             blurred = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -513,6 +517,28 @@ public class Picture {
             baselines = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( withLines, "png", baselines );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+        
+    }
+    /**
+     * Convert to reduced lines from baselines
+     * @throws ImageException 
+     */
+    void convertToReduced() throws ImageException
+    {
+        try
+        {
+            if ( baselines == null )
+                convertToBaselines();
+            BufferedImage reducedLines = ImageIO.read(cleaned);
+            ReduceLines rl = new ReduceLines( reducedLines, page, blur );
+            reduced = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( reducedLines, "png", reduced );
         }
         catch ( Exception e )
         {
@@ -649,6 +675,17 @@ public class Picture {
         if ( baselines == null )
             convertToBaselines();
         return getPicData( baselines );
+    }
+    /**
+     * Get a reduced baselines representation of the original
+     * @return a byte array (at 256 bpp)
+     * @throws ImageException 
+     */
+    public byte[] getReducedData() throws ImageException
+    {
+        if ( reduced == null )
+            convertToReduced();
+        return getPicData( reduced );
     }
     /**
      * Get a baselines representation of the original

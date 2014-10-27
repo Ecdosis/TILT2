@@ -29,14 +29,16 @@ import tilt.image.filter.GaussianFilter;
  */
 public class BlurImage 
 {
-    BufferedImage src,dst;
+    int blur;
+    BufferedImage src;
     /**
      * Create a new Blur object 
      * @param src the source B&W image
      */
-    public BlurImage( BufferedImage src )
+    public BlurImage( BufferedImage src, int blur )
     {
         this.src = src;
+        this.blur = blur;
     }
     /**
      * Deploy a Gaussian blur
@@ -45,9 +47,15 @@ public class BlurImage
     public BufferedImage blur()
     {
         WritableRaster wr = src.copyData(null);
-        GaussianFilter gf= new GaussianFilter(10);
-        BufferedImage dst = new BufferedImage(src.getColorModel(), wr, false,null);
-        gf.filter( src, dst );
+        BufferedImage dst;
+        if ( blur > 0 )
+        {
+            GaussianFilter gf= new GaussianFilter(blur);
+            dst = new BufferedImage(src.getColorModel(), wr, false,null);
+            gf.filter( src, dst );
+        }
+        else
+            dst = src;
         return dst;
     }
 }
