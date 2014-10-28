@@ -142,25 +142,16 @@ public class TiltPostHandler extends TiltHandler
         if ( obj instanceof JSONObject )
         {
             JSONObject g = (JSONObject)obj;
-            JSONObject props = (JSONObject)g.get("properties");
+            Options opts = new Options((JSONObject)g.get("properties"));
             JSONObject geometry = (JSONObject)g.get("geometry");
             if ( geometry != null && geometry.get("coordinates") 
                 instanceof JSONArray )
             {
                 JSONArray cc = (JSONArray)geometry.get("coordinates");
-                Number blurOpt= (Number) props.get("blur");
-                int blur;
-                if ( blurOpt != null )
-                    blur = blurOpt.intValue();
-                else
-                    blur = 0;
-                JSONObject opts= new JSONObject();
-                opts.put("coords",cc);
-                opts.put("blur",blur);
+                opts.setCoords(cc);
                 // create the picture and store it in the picture registry
-                Picture p = new Picture( (String)props.get("url"), 
-                    opts, text, poster );
-                PictureRegistry.update( (String)props.get("url"), p );
+                Picture p = new Picture( opts, text, poster );
+                PictureRegistry.update( opts.url, p );
                 // it will be identified later by its docid during GET
             }
             sb.append("<img width=\"500\" src=\"");
@@ -176,7 +167,7 @@ public class TiltPostHandler extends TiltHandler
             sb.append("/?");
             sb.append(Params.DOCID);
             sb.append("=");
-            sb.append(Utils.escape((String)props.get("url")));
+            sb.append(Utils.escape(opts.url));
             sb.append("&pictype=");
             sb.append(picType.toString());
             sb.append("\">");

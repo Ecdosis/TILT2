@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.awt.geom.Area;
 import tilt.Utils;
+import tilt.handler.Options;
 /**
  * Remove big black blobs from two-tone pictures. The border
  * @author desmond
@@ -40,13 +41,15 @@ public class RemoveNoise
     Border border;
     /** blobs that were too small but were in the outermost border */
     ArrayList<Blob> rejects;
+    Options options;
     /**
      * Create a new RemoveNoise object 
      * @param src the source B&W image
      */
-    public RemoveNoise( BufferedImage src )
+    public RemoveNoise( BufferedImage src, Options options )
     {
         this.src = src;
+        this.options = options;
         darkRegions = src.copyData(null);
         float average = Blob.setToWhite( darkRegions );
         border = new Border( src.getRaster(), average );
@@ -142,7 +145,7 @@ public class RemoveNoise
                     {
                         if ( !isDirty(loc) && !isRejected(loc) )
                         {
-                            Blob b = new Blob(darkRegions);
+                            Blob b = new Blob(darkRegions,options);
                             b.expandArea( wr, loc );
                             if ( b.isValid(wr.getWidth(),wr.getHeight())
                                 ||b.isOddShaped(wr.getWidth(),wr.getHeight()) )

@@ -30,6 +30,7 @@ import tilt.handler.TextIndex;
 import tilt.image.convexhull.*;
 import org.json.simple.*;
 import tilt.image.page.Polygon;
+import tilt.handler.Options;
 
 
 /**
@@ -42,12 +43,6 @@ public class Blob
     int numBlackPixels;
     /** number of white pixels in area */
     int numWhitePixels;
-    /** minimum ratio of black to white pixels in area */
-    static float MIN_BLACK_PC = 0.5f;
-    /** minimum proportion of width or height taken up by blob */
-    static float MIN_H_PROPORTION = 0.05f;
-    static float MIN_V_PROPORTION = 0.05f;
-    static float ODD_SHAPE = 4.0f;
     /** accumulate black pixels here */
     WritableRaster dirt; 
     /** unless they are already in here */
@@ -58,11 +53,13 @@ public class Blob
     Point firstBlackPixel;
     Stack<Point> stack;
     ArrayList<Point> hull;
-    Blob( WritableRaster parent )
+    Options opts;
+    Blob( WritableRaster parent, Options opts )
     {
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
         this.stack = new Stack();
+        this.opts = opts;
     }
     /**
      * Actually commit the blob to the dirty raster
@@ -169,13 +166,13 @@ public class Blob
         int edge = Math.round(iWidth/100.0f);
         if ( nearEdge(edge,width,height) )
             return true;
-        else if ( ratio > MIN_BLACK_PC )
+        else if ( ratio > opts.minBlackPC )
         {
             float hprop = width/(float)iWidth;
             float vprop = height/(float)iHeight;
-            if ( hprop >= MIN_H_PROPORTION )
+            if ( hprop >= opts.minHProportion )
                 return true;
-            else if ( vprop >=MIN_V_PROPORTION )
+            else if ( vprop >=opts.minVProportion )
                 return true;
 //            if ( htWtRatio>= 2.0 )
 //                System.out.println("vprop="+vprop);
@@ -195,9 +192,9 @@ public class Blob
         float wtHtRatio = (float)width/(float)height;
         float hprop = width/(float)iWidth;
         float vprop = height/(float)iHeight;
-        if ( (hprop >= MIN_H_PROPORTION) && (wtHtRatio > ODD_SHAPE) )
+        if ( (hprop >= opts.minHProportion) && (wtHtRatio > opts.oddShape) )
             return true;
-        else if ( (vprop >=MIN_V_PROPORTION) && (htWtRatio > ODD_SHAPE) )
+        else if ( (vprop >=opts.minVProportion) && (htWtRatio > opts.oddShape) )
             return true;
         else
             return false;
@@ -328,14 +325,9 @@ public class Blob
     {
         try
         {
-            String s="[[0.0,0.0],[100.0,0.0],[100.0,100.0],[0.0,100.0]]";
-            Object obj=JSONValue.parse(s);
-            JSONArray coords=(JSONArray)obj;
-            JSONObject opts = new JSONObject();
-            opts.put("coords",coords);
-            opts.put("blur",0);
-            Picture p = new Picture( "http://ecdosis.net/test.png", opts, 
-                new TextIndex("",""), 
+            Options opts = new Options(new JSONObject());
+            opts.url = "http://ecdosis.net/test.png";
+            Picture p = new Picture( opts, new TextIndex("",""), 
                 InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);
@@ -349,7 +341,7 @@ public class Blob
             {
                 for ( int x=0;x<wr.getWidth();x++ )
                 {
-                    Blob b = new Blob(darkRegions);
+                    Blob b = new Blob(darkRegions,opts);
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
                     {

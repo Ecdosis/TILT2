@@ -22,6 +22,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/QueueComparator.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Word.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Polygon.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltPutHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/ImageException.java</file>
@@ -35,12 +36,14 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/package-info.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/convexhull/Point2D.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/Options.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/Matrix.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltGetHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/JettyServerThread.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/exception/TiltException.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/filter/PixelUtils.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/QueueItem.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Split.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/RemoveNoise.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/align/Score.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/SplitShape.java</file>

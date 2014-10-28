@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import tilt.image.page.Page;
+import tilt.handler.Options;
 
 /**
  * Find the lines based on a Gaussian-blurred image
@@ -51,7 +52,8 @@ public class FindLinesBlurred {
      * @param numWords the number of words on the page (needed by page object)
      * @throws Exception 
      */
-    public FindLinesBlurred( BufferedImage src, int numWords ) throws Exception
+    public FindLinesBlurred( BufferedImage src, int numWords, Options options ) 
+        throws Exception
     {
         this.src = src;
         WritableRaster wr = src.getRaster();
@@ -63,7 +65,7 @@ public class FindLinesBlurred {
             peaks[i] = findPeaks(wr,i);
         lightenImage( wr );
         // now draw the lines
-        page = new Page( peaks, hScale, 1, numWords );
+        page = new Page( peaks, hScale, 1, numWords, options );
         page.refineRight( wr, hScale, 1, LIGHT_SHADE );
         page.refineLeft( wr, hScale, 1, LIGHT_SHADE );
         page.finalise( wr );

@@ -23,6 +23,7 @@ import tilt.image.page.Page;
 import java.util.ArrayList;
 import tilt.image.page.Line;
 import java.awt.Point;
+import tilt.handler.Options;
 
 /**
  * Remove lines that intersect with blobs that already have a longer line
@@ -34,21 +35,22 @@ public class ReduceLines
     BufferedImage src;
     WritableRaster wr;
     WritableRaster dirty;
+    Options options;
     /**
      * 1. Sort lines by decreasing length.
      * 2. Identify blobs attached to each line
      * 3. If all blobs found are already present, drop that line
      * @param src the blurred source image
      * @param page the page with the lines
-     * @param blur the amount of blur in the src
+     * @param options the options from the GeoJSON
      */
-    public ReduceLines( BufferedImage src, Page page, int blur )
+    public ReduceLines( BufferedImage src, Page page, Options options )
     {
         Point pt =new Point();
         this.page = page;
         this.src = src;
         WritableRaster wr = src.getRaster();
-        if ( blur > 0 )
+        if ( options.blur > 0 )
             blackify(src);
         ArrayList<Line>lines = page.getLines();
         sortLines(lines);
@@ -75,7 +77,7 @@ public class ReduceLines
                         dirty.getPixel(x,y,iArray);
                         if ( iArray[0] != 0 )
                         {
-                            Blob b = new Blob( wr );
+                            Blob b = new Blob( wr, options );
                             b.save( dirty, wr, new Point(x,y) );
                             dirty.getPixel(x,y,iArray);
                             if ( iArray[0]== 0 )

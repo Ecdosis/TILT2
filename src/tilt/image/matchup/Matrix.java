@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.Arrays;
 import tilt.exception.MatrixException;
 import java.util.Iterator;
+import tilt.handler.Options;
 /**
  * A rewrite of the line-joining algorithm.We use a greedy approach. 
  * Differences between all points on the left and right are stored on a 
@@ -40,8 +41,6 @@ public class Matrix
     int M;
     /** length of list1 */
     int N;
-    /** maximum amount times line depth to accept new lines */
-    float LINE_DEPTH_FACTOR=3.0f;
     /** map of unique links between list1 and list2 y-positions */
     HashSet<QueueItem> uniqueMap;
     /** list1 line positions */
@@ -50,6 +49,7 @@ public class Matrix
     ArrayList<Integer> rhs;
     /** running total of line diffs */
     float averageLineDepth;
+    Options options;
     /**
      * Does the proposed join between lhs and rhs cross any other lines?
      * @param qi the item to test
@@ -98,7 +98,7 @@ public class Matrix
      */
     private boolean diffOK( QueueItem qi )
     {
-        return qi.diff < Math.round(averageLineDepth*LINE_DEPTH_FACTOR);
+        return qi.diff < Math.round(averageLineDepth*options.lineDepthFactor);
     }
     /**
      * Insert into a integer list keeping it sorted
@@ -159,12 +159,14 @@ public class Matrix
      * Compute the best alignment of two arrays of ints
      * @param list1 the first list arranged on the X-axis
      * @param list2 the second list on the Y-axis
+     * @param options the options read from the GeoJSON
      * @throws MatrixException
      */
-    public Matrix( int[] list1, int[] list2 ) throws MatrixException
+    public Matrix( int[] list1, int[] list2, Options options ) throws MatrixException
     {
         this.list1 = list1;
         this.list2 = list2;
+        this.options = options;
         lhs = new ArrayList<>();
         rhs = new ArrayList<>();
         averageLineDepth = Float.MAX_VALUE;

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.awt.Point;
 import tilt.image.page.Polygon;
 import java.awt.Rectangle;
+import tilt.handler.Options;
 /**
  * Using the lines lists search for words
  * @author desmond
@@ -35,19 +36,23 @@ public class FindWords
     WritableRaster wr;
     WritableRaster dirty;
     Rectangle wordSquare;
+    Options opts;
     /**
      * Create a word-finder
      * @param src the src image in pure black and white
      * @param page the page object with postulated lines
+     * @param opts the options from the GeoJSON document
      */
-    public FindWords( BufferedImage src, Page page ) 
+    public FindWords( BufferedImage src, Page page, Options opts ) 
     {
         wr = src.getRaster();
         dirty = src.copyData(null);
         Blob.setToWhite(dirty);
         this.page = page;
         this.src = src;
+        this.opts = opts;
         ArrayList<Line> lines = page.getLines();
+        int nShapes = 0;
         for ( int i=0;i<lines.size();i++ )
         {
             Line line = lines.get(i);
@@ -61,6 +66,7 @@ public class FindWords
                     {
                         line.add( s[k] );
                         page.addShape( s[k], line );
+                        nShapes++;
                     }
                 }
             }
@@ -70,13 +76,9 @@ public class FindWords
             // onto the correct line
             Blob.setToWhite( dirty, bounds );
         }
+        System.out.println("nShapes="+nShapes);
         page.mergeLines();
-//        for ( int i=0;i<lines.size();i++ )
-//        {
-//            Line l = lines.get(i);
-//            if ( l.countShapes()==0 )
-//                System.out.println("0");
-//        }
+        page.pruneShortLines();
         page.getWordGap(); 
         page.joinWords();
     }
@@ -109,7 +111,7 @@ public class FindWords
                     dirty.getPixel( x, y, iArray );
                     if ( iArray[0]!= 0 )
                     {
-                        Blob b = new Blob( dirty );
+                        Blob b = new Blob( dirty, opts );
                         b.save( dirty, wr, new Point(x,y) );
                         blobs.add( b );
                     }

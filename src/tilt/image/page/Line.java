@@ -391,6 +391,7 @@ public class Line implements Comparable<Line>
      */
     public void mergeWords( int minWordGap )
     {
+        ArrayList<Integer> positions = new ArrayList<>();
         Polygon prev = null;
         ArrayList<Polygon> newShapes = new ArrayList<>();
         for ( int i=0;i<shapes.size();i++ )
@@ -398,23 +399,31 @@ public class Line implements Comparable<Line>
             Polygon pg = shapes.get(i);
             if ( prev != null )
             {
-                // gaps will have changed due to merging
+                // gaps will change due to merging
                 int current = (int)Math.round(Utils.distanceBetween(prev,pg) );
-                if ( current <= minWordGap  )
-                {
-                    prev = Utils.mergePolygons(prev,pg);
-                }
-                else
-                {
-                    newShapes.add( prev );
-                    prev = pg;
-                }
+                if ( current > minWordGap  )
+                    positions.add( new Integer(i) );
             }
-            else
-                prev = pg;
+            prev = pg;
         }
-        if ( prev != null )
-            newShapes.add( prev );
+        positions.add( shapes.size());
+        // now actually merge the words
+        for ( int last=0,i=0;i<positions.size();i++ )
+        {
+            int pos = positions.get(i).intValue();
+            prev = null;
+            for ( int j=last;j<pos;j++)
+            {
+                Polygon pg = shapes.get(j);
+                if ( prev != null )
+                    prev = Utils.mergePolygons(prev,pg);
+                else
+                    prev = pg;
+            }
+            if ( prev != null )
+                newShapes.add( prev );
+            last = pos;
+        }
         this.shapes = newShapes;
     }
     /**

@@ -33,6 +33,7 @@ import tilt.exception.*;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import org.json.simple.*;
+import tilt.handler.Options;
 
 /**
  * Represent a collection of lines already recognised on a page
@@ -45,6 +46,7 @@ public class Page
     int medianLineDepth;
     int minWordGap;
     int numWords;
+    Options options;
     /**
      * Convert an array of scaled column-peaks into lines
      * @param cols a 2-D array of scaled line-peaks going *down* the page
@@ -53,10 +55,11 @@ public class Page
      * @param numWords number of words on page
      * @throws Exception
      */
-    public Page( ArrayList[] cols, int hScale, int vScale, int numWords ) 
-        throws Exception
+    public Page( ArrayList[] cols, int hScale, int vScale, int numWords,
+        Options options ) throws Exception
     {
         this.numWords = numWords;
+        this.options = options;
         map = new HashMap<>();
         lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
@@ -67,7 +70,7 @@ public class Page
             int[] list2 = new int[col2.size()];
             listToIntArray(col1,list1);
             listToIntArray(col2,list2);
-            Matrix m = new Matrix( list1, list2 );
+            Matrix m = new Matrix( list1, list2, options );
             Move[] moves = m.traceBack();
             int x2,z2;
             for ( int y1=0,y2=0,j=0;j<moves.length;j++ )
@@ -255,12 +258,12 @@ public class Page
      */
     public void mergeLines()
     {
-        for ( int i=0;i<lines.size();i++ )
-        {
-            Line l = lines.get(i);
-            if ( l.countShapes()== 0 )
-                System.out.println("0");
-        }
+//        for ( int i=0;i<lines.size();i++ )
+//        {
+//            Line l = lines.get(i);
+//            if ( l.countShapes()== 0 )
+//                System.out.println("0");
+//        }
         Set<Polygon> keys = map.keySet();
         Iterator<Polygon> iter = keys.iterator();
         while ( iter.hasNext() )
@@ -454,6 +457,25 @@ public class Page
         joinBrokenLines();
     }
     /**
+     * Remove lines with only 1 shape that is &lt; or = minWordGap
+     */
+    public void pruneShortLines()
+    {
+        ArrayList<Line> delenda = new ArrayList<>();
+        for( int i=0;i<this.lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            if ( l.shapes.size()==1 )
+            {
+                Polygon pg = l.shapes.get(0);
+                if ( pg.getBounds().width <= minWordGap )
+                    delenda.add( l );
+            }
+        }
+        for ( int i=0;i<delenda.size();i++ )
+            this.lines.remove( delenda.get(i) );
+    }
+    /**
      * Retrieve the minimum gap between words in pixels
      * @return an int
      */
@@ -472,10 +494,11 @@ public class Page
             keys.toArray( hArray );
             Arrays.sort( hArray );
             int runningTotal= 0;
+            int targetWords = (numWords-(lines.size()-1))-1;
             for ( int i=hArray.length-1;i>=0;i-- )
             {
                 runningTotal += hGaps.get(hArray[i]).intValue();
-                if ( runningTotal >= numWords )
+                if ( runningTotal >= targetWords )
                 {
                     minWordGap = hArray[i].intValue();
                     break;

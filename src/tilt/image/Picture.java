@@ -44,6 +44,7 @@ import tilt.image.page.Page;
 import tilt.handler.TextIndex;
 import tilt.align.Matchup;
 import tilt.image.page.Word;
+import tilt.handler.Options;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -67,26 +68,26 @@ public class Picture {
     Double[][] coords;
     TextIndex text;
     boolean linked;
+    Options options;
     /**
      * Create a picture. Pictures stores links to the various image files.
-     * @param urlStr the remote picture url as a string
      * @param options options from the geoJSON file
      * @param text the text to align with
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
-    public Picture( String urlStr, JSONObject options, TextIndex text, 
+    public Picture( Options options, TextIndex text, 
         InetAddress poster ) throws TiltException
     {
         try
         {
-            URL url = new URL( urlStr );
+            URL url = new URL( options.url );
             // use url as id for now
-            id = urlStr;
+            id = options.url;
             this.text = text;
             this.poster = poster;
             // try to register the picture
-            PictureRegistry.register( this, urlStr );
+            PictureRegistry.register( this, options.url );
             // fetch picture from url
             ReadableByteChannel rbc = Channels.newChannel(url.openStream());
             orig = File.createTempFile(PictureRegistry.PREFIX,
@@ -97,13 +98,11 @@ public class Picture {
             String mimeType = getFormatName();
             if ( !mimeType.equals(PNG_TYPE) )
                 convertToPng();
-            this.blur = ((Number)options.get("blur")).intValue();
+            this.options = options;
             this.coords = new Double[4][2];
-            JSONArray coords = (JSONArray)options.get("coords");
-            JSONArray array = (JSONArray)coords.get(0);
             for ( int i=0;i<4;i++ )
             {
-                JSONArray vector = (JSONArray)array.get(i);
+                JSONArray vector = (JSONArray)options.coords.get(i);
                 for ( int j=0;j<2;j++ )
                 {
                     this.coords[i][j] = (Double)vector.get(j);
@@ -467,7 +466,7 @@ public class Picture {
             if ( twotone == null )
                 convertToTwoTone();
             BufferedImage tt = ImageIO.read(twotone);
-            RemoveNoise rn = new RemoveNoise( tt );
+            RemoveNoise rn = new RemoveNoise( tt, options );
             rn.clean();
             cleaned = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -489,7 +488,7 @@ public class Picture {
             if ( cleaned == null )
                 convertToCleaned();
             BufferedImage tt = ImageIO.read(cleaned);
-            BlurImage bi = new BlurImage( tt, this.blur );
+            BlurImage bi = new BlurImage( tt, options.blur );
             BufferedImage out = bi.blur();
             blurred = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -511,7 +510,8 @@ public class Picture {
             if ( blurred == null )
                 convertToBlurred();
             BufferedImage withLines = ImageIO.read(blurred);
-            FindLinesBlurred fl = new FindLinesBlurred( withLines, text.numWords() );
+            FindLinesBlurred fl = new FindLinesBlurred( withLines, 
+                text.numWords(), options );
             page = fl.getPage();
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,
@@ -522,7 +522,6 @@ public class Picture {
         {
             throw new ImageException(e);
         }
-        
     }
     /**
      * Convert to reduced lines from baselines
@@ -535,7 +534,7 @@ public class Picture {
             if ( baselines == null )
                 convertToBaselines();
             BufferedImage reducedLines = ImageIO.read(cleaned);
-            ReduceLines rl = new ReduceLines( reducedLines, page, blur );
+            ReduceLines rl = new ReduceLines( reducedLines, page, options );
             reduced = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( reducedLines, "png", reduced );
@@ -558,7 +557,7 @@ public class Picture {
                 convertToBaselines();
             BufferedImage bandw = ImageIO.read(twotone);
             BufferedImage originalImage =  ImageIO.read(orig);
-            FindWords fw = new FindWords( bandw, page );
+            FindWords fw = new FindWords( bandw, page, options );
             page.print( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
