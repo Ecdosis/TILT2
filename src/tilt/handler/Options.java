@@ -31,6 +31,8 @@ public class Options
     public float sharedRatio = 0.75f;
     /** percent-wise proportion of image to be scanned*/
     public JSONArray coords;
+    /** is the text hyphenated at line-end?*/
+    public boolean hyphenated = false;
     /**
      * Initialise an options object fro a possibly empty set of properties
      * @param opts a RAW JSON object
@@ -57,6 +59,8 @@ public class Options
             this.lineDepthFactor = ((Number)opts.get("lineDepthFactor")).floatValue();
         if ( opts.containsKey("sharedRatio") )
             this.sharedRatio = ((Number)opts.get("sharedRatio")).floatValue();
+        if ( opts.containsKey("hyphenated") )
+            this.hyphenated = ((Boolean)opts.get("hyphenated")).booleanValue();
         String s = "[[0.0,0.0],[100.0,0.0],[100.0,100.0],[0.0,100.0]]";
         Object obj=JSONValue.parse(s);
         this.coords = (JSONArray)obj;

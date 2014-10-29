@@ -494,11 +494,12 @@ public class Page
             keys.toArray( hArray );
             Arrays.sort( hArray );
             int runningTotal= 0;
-            int targetWords = (numWords-(lines.size()-1))-1;
+            int targetGaps = (numWords-(lines.size()-1))-1;
+            System.out.println("target gaps="+targetGaps+" numWords="+numWords);
             for ( int i=hArray.length-1;i>=0;i-- )
             {
                 runningTotal += hGaps.get(hArray[i]).intValue();
-                if ( runningTotal >= targetWords )
+                if ( runningTotal >= targetGaps )
                 {
                     minWordGap = hArray[i].intValue();
                     break;
@@ -520,12 +521,14 @@ public class Page
      */
     public void joinWords()
     {
-        //System.out.println("numWords="+numWords+" minWordGap="+minWordGap);
+        int nWords=0;
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
             l.mergeWords( minWordGap );
+            nWords += l.countShapes();
         }
+        System.out.println("recognised"+nWords+" words");
     }
     /**
      * Join up broken lines BEFORE any shapes have been recognised

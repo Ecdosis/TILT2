@@ -401,7 +401,7 @@ public class Line implements Comparable<Line>
             {
                 // gaps will change due to merging
                 int current = (int)Math.round(Utils.distanceBetween(prev,pg) );
-                if ( current > minWordGap  )
+                if ( current >= minWordGap  )
                     positions.add( new Integer(i) );
             }
             prev = pg;

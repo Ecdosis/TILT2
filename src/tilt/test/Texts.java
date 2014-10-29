@@ -251,9 +251,39 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    //"\t\"url\": \"http://ecdosis.net/images/00000013.jpg\"\n\t"
-    +"\t\"url\": \"http://localhost/images/00000013.jpg\"\n\t"
-    +"}\n}\n"}};
+    +"\t\"url\": \"http://localhost/images/00000013.jpg\"\n,"
+    +"\"hyphenated\":false\n\t}\n}\n"},
+    {"Biodiversity1","First Biodiversity example",
+    "May 9\nClear and cool with hig"
+    +"h N. W. wind.\nA glorious day as bracing as October yet with"
+    +"\nthe country wreathed in flowers.\nIn the forenoon I drove "
+    +"C. to Sudbury\nThe roads are lonely and little used, after\n"
+    +"passing through woodland, occasionally skirting\nbroad meado"
+    +"ws. The Apple Orchards were at their\nhighest perfection wit"
+    +"h patches of white. Birds were\nnumerous, but I saw nothing "
+    +"of any particular\ninterest. Meadow Larks were common, one o"
+    +"r\nmore being seen or heard in every meadow.\nBluebirds were"
+    +" frequently seen along the road-\nside, and Orioles occurred"
+    +" about the orchard\nand Elm. Shaded farmhouses in apparently"
+    +" un-\ndiminished numbers. I neither saw nor heard\nany Bobol"
+    +"inks, although we passed many places\nin every way suited to"
+    +" their habits.\nIn the afternoon I rowed up the Assabet with"
+    +"\nD. C. French. While midway of the straight reach\nabove th"
+    +"e Hemlocks, my companion asked \"is that\na Yellow Warbler?\""
+    +", pointing out a small bird hop-\nping about in some drift-"
+    +"wood caught in the\nlower branches of the black willows lini"
+    +"ng the\nwest bank. After looking at it intently for a \nmome"
+    +"nt, I was amazed to recognize my old\nMt. Carmel friend, the"
+    +" Prothonotary Warbler.\nWe had no gun, but it did not take l"
+    +"ong to\nwhirl the boat around and start back for one.\nRetur"
+    +"ning in about three quarters of an hour\nwe found our little"
+    +" stranger gone, but presently\nI heard him chirp and then si"
+    +"ng in an undertone\nnear at hand. At length he emerged from\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://localhost/images/43746022.jpg\",\n"
+    +"\"blur\":10,\n\"smoothN\":20,\n\"hScaleRatio\":0.08\n\t}\n}\n"}};
 }
 /*,
     {"Biodiversity1","First Biodiversity example",

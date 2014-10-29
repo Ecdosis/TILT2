@@ -127,6 +127,9 @@ public class FindWords
                 Blob b = blobs.get(i);
                 Polygon pg = b.toPolygon();
                 shapes.add( pg );
+                Rectangle bounds = pg.getBounds();
+                if ( bounds.height > 5*rHt )
+                    System.out.println("Height="+bounds.height);
             }
             // convert to array
             Polygon[] ss = new Polygon[shapes.size()];

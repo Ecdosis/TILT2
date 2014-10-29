@@ -126,7 +126,7 @@ public class Post extends Test
             // create the doc and install the scripts etc
             doc = new HTML();
             doc.getHead().addEncoding("text/html; charset=UTF-8");
-            doc.getHead().addJQuery("1.9.0");
+            doc.getHead().addJQuery("1.11.1",true);
             doc.getHead().addScriptFile( "jquery.highlight.js" );
             doc.getHead().addScriptFile( "post.js" );
             doc.getHead().addCss(POST_CSS);

@@ -555,7 +555,7 @@ public class Picture {
         {
             if ( baselines == null )
                 convertToBaselines();
-            BufferedImage bandw = ImageIO.read(twotone);
+            BufferedImage bandw = ImageIO.read(cleaned);
             BufferedImage originalImage =  ImageIO.read(orig);
             FindWords fw = new FindWords( bandw, page, options );
             page.print( originalImage );
