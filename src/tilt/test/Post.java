@@ -126,9 +126,9 @@ public class Post extends Test
             // create the doc and install the scripts etc
             doc = new HTML();
             doc.getHead().addEncoding("text/html; charset=UTF-8");
-            doc.getHead().addJQuery("1.11.1","static",true);
-            doc.getHead().addScriptFile( "static/jquery.highlight.js" );
-            doc.getHead().addScriptFile( "static/post.js" );
+            doc.getHead().addScriptFile( "/tilt/static/jquery-1.11.1.js" );
+            doc.getHead().addScriptFile( "/tilt/static/jquery.highlight.js" );
+            doc.getHead().addScriptFile( "/tilt/static/post.js" );
             doc.getHead().addCss(POST_CSS);
             HashMap<String,String> selections = new HashMap<>();
             for ( int i=0;i<Texts.samples.length;i++ )
