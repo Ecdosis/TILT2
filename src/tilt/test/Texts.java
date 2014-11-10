@@ -45,8 +45,8 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [15.0, 25.0], [97.0, 25.0],"
     +" [97.0, 87.0], [15.0, 87.0] ]\n\t]\n},\n\"properties\": {\n"
-    //"\t\"url\": \"http://ecdosis.net/images/00000005.jpg\"\n\t}\n}\n"},
-    +"\t\"url\": \"http://localhost/images/00000005.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/00000005.jpg\",\n\t"
+    +"\"blur\":3,\"smoothN\":20}\n}\n"},
     {"CAPUANA","Capuana example",
     "<h3>Al lettore.</h3>\n<p>Quando l’autore e l’editore di quest"
     +"i due frammenti mi\npregarono di scrivere due parole di pref"

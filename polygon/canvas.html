@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+.img{position:absolute;z-index:1;}
+
+#container{
+    display:inline-block;
+    position:relative; 
+}
+#test {
+    position:relative;
+    left:-200px;
+    z-index:20;
+}
+</style>
+<script type="text/javascript" src="jquery-1.11.1.js"></script>
+<script type="text/javascript" src="geometry.js"></script>
+<script type="text/javascript" src="quadtree.js"></script>
+<script>
+$( document ).ready(function() {
+    // temporary test data
+    var pts = [
+        {x:20,y:20},
+        {x:100,y:35},
+        {x:150,y:80},
+        {x:90,y:88},
+        {x:40,y:60},
+        {x:20,y:20}
+    ];
+    qt = new QuadTree(0,0,200,100);
+    polygon = new Polygon( pts, "test" );
+    for ( var i=0;i<pts.length;i++ )
+    {
+        var pt = new Point(pts[i].x,pts[i].y)
+        if ( !qt.addPoint(pt) )
+            console.log("failed to add point "+pt.x+","+pt.y);
+    }
+    $("#test").mousemove(function( event ) {
+        var offset = $("#test").offset();
+        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+        if ( !polygon.anchored )
+        {
+            if ( polygon.pointInPoly(pt) )
+                polygon.drawPolygon();
+            else
+                polygon.erase();
+        }
+        else if ( polygon.dragging() )
+            polygon.dragTo(pt,qt);
+    });
+    $("#test").mousedown(function(event) {
+        var offset = $("#test").offset();
+        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+        if ( polygon.anchored )
+        {
+            var inside = polygon.pointInPoly(pt);
+            var closest = qt.hasPoint(pt,undefined);
+            var dist = (closest!=undefined)?qt.distance(closest,pt):Number.MAX_VALUE;
+            if ( dist<=polygon.radius )
+                polygon.startDrag(closest);
+            else if ( !inside )
+            {
+                polygon.anchored = false;
+                polygon.erase();
+            }
+            else
+                polygon.setAnchorNormal();
+        }
+        else
+        {
+            polygon.anchored = polygon.pointInPoly(pt);
+            if ( polygon.anchored )
+                polygon.drawControlPoints();
+        }
+    });
+    $("#test").mouseup(function(event) {
+        var offset = $("#test").offset();
+        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+        var closest = qt.hasPoint(pt,undefined);
+        if ( closest!=undefined && closest.equals(polygon.dragPt) )
+            polygon.setHighlightPt(closest);
+        if ( polygon.dragging() )
+            polygon.endDrag();
+    });
+    $(document).keydown(function(event){
+        if ( polygon.highlightPt != undefined )
+            if ( event.which == 8 || event.which == 46 )
+            {
+                qt.removePoint(polygon.highlightPt);
+                polygon.deleteHighlightPt();
+            }
+        return false;
+    });
+});
+</script>
+</head>
+<body>
+<div id="container">
+<img src="test.png">
+<canvas id="test" width="200" height="100"></canvas>
+</div>
+</body>
+</html>
