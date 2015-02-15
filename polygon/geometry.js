@@ -33,7 +33,7 @@ function Rect( x, y, width, height )
     this.contains = function( p ) {
         if ( p.x >= this.x && p.x < this.x+this.width )
         {
-            if ( p.y >= this.y  && p.y < this.y+this.width )
+            if ( p.y >= this.y  && p.y < this.y+this.height )
                 return true;
         }
         return false;
@@ -68,6 +68,14 @@ function Polygon( pts, id )
     this.dragPt = undefined;
     // currently highlighted point
     this.highlightPt = undefined;
+    // distance to new points from edge
+    this.tolerance = 0.07;
+    // first end-point of edge nearest to new point
+    this.pt1 = undefined;
+    // second end-point of edge nearest to new point
+    this.pt2 = undefined;
+    // index into points of edge end-point
+    this.pos = 0;
     // array of points
     this.points = new Array();
     for ( var i=0;i<pts.length;i++ )
@@ -254,6 +262,7 @@ function Polygon( pts, id )
             if ( this.points[i].equals(pt) )
             {
                 this.highlightPt = this.points[i];
+                this.endDrag();
                 break;
             }
         }
@@ -276,5 +285,64 @@ function Polygon( pts, id )
             }
         }
     };
+    /**
+     * Is the point within some tolerance of an edge?
+     * http://forums.codeguru.com/printthread.php?t=194400
+     * @param pt the point near the edge
+     * @return true if it is else false
+     */
+	this.ptOnEdge = function(pt) {
+        this.pt1 = this.pt2 = undefined;
+    	for ( var i=0;i<this.points.length-1;i++ )
+        {
+            var left = this.points[i];
+            var right = this.points[i+1];
+            var diff = (pt.x-left.x)/(right.x-left.x) 
+               -(pt.y-left.y)/(right.y-left.y);
+			if ( Math.abs(diff) < this.tolerance )
+            {
+				// check that it really is on the line
+                var slope = (right.y-left.y)/(right.x-left.x);
+                var predicted_y = left.y+Math.round((pt.x-left.x)*slope);
+				if ( predicted_y-Math.round(pt.y)<=1 )
+                {
+		            this.pt1 = left;
+			        this.pt2 = right;
+			        this.pos = i+1;
+			        return true;
+                }
+                else
+                    console.log("predicted y="+predicted_y+" actual y="+Math.round(pt.y));
+            }
+        }
+        return false;
+    };
+    /**
+     * Find the closest point on the line to the proposed point
+     * @param a one existing end-point
+     * @param b the other existing end-point
+     * @param c the point off the line
+     * @return a new point on the line being closest to c
+     */
+    this.closestPt = function( a, b, c ) {
+		var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
+		var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
+		var r = r_num / r_den;
+		return new Point(a.x + r*(b.x-a.x), a.y + r*(b.y-a.y) );
+    };
+	/**
+     * Add a point to the polygon after test for ptOnEdge
+     * @param pt the point to add
+     */
+	this.addPt = function(pt) {
+        if ( this.pt1 != undefined && this.pt2 != undefined )
+        {
+            var newPt = this.closestPt(this.pt1,this.pt2,pt);
+			this.points.splice(this.pos,0,newPt);
+            this.redraw();
+            return newPt;
+        }
+        return false;
+	};
 }
 

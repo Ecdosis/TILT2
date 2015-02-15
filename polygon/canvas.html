@@ -19,7 +19,7 @@
 <script type="text/javascript" src="geometry.js"></script>
 <script type="text/javascript" src="quadtree.js"></script>
 <script>
-$( document ).ready(function() {
+$(document).ready(function() {
     // temporary test data
     var pts = [
         {x:20,y:20},
@@ -29,6 +29,7 @@ $( document ).ready(function() {
         {x:40,y:60},
         {x:20,y:20}
     ];
+    downPt = undefined;
     qt = new QuadTree(0,0,200,100);
     polygon = new Polygon( pts, "test" );
     for ( var i=0;i<pts.length;i++ )
@@ -59,14 +60,23 @@ $( document ).ready(function() {
             var closest = qt.hasPoint(pt,undefined);
             var dist = (closest!=undefined)?qt.distance(closest,pt):Number.MAX_VALUE;
             if ( dist<=polygon.radius )
+            {
                 polygon.startDrag(closest);
+            }
+            else if ( polygon.ptOnEdge(pt) )
+            {
+                var newPt = polygon.addPt(pt);
+                qt.addPoint(newPt);
+            }
             else if ( !inside )
             {
-                polygon.anchored = false;
-                polygon.erase();
+                console.log("setting downPt");
+                downPt = pt;
             }
             else
+            {
                 polygon.setAnchorNormal();
+            }
         }
         else
         {
@@ -81,8 +91,16 @@ $( document ).ready(function() {
         var closest = qt.hasPoint(pt,undefined);
         if ( closest!=undefined && closest.equals(polygon.dragPt) )
             polygon.setHighlightPt(closest);
-        if ( polygon.dragging() )
+        else if ( polygon.dragging() )
             polygon.endDrag();
+        else if ( (downPt == undefined || downPt.equals(pt)) && !polygon.pointInPoly(pt) )
+        {
+	         polygon.erase();
+             polygon.anchored = false;
+        }
+        else if ( downPt != undefined )
+            console.log("downPt was defined");
+        downPt = undefined;
     });
     $(document).keydown(function(event){
         if ( polygon.highlightPt != undefined )

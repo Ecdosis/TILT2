@@ -24,7 +24,9 @@ function QuadTree( x, y, width, height )
     this.addPoint = function( pt )
     {
         if ( !this.contains(pt) )
+        {
             return false;
+        }
         else 
         {
             if ( this.points != undefined )
@@ -94,7 +96,7 @@ function QuadTree( x, y, width, height )
         // precompute x,y of se quadrant
         var xSplit = Math.floor(this.boundary.width/2)+this.boundary.x;
         var ySplit = Math.floor(this.boundary.height/2)+this.boundary.y;
-        // createthe four sub-trees
+        // create the four sub-trees
         this.nw = new QuadTree(this.boundary.x,this.boundary.y,
             xSplit-this.boundary.x,
             ySplit-this.boundary.y);
