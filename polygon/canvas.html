@@ -52,8 +52,10 @@ $(document).ready(function() {
         }
         else if ( polygon.dragging() )
         {
+            var quad = qt.getQuad(polygon.dragPt);
             polygon.dragTo(pt);
-            qt.updatePt(polygon.dragPt);
+            quad.removePt(polygon.dragPt);
+            qt.addPt(polygon.dragPt);
         }
         else if ( downPt != undefined && polygon.anchored && !polygon.pointInPoly(downPt) )
         {
@@ -125,7 +127,13 @@ $(document).ready(function() {
         if ( closest!=undefined && closest.equals(polygon.dragPt) )
             polygon.setHighlightPt(closest);
         else if ( polygon.dragging() )
+        {
+            var quad = qt.getQuad(polygon.dragPt);
+            quad.removePt(polygon.dragPt);
+            polygon.dragTo(pt);
+            qt.addPt(polygon.dragPt);
             polygon.endDrag(qt);
+        }
         else if ( downPt != undefined )
         {
              var upInPoly = polygon.pointInPoly(pt);

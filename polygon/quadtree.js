@@ -55,6 +55,36 @@ function QuadTree( x, y, width, height )
         }
     };
     /**
+     * Find the quadrant to which this point belongs
+     * @param pt the point to find
+     * @return the quadrant in which it is stored or undefined
+     */
+    this.getQuad = function(pt) {
+        if ( this.points != undefined )
+        {
+            for( var i=0;i<this.points.length;i++ )
+            {
+                if ( this.points[i] == pt )
+                {
+                    return this;
+                }
+            }
+        }
+        else if ( this.nw.contains(pt) )
+            return this.nw.getQuad(pt);
+        else if ( this.sw.contains(pt) )
+            return this.sw.getQuad(pt);
+        else if ( this.ne.contains(pt) )
+            return this.ne.getQuad(pt);
+        else if ( this.se.contains(pt) )
+            return this.se.getQuad(pt);
+        else
+        {
+            console.log("failed to remove point "+pt.x+","+pt.y);
+            return undefined;
+        }
+    };
+    /**
      * Remove a point from the quadtree
      * @param pt the point to remove
      */

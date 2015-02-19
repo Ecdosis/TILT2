@@ -313,14 +313,10 @@ function Polygon( pts, id )
     this.dragPt = undefined;
     // currently highlighted point
     this.highlightPt = undefined;
-    // distance to new points from edge
-    this.tolerance = 0.07;
-    // first end-point of edge nearest to new point
-    this.pt1 = undefined;
-    // second end-point of edge nearest to new point
-    this.pt2 = undefined;
+    // distance in pixels to new points from edge
+    this.tolerance = 1.5;
     // index into points of edge end-point
-    this.pos = 0;
+    this.pos = undefined;
     // array of points
     this.points = new Array();
     // small number
@@ -474,7 +470,6 @@ function Polygon( pts, id )
      * @param qt the top-level quadtree
      */
     this.endDrag = function(qt) {
-        qt.updatePt( this.dragPt);
         qt.updatePolygon(this);
         this.dragPt = undefined;
         this.redraw($("#"+this.canvas)[0].getContext("2d"));
@@ -494,7 +489,7 @@ function Polygon( pts, id )
     this.dragTo = function(pt) {
         if ( this.dragPt.x != pt.x || this.dragPt.y != pt.y )
         {
-            var ctx= $("#"+this.canvas)[0].getContext("2d");
+            var ctx = $("#"+this.canvas)[0].getContext("2d");
             this.erase(ctx);
             this.dragPt.x = pt.x;
             this.dragPt.y = pt.y;
@@ -544,15 +539,14 @@ function Polygon( pts, id )
      * @return true if it is else false
      */
 	this.ptOnEdge = function(pt) {
-        this.pt1 = this.pt2 = undefined;
+        this.pos = undefined;
     	for ( var i=0;i<this.points.length-1;i++ )
         {
             var seg = new Segment(this.points[i],this.points[i+1]);
             var dist = seg.distFromLine(pt);
             if ( dist < this.tolerance )
             {
-                this.pt1 = this.points[i];
-                this.pt2 = this.points[i+1];
+                this.pos = i;
                 return true;            
             }
         }
@@ -569,7 +563,8 @@ function Polygon( pts, id )
 		var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
 		var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
 		var r = r_num / r_den;
-		return new Point(a.x + r*(b.x-a.x), a.y + r*(b.y-a.y) );
+		return new Point(Math.round(a.x + r*(b.x-a.x)), 
+            Math.round(a.y + r*(b.y-a.y)) );
     };
 	/**
      * Add a point to the polygon after test for ptOnEdgeor otherwise
@@ -577,12 +572,13 @@ function Polygon( pts, id )
      */
 	this.addPt = function(pt) {
         // have we just called ptOnEdge?
-        if ( this.pt1 != undefined && this.pt2 != undefined )
+        if ( this.pos != undefined )
         {
-            var newPt = this.closestPt(this.pt1,this.pt2,pt);
-			this.points.splice(this.pos,0,newPt);
+            var newPt = this.closestPt(this.points[this.pos],this.points[this.pos+1],pt);
+            this.points.splice(this.pos+1,0,newPt);
             var ctx = $("#"+this.canvas)[0].getContext("2d");
             this.redraw(ctx);
+            this.pos = undefined;
             return newPt;
         }
         else    // otherwise
