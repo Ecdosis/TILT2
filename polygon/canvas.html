@@ -32,24 +32,52 @@ $(document).ready(function() {
     downPt = undefined;
     qt = new QuadTree(0,0,200,100);
     polygon = new Polygon( pts, "test" );
-    for ( var i=0;i<pts.length;i++ )
-    {
-        var pt = new Point(pts[i].x,pts[i].y)
-        if ( !qt.addPoint(pt) )
-            console.log("failed to add point "+pt.x+","+pt.y);
-    }
+    qt.addPolygon(polygon);
+    upPt = undefined;
     $("#test").mousemove(function( event ) {
         var offset = $("#test").offset();
         var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
         if ( !polygon.anchored )
         {
+            var ctx = $("#test")[0].getContext("2d");
             if ( polygon.pointInPoly(pt) )
-                polygon.drawPolygon();
+                polygon.drawPolygon(ctx);
             else
-                polygon.erase();
+            {
+                polygon.erase(ctx);
+                var newPoly = qt.pointInPolygon(pt);
+                if ( newPoly )
+                    polygon = newPoly;
+            }
         }
         else if ( polygon.dragging() )
-            polygon.dragTo(pt,qt);
+        {
+            polygon.dragTo(pt);
+            qt.updatePt(polygon.dragPt);
+        }
+        else if ( downPt != undefined && polygon.anchored && !polygon.pointInPoly(downPt) )
+        {
+            var ctx = $("#test")[0].getContext("2d");
+            if ( upPt != undefined )
+            {
+                var r = clipRect();
+                ctx.save();
+                ctx.rect(r.x,r.y,r.width,r.height);
+                ctx.clip();
+                polygon.redraw(ctx);
+                ctx.restore();
+            }
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(downPt.x,downPt.y);
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([2,3]);
+            ctx.lineTo(pt.x,pt.y);
+            ctx.stroke();
+            ctx.restore();
+            upPt = pt;
+        }
     });
     $("#test").mousedown(function(event) {
         var offset = $("#test").offset();
@@ -66,51 +94,90 @@ $(document).ready(function() {
             else if ( polygon.ptOnEdge(pt) )
             {
                 var newPt = polygon.addPt(pt);
-                qt.addPoint(newPt);
+                qt.addPt(newPt);
+                qt.updatePolygon(polygon);
             }
-            else if ( !inside )
+            else 
             {
-                console.log("setting downPt");
+                if ( inside )
+                {
+                    polygon.setAnchorNormal();
+                }
                 downPt = pt;
-            }
-            else
-            {
-                polygon.setAnchorNormal();
+                upPt= undefined;
             }
         }
         else
         {
             polygon.anchored = polygon.pointInPoly(pt);
             if ( polygon.anchored )
-                polygon.drawControlPoints();
+            {
+                var ctx = $("#test")[0].getContext("2d");
+                polygon.drawControlPoints(ctx);
+            }
         }
     });
     $("#test").mouseup(function(event) {
         var offset = $("#test").offset();
         var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
         var closest = qt.hasPoint(pt,undefined);
+        //this stops endDrag from being called
         if ( closest!=undefined && closest.equals(polygon.dragPt) )
             polygon.setHighlightPt(closest);
         else if ( polygon.dragging() )
-            polygon.endDrag();
-        else if ( (downPt == undefined || downPt.equals(pt)) && !polygon.pointInPoly(pt) )
-        {
-	         polygon.erase();
-             polygon.anchored = false;
-        }
+            polygon.endDrag(qt);
         else if ( downPt != undefined )
-            console.log("downPt was defined");
+        {
+             var upInPoly = polygon.pointInPoly(pt);
+	         if ( !upInPoly )
+             {
+                 if ( downPt.equals(pt) )
+                 {
+                     var ctx = $("#test")[0].getContext("2d");
+                     polygon.erase(ctx);
+                     polygon.anchored = false;
+                 }
+             }
+        }
+        if ( downPt != undefined && upPt != undefined )
+        {
+            var polygons = polygon.split(downPt,upPt);
+            qt.removePolygon( polygon );
+            if ( polygons != undefined )
+            {
+                for ( var i=0;i<polygons.length;i++ )
+                    qt.addPolygon(polygons[i]);
+                if( polygons.length>0 )
+                    polygon = polygons[0];
+            }
+            //var r = clipRect();
+            //var ctx = $("#test")[0].getContext("2d");
+            //polygon.redraw(ctx);
+        }
         downPt = undefined;
+        upPt = undefined;
     });
     $(document).keydown(function(event){
         if ( polygon.highlightPt != undefined )
             if ( event.which == 8 || event.which == 46 )
             {
-                qt.removePoint(polygon.highlightPt);
+                qt.removePt(polygon.highlightPt);
+                qt.updatePolygon(polygon);
                 polygon.deleteHighlightPt();
             }
+        // otherwise we should remove the whole polygon
         return false;
     });
+    function clipRect()
+    {
+        var left = (downPt.x<upPt.x)?downPt.x:upPt.x;
+        var right = (downPt.x>upPt.x)?downPt.x:upPt.x;
+        var top = (upPt.y<downPt.y)?upPt.y:downPt.y;
+        var bot = (upPt.y>downPt.y)?upPt.y:downPt.y;
+        var r = new Rect(left,top,right-left,bot-top);
+        r.expand( 2 );
+        return r;
+    }
 });
 </script>
 </head>
