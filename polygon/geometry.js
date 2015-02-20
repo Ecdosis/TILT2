@@ -660,8 +660,8 @@ function Polygon( pts, id )
         if ( intersects )
         {
             var state = 0;
-            var left = new Polygon(new Array(),this.canvas+"-left");
-            var right = new Polygon(new Array(),this.canvas+"-right");
+            var left = new Polygon(new Array(),this.canvas);
+            var right = new Polygon(new Array(),this.canvas);
             //now compose the two separate polygons
             for ( var i=0;i<this.points.length-1;i++ )
             {
@@ -691,8 +691,8 @@ function Polygon( pts, id )
                             var ydl = seg.y_inc_left();
                             var xdr = seg.x_inc_right();
                             var ydr = seg.y_inc_right();
-                            right.addPt( new Point(SI.p1.x+xdr,SI.p1.y+ydr) );
-                            left.addPt( new Point(SI.p1.x+xdl,SI.p1.y+ydl) );
+                            right.addPt( new Point(SI.p1.x+xdl,SI.p1.y+ydl) );
+                            left.addPt( new Point(SI.p1.x+xdr,SI.p1.y+ydr) );
                             state = 2;
                         }
                         break;

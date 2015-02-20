@@ -157,6 +157,8 @@ $(document).ready(function() {
         {
             var polygons = polygon.split(downPt,upPt);
             qt.removePolygon( polygon );
+            var ctx = $("#test")[0].getContext("2d");
+            polygon.erase(ctx);
             if ( polygons != undefined )
             {
                 for ( var i=0;i<polygons.length;i++ )
@@ -164,9 +166,8 @@ $(document).ready(function() {
                 if( polygons.length>0 )
                     polygon = polygons[0];
             }
-            //var r = clipRect();
-            //var ctx = $("#test")[0].getContext("2d");
-            //polygon.redraw(ctx);
+            polygon.anchored = true;
+            polygon.setAnchorNormal();
         }
         downPt = undefined;
         upPt = undefined;
