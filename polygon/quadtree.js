@@ -69,6 +69,8 @@ function QuadTree( x, y, width, height )
                     return this;
                 }
             }
+            console.log("failed to find quad for point "+pt.x+","+pt.y);
+            return undefined;
         }
         else if ( this.nw.contains(pt) )
             return this.nw.getQuad(pt);
@@ -80,7 +82,7 @@ function QuadTree( x, y, width, height )
             return this.se.getQuad(pt);
         else
         {
-            console.log("failed to remove point "+pt.x+","+pt.y);
+            console.log("failed to find quad for point "+pt.x+","+pt.y);
             return undefined;
         }
     };
@@ -96,9 +98,10 @@ function QuadTree( x, y, width, height )
                 if ( this.points[i] == pt )
                 {
                     this.points.splice(i,1);
-                    break;
+                    return;
                 }
             }
+            console.log("failed to remove point "+pt.x+","+pt.y);
         }
         else if ( this.nw.contains(pt) )
             this.nw.removePt(pt);

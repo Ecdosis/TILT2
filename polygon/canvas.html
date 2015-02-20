@@ -129,10 +129,16 @@ $(document).ready(function() {
         else if ( polygon.dragging() )
         {
             var quad = qt.getQuad(polygon.dragPt);
-            quad.removePt(polygon.dragPt);
-            polygon.dragTo(pt);
-            qt.addPt(polygon.dragPt);
-            polygon.endDrag(qt);
+            if ( quad != undefined )
+            {
+                quad.removePt(polygon.dragPt);
+                polygon.dragTo(pt);
+                qt.addPt(polygon.dragPt);
+                polygon.endDrag(qt);
+            }
+            else
+                console.log("quad for "+polygon.dragPt.x
+                +":"+polygon.y+" is undefined");
         }
         else if ( downPt != undefined )
         {
