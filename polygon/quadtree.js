@@ -316,8 +316,6 @@ function QuadTree( x, y, width, height )
             {
                 if ( this.polygons[i].pointInPoly(pt) )
                 {
-                    pt.print();
-                    this.polygons[i].print();
                     return this.polygons[i];
                 }
             }

@@ -355,21 +355,6 @@ function Polygon( pts, id )
                 c = !c;
         }
         return c;
-        /*var cn = 0;
-        var V = this.points;
-        for ( var i=0; i<V.length-1; i++ ) 
-        {
-            if ( pt.x==V[i].x && pt.y==V[i].y )
-                return true;
-            if (((V[i].y <= pt.y) && (V[i+1].y > pt.y))
-                || ((V[i].y > pt.y) && (V[i+1].y <=  pt.y))) 
-            {
-                var vt = (pt.y  - V[i].y) / (V[i+1].y - V[i].y);
-                if (pt.x <  V[i].x + vt * (V[i+1].x - V[i].x))
-                     ++cn;
-            }
-        }
-        return cn&1 || (pt.x==V[V.length-1].x && pt.y==V[V.length-1].y);*/
     };
     /**
      * Draw this polygon in the canvas' context
