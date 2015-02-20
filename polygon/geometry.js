@@ -34,6 +34,10 @@ function Point(x,y)
     this.crossProduct = function( b ){
         return this.x*b.y-b.x*this.y;
     };
+    this.inRect = function( r ) {
+        return this.x >= r.x && this.x <=r.x+r.width 
+        && this.y >= r.y && this.y <= r.y+r.height;
+    };
 }
 /**
  * A simple rectangle class

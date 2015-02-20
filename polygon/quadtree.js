@@ -284,13 +284,14 @@ function QuadTree( x, y, width, height )
                 }
             }
         }
-        else if ( this.nw != undefined )
+        // the polygon can be registered multiple times
+        if ( this.nw != undefined )
             this.nw.removePolygonFromQuadrant(pg);
-        else if ( this.ne != undefined )
+        if ( this.ne != undefined )
             this.ne.removePolygonFromQuadrant(pg);
-        else if ( this.sw != undefined )
+        if ( this.sw != undefined )
             this.sw.removePolygonFromQuadrant(pg);
-        else if ( this.se != undefined )
+        if ( this.se != undefined )
             this.se.removePolygonFromQuadrant(pg);
     };
     /**
