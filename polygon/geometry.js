@@ -656,7 +656,7 @@ function Polygon( pts, id )
         var polygons = new Array();
         var S = new Segment(p0,p1);
         var SI = new Segment(new Point(0,0),new Point(0,0));
-        var intersects = polygon.intersectsLine(S,SI);
+        var intersects = this.intersectsLine(S,SI);
         if ( intersects )
         {
             var state = 0;

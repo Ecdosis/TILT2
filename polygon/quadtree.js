@@ -166,7 +166,7 @@ function QuadTree( x, y, width, height )
         // send polygons also to their respective quadrants
         if ( this.polygons != undefined )
         {
-            for ( var i=0;i<polygons.length;i++ )
+            for ( var i=0;i<this.polygons.length;i++ )
             {
                 var pg = this.polygons[i];
                 this.nw.addPolygonToQuadrant(pg);
@@ -174,7 +174,7 @@ function QuadTree( x, y, width, height )
                 this.se.addPolygonToQuadrant(pg);
                 this.ne.addPolygonToQuadrant(pg);
             }
-            polygons = undefined;
+            this.polygons = undefined;
         }
     };
     /**
@@ -262,14 +262,14 @@ function QuadTree( x, y, width, height )
         var pts = pg.points;
         for ( var i=0;i<pts.length;i++ )
         {
-            if ( !qt.addPt(pts[i]) )
+            if ( !this.addPt(pts[i]) )
                 console.log("failed to add point "+pt.x+","+pt.y);
         }
         // now add the polygon to the quadrant's list
         this.addPolygonToQuadrant(pg);
     };
     /**
-     * Remove a polygon from the quadrant (not the points)
+     * Remove a polygon from the quadrant (not its points)
      * @param pg the polygon to remove
      */
     this.removePolygonFromQuadrant = function( pg) {
@@ -311,7 +311,7 @@ function QuadTree( x, y, width, height )
     this.pointInPolygon = function( pt ) {
         if ( this.points != undefined )
         {
-            // then there must also be polygons
+            // polygons must be defined also
             for ( var i=0;i<this.polygons.length;i++ )
             {
                 if ( this.polygons[i].pointInPoly(pt) )
