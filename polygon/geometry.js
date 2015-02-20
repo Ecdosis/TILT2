@@ -339,26 +339,37 @@ function Polygon( pts, id )
     };
     /**
      * Is the given point inside this polygon?
+     * http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
      * @param pt the point to test for
      * @return true if it was else false 
      */
     this.pointInPoly = function(pt) {
-        var cn = 0;
+        var i,j,nvert = this.points.length;
+        var c = false;
+        for ( i=0,j=nvert-1;i<nvert;j=i++ ) 
+        {
+            if ( ((this.points[i].y >= pt.y) != (this.points[j].y >= pt.y)) 
+                && (pt.x <= (this.points[j].x-this.points[i].x)
+                *(pt.y-this.points[i].y)/(this.points[j].y-this.points[i].y)
+                +this.points[i].x) )
+                c = !c;
+        }
+        return c;
+        /*var cn = 0;
         var V = this.points;
-        var was = false;
         for ( var i=0; i<V.length-1; i++ ) 
         {
             if ( pt.x==V[i].x && pt.y==V[i].y )
                 return true;
             if (((V[i].y <= pt.y) && (V[i+1].y > pt.y))
-            || ((V[i].y > pt.y) && (V[i+1].y <=  pt.y))) 
+                || ((V[i].y > pt.y) && (V[i+1].y <=  pt.y))) 
             {
                 var vt = (pt.y  - V[i].y) / (V[i+1].y - V[i].y);
                 if (pt.x <  V[i].x + vt * (V[i+1].x - V[i].x))
                      ++cn;
             }
         }
-        return cn&1 || (pt.x==V[V.length-1].x && pt.y==V[V.length-1].y);
+        return cn&1 || (pt.x==V[V.length-1].x && pt.y==V[V.length-1].y);*/
     };
     /**
      * Draw this polygon in the canvas' context
@@ -738,5 +749,16 @@ function Polygon( pts, id )
         if ( this.pointInPoly(p) )
             return true;
         return false;
+    };
+    this.print = function() {
+        var str = "polygon: ";
+        for ( var i=0;i<this.points.length;i++ )
+        {
+            var pt = this.points[i];
+            str +=  pt.x+","+pt.y;
+            if ( i < this.points.length-1 )
+                str += ":";
+        }
+        console.log(str);
     };
 }
