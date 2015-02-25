@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="tilt/tilt.css">
+<link rel="stylesheet" type="text/css" href="biodiversity.css">
+<style>
+@media screen and (min-device-width : 1366px) and (max-device-width : 1920px) {
+    body {font-size:14px}
+    #toolbox {
+        display: table-cell;
+        background: white;
+        width: 41px;
+        padding:0px 4px;
+        vertical-align:top;
+        background-color:lightgrey;
+    }
+    #toolbox li { width:30px; padding:0px 4px;
+        border: 1px solid;
+        border-radius: 5px;
+        text-align:center;
+        margin: 4px 0px;
+        background-color:white;
+    }
+}
+@media screen and (min-device-width : 640px) and (max-device-width : 1024px) {
+    body {font-size:12px}
+    #toolbox {
+        display: table-cell;
+        background: white;
+        width: 34px;
+        padding:0px 2px;
+        vertical-align:top;
+        border-left:1px solid lightgrey;
+    }
+    #toolbox li { width:26px; padding:0px 2px;
+        border: 1px solid;
+        border-radius: 3px;
+        text-align:center;
+        margin: 2px 0px;}
+}
+#toolbox li:hover {background-color:palegreen;color:green;cursor:default}
+#container { 
+    display: table;
+    margin:0 auto;
+    border:0;
+}
+#image {
+    display: table-cell;
+    background: green;
+    margin: 0;
+    padding:0;
+    border:0;
+}
+img { vertical-align:text-bottom}
+#text {
+    display: table-cell;
+    vertical-align:top;
+    padding:10px;
+}
+body {margin: 0}
+#toolbox ul { list-style-type:none;margin-top:0px;padding-left:0px }
+</style>
+<script type="text/javascript" src="jquery-1.11.1.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    var iht = $("#image > img").height();
+    var iwt = $("#image > img").width();
+    var wht = $(window).height();
+    var awt = Math.round((iwt*wht)/iht);
+    $("#image > img").height(wht);
+    $("#image > img").width(awt);
+    $("#text").width(awt);
+    /**
+     * Toggle between honouring line-breaks and ignoring them
+     */
+    $("#justify-button").click(function()
+    {
+        var classtr = $("#justify-button").attr("class");
+        var classNames = classtr.split(" ");
+        if ( classNames[classNames.length-1]=="fa-justify" )
+        {
+            $("br").css("display","none");
+            $(this).attr("title","line-breaks");
+            $(this).attr("class","fa fa-2x fa-linebreaks");
+            $("span.hard").attr("class","soft");
+        }
+        else
+        {
+            $("br").css("display","inline");
+            $(this).attr("title","justify");
+            $(this).attr("class","fa fa-2x fa-justify");
+            $("span.soft").attr("class","hard");
+        }
+    });
+    /**
+     * Change the cursor and react to clicks when magnifying or minifying
+     */
+    $("#magnify-button").click(function()
+    {
+        var container = $("#container");
+        var icon = $("#magnify-button");
+        var cursor = container.attr("class");
+        if ( cursor == "standard" )
+        {
+            container.attr("class","level-0");
+            icon.attr("class","fa fa-2x fa-minify");
+            console.log("changing to level-0");
+        }
+        else if ( cursor == "level-0" )
+        {
+            container.attr("class","standard");
+            icon.attr("class","fa fa-2x fa-magnify");
+            console.log("changing back to standard");
+        }
+        else if ( cursor == "level-1" )
+        {
+            container.attr("class","standard");
+            icon.attr("class","fa fa-2x fa-magnify");
+            console.log("changing back to standard");
+        }
+        else if ( cursor == "level-2" )
+        {
+            container.attr("class","level-1");
+            console.log("changing back to level-1");
+            // leave icon at minify
+        }
+        else if ( cursor == "level-3" )
+        {
+            container.attr("class","level-2");
+            console.log("changing back to level-2");
+            // leave icon at minify
+        }
+    });
+});
+</script>
+</head>
+<body>
+<div id="container" class="standard">
+<div id="toolbox">
+<ul>
+<li title="open..."><span class="fa fa-2x fa-folder-open-o"></span></li>
+<li title="save"><span class="fa fa-2x fa-save"></span></li>
+<li title="previous page"><span class="fa fa-2x fa-chevron-left"></span></li>
+<li title="next page"><span class="fa fa-2x fa-chevron-right"></span></li>
+<li title="merge shapes"><span class="fa fa-2x fa-merge"></span></li>
+<li title="split shape"><span class="fa fa-2x fa-split"></span></li>
+<li title="recognise"><span class="fa fa-2x fa-recognise"></span></li>
+<li title="re-align"><span class="fa fa-2x fa-align"></span></li>
+<li title="magnify"><span id="magnify-button" class="fa fa-2x fa-magnify"></span></li>
+<li title="justify"><span id="justify-button" class="fa fa-2x fa-justify"></span></li>
+</ul>
+<!--
+we need to: realign, re-recognise
+-->
+</div>
+<div id="image">
+<img src="43746034.jpg">
+</div>
+<div id="text">
+<div class="date">1886<br>
+May 2<br>
+<br>
+Sunday</div>
+<h4>Concord, Massachusetts.</h4>
+<p>I came to Concord last night to spend<br>
+Sunday only, my business in Cambridge and<br>
+Boston being still uncompleted. <span class="metamark">x</span></p>
+<p>Early this morning there was a grand<br>
+chorus of bird voices such as we used to hear<br>
+in Cambridge before the wretched sparrows<br>
+came. Robins, <span class="del">s</span><span class="add">S</span>ong <span class="del">s</span><span class="add">S</span>parrows, Bluebirds,<br>
+Purple Finches, Grass Finches etc. made the air<br>
+ring. About a Martin box which was put up<br>
+only yesterday several pairs of <span class="ul">Hirundo bicolor</span><br>
+and one pair of <span class="ul">Piogen purpuria</span> held high<br>
+carnival. <span class="metamark">x</span></p>
+<p>Early in the forenoon I went down to the<br>
+boathouse and spent an hour sitting on it's<br>
+sunny western wall. Red Wings singing in all<br>
+directions, a Meadow Lark whistling over by the<br>
+railroad Station, the Pewers occasionally coming<br>
+to see that their nest on a rafter inside the<br>
+boathouse still held its two rosy eggs. In the<br>
+water beneath, several species of fishes were<br>
+feeding or playing. I compared these to boats;<br>
+the red perch long, narrow, swift of movement,<br>
+resembled a steam launch; the bream, deep<br>
+broad and and yet graceful, a roomy schooner,<br>
+while a great clumsy horned perch rooted along<br>
+the bottom, recalled a mud-scow. The monsters<br>
+were of course the mud-turtles, of which there<br>
+were dozens in sight, all of the red-banded<br>
+("soldier turtle") species. One came along<br>
+past me feeding. It would raise it's head a<span class="hard">-</span><br>bove the the water, look warily about for a moment,<br>
+then sink and walk along the bottom exploring it,</p>
+</div>
+</body>
+</html>
