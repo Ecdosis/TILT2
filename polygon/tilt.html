@@ -51,6 +51,18 @@
     margin: 0;
     padding:0;
     border:0;
+    overflow: hidden;
+    position:relative;
+}
+#image img {
+    position:absolute; 
+    display:block;
+    left: 0px;
+    top: 0px;
+};
+#test {
+    position:relative;
+    z-index:20;
 }
 img { vertical-align:text-bottom}
 #text {
@@ -67,9 +79,26 @@ $(document).ready(function() {
     var iht = $("#image > img").height();
     var iwt = $("#image > img").width();
     var wht = $(window).height();
+    //adjusted width and height (equals window height)
     var awt = Math.round((iwt*wht)/iht);
-    $("#image > img").height(wht);
+    var aht = wht;
+    // save magnifications as data-magnify attr on #image
+    var mag1wt = Math.round(awt*1.5);
+    var mag1ht = Math.round(aht*1.5);
+    var mag2wt = Math.round(mag1wt*1.5);
+    var mag2ht = Math.round(mag1ht*1.5);
+    var mag3wt = Math.round(mag2wt*1.5);
+    var mag3ht = Math.round(mag2ht*1.5);
+    $("#image").attr("data-magnify",iwt+" "+iht+" "+awt+" "+aht
+        +" "+mag1wt+" "+mag1ht+" "+mag2wt+" "+mag2ht+" "+mag3wt+" "+mag3ht);
+    $("#image > img").height(aht);
     $("#image > img").width(awt);
+    // ensure wrapper div is also scaled
+    $("#image").height(wht);
+    $("#image").width(awt);
+    $("#tilt").height(wht);
+    $("#tilt").width(awt);
+    $("#tilt").css("left","-"+awt+"px");
     $("#text").width(awt);
     /**
      * Toggle between honouring line-breaks and ignoring them
@@ -94,6 +123,72 @@ $(document).ready(function() {
         }
     });
     /**
+     * Scale image
+     */
+    function setImageScale( factor )
+    {
+        var dataMagnify = $("#image").attr("data-magnify");
+        var scales = dataMagnify.split(" ");
+        if ( scales.length == 10 )
+        {
+            //console.log("old width="+$("#image").width());
+            var img = $("#image > img");
+            var awt = parseInt(scales[factor*2]);
+            var aht = parseInt(scales[factor*2+1]);
+            img.width(awt);
+            img.height(aht);
+            //console.log("new width="+$("#image").width());
+            //console.log("overflow="+$("#image").css("overflow"));
+        }
+    }
+    /**
+     * Centre image around location
+     * @param globalX the global (window relative) X click location
+     * @param globalY the global Y click location
+     * @param factor the target scale factor between 1 and 4
+     * @param oldFactor the current scale factor between 1 and 4
+     */ 
+    function centreAround( globalX, globalY, factor, oldFactor )
+    {
+        if ( factor >= 1 && factor <= 4 )
+        {
+            var dataMagnify = $("#image").attr("data-magnify");
+            var scales = dataMagnify.split(" ");
+            var currW = parseInt(scales[oldFactor*2]);
+            var currH = parseInt(scales[oldFactor*2+1]);
+            var nextW = parseInt(scales[factor*2]);
+            var nextH = parseInt(scales[factor*2+1]);
+            var pic = $("#image img");
+            var top = parseInt(pic.css("top").split("px")[0]);
+            var left = parseInt(pic.css("left").split("px")[0]);
+            // localise global coordinates
+            var localX = globalX-left;
+            var localY = globalY-top;
+            // scale localX and localY to new mag
+            localX = (localX*nextW)/currW; 
+            localY = (localY*nextH)/currH; 
+            // actual window height and width
+            var aWt = scales[2];
+            var aHt = scales[3];
+            // centre click 
+            top = Math.round((aHt/2)-localY);
+            left = Math.round((aWt/2)-localX);
+            // sanity checks
+            var minTop = aHt-nextH;
+            var minLeft = aWt-nextW;
+            if ( top < minTop )
+                top = minTop;
+            if ( left < minLeft )
+                left = minLeft;
+            if ( left > 0 )
+                left = 0;
+            if ( top > 0 )
+                top = 0;
+            pic.css("top", top+"px");
+            pic.css("left",left+"px");
+        }
+    }
+    /**
      * Change the cursor and react to clicks when magnifying or minifying
      */
     $("#magnify-button").click(function()
@@ -101,38 +196,88 @@ $(document).ready(function() {
         var container = $("#container");
         var icon = $("#magnify-button");
         var cursor = container.attr("class");
+        var level;
         if ( cursor == "standard" )
+            level = 0;
+        else if ( cursor == "level-0" )
+            level = -1;
+        else
+            level = parseInt(cursor.split("-")[1])-1;
+        if ( level < 0 )
+        {
+            container.attr("class","standard");
+            icon.attr("class","fa fa-2x fa-magnify");
+        }
+        else if ( level == 0 )
         {
             container.attr("class","level-0");
             icon.attr("class","fa fa-2x fa-minify");
-            console.log("changing to level-0");
+            setImageScale( 1 );
+            $("#image img").css({left:"0px",top:"0px"});
         }
-        else if ( cursor == "level-0" )
+        else if ( level > 0 )
         {
-            container.attr("class","standard");
-            icon.attr("class","fa fa-2x fa-magnify");
-            console.log("changing back to standard");
+            icon.attr("class","fa fa-2x fa-minify");
+            container.attr("class","level-"+level);
+            setImageScale( level+1 );
+            centreAround( container.width()/2+container.offset().left,
+                container.height()/2+container.offset().top, level+1, 
+                level+2 );
+        }
+    });
+    $("#image").click(function(event){
+        var container = $("#container");
+        var cursor = container.attr("class");
+        var img = $("#image");
+        var icon = $("#magnify-button");
+        // do nothing if at standard mag
+        if ( cursor == "level-0" )
+        {
+            container.attr("class","level-1");
+            // magnify the image around the location
+            //1. increase the size of <img>
+            setImageScale(2);
+            //2. centre the image around the click-point
+            centreAround( event.pageX-img.offset().left,
+                event.pageY-img.offset().top, 2, 1 );
+            icon.attr("class","fa fa-2x fa-minify");
         }
         else if ( cursor == "level-1" )
         {
-            container.attr("class","standard");
-            icon.attr("class","fa fa-2x fa-magnify");
-            console.log("changing back to standard");
+            container.attr("class","level-2");
+            // now magnify the image around the location
+            //1. increase the sizeof <img>
+            setImageScale(3);
+            //2. increase the image offset within the wrapper
+            centreAround( event.pageX-img.offset().left,
+                event.pageY-img.offset().top, 3, 2 );
+            icon.attr("class","fa fa-2x fa-minify");
         }
         else if ( cursor == "level-2" )
         {
-            container.attr("class","level-1");
-            console.log("changing back to level-1");
-            // leave icon at minify
+            container.attr("class","level-3");
+            // now magnify the image around the location
+            //1. increase the sizeof <img>
+            setImageScale(4);
+            //2. increase the image offset within the wrapper
+            centreAround( event.pageX-img.offset().left,
+                event.pageY-img.offset().top, 4, 3 );
+            icon.attr("class","fa fa-2x fa-minify");
         }
         else if ( cursor == "level-3" )
         {
             container.attr("class","level-2");
-            console.log("changing back to level-2");
-            // leave icon at minify
+            // now magnify the image around the location
+            //1. decrease the sizeof <img>
+            setImageScale(3);
+            //2. decrease the image offset within the wrapper
+            centreAround( event.pageX-img.offset().left,
+                event.pageY-img.offset().top, 3, 4 );
+            icon.attr("class","fa fa-2x fa-minify");
         }
     });
 });
+
 </script>
 </head>
 <body>
@@ -156,6 +301,7 @@ we need to: realign, re-recognise
 </div>
 <div id="image">
 <img src="43746034.jpg">
+<canvas id="tilt"></canvas>
 </div>
 <div id="text">
 <div class="date">1886<br>

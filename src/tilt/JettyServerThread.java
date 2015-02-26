@@ -38,6 +38,7 @@ public class JettyServerThread extends Thread
             System.out.println("starting...");
             server.start();
             server.join();
+            System.out.println();
         }
         catch ( Exception e )
         {
