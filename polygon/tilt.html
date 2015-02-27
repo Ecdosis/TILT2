@@ -188,6 +188,27 @@ $(document).ready(function() {
             pic.css("left",left+"px");
         }
     }
+    function decLevel( level )
+    {
+        if ( level == -1 )
+            return 0;
+        else
+            return level-1;
+    }
+    function levelToNumber( str ) 
+    {
+        if ( str == "standard" )
+            return -1;
+        else
+            return parseInt(str.split("-")[1]);
+    }
+    function numberToLevel( number )
+    {
+        if ( number == -1 )
+            return "standard";
+        else
+            return "level-"+number;
+    }
     /**
      * Change the cursor and react to clicks when magnifying or minifying
      */
@@ -196,33 +217,23 @@ $(document).ready(function() {
         var container = $("#container");
         var icon = $("#magnify-button");
         var cursor = container.attr("class");
-        var level;
-        if ( cursor == "standard" )
-            level = 0;
-        else if ( cursor == "level-0" )
-            level = -1;
-        else
-            level = parseInt(cursor.split("-")[1])-1;
+        var level = decLevel(levelToNumber(cursor));
         if ( level < 0 )
         {
             container.attr("class","standard");
             icon.attr("class","fa fa-2x fa-magnify");
         }
-        else if ( level == 0 )
-        {
-            container.attr("class","level-0");
-            icon.attr("class","fa fa-2x fa-minify");
-            setImageScale( 1 );
-            $("#image img").css({left:"0px",top:"0px"});
-        }
-        else if ( level > 0 )
+        else if ( level >= 0 )
         {
             icon.attr("class","fa fa-2x fa-minify");
             container.attr("class","level-"+level);
             setImageScale( level+1 );
-            centreAround( container.width()/2+container.offset().left,
-                container.height()/2+container.offset().top, level+1, 
-                level+2 );
+            if ( level > 0 )
+                centreAround( container.width()/2+container.offset().left,
+                    container.height()/2+container.offset().top, level+1, 
+                    level+2 );
+            else
+                $("#image img").css({left:"0px",top:"0px"});
         }
     });
     $("#image").click(function(event){
@@ -230,50 +241,20 @@ $(document).ready(function() {
         var cursor = container.attr("class");
         var img = $("#image");
         var icon = $("#magnify-button");
-        // do nothing if at standard mag
-        if ( cursor == "level-0" )
+        var level = levelToNumber(cursor);
+        if ( level == 3 )
         {
-            container.attr("class","level-1");
-            // magnify the image around the location
-            //1. increase the size of <img>
-            setImageScale(2);
-            //2. centre the image around the click-point
-            centreAround( event.pageX-img.offset().left,
-                event.pageY-img.offset().top, 2, 1 );
-            icon.attr("class","fa fa-2x fa-minify");
-        }
-        else if ( cursor == "level-1" )
-        {
-            container.attr("class","level-2");
-            // now magnify the image around the location
-            //1. increase the sizeof <img>
-            setImageScale(3);
-            //2. increase the image offset within the wrapper
-            centreAround( event.pageX-img.offset().left,
-                event.pageY-img.offset().top, 3, 2 );
-            icon.attr("class","fa fa-2x fa-minify");
-        }
-        else if ( cursor == "level-2" )
-        {
-            container.attr("class","level-3");
-            // now magnify the image around the location
-            //1. increase the sizeof <img>
-            setImageScale(4);
-            //2. increase the image offset within the wrapper
-            centreAround( event.pageX-img.offset().left,
-                event.pageY-img.offset().top, 4, 3 );
-            icon.attr("class","fa fa-2x fa-minify");
-        }
-        else if ( cursor == "level-3" )
-        {
-            container.attr("class","level-2");
-            // now magnify the image around the location
-            //1. decrease the sizeof <img>
-            setImageScale(3);
-            //2. decrease the image offset within the wrapper
+            container.attr("class",numberToLevel(level-1));
+            setImageScale( 3 );
             centreAround( event.pageX-img.offset().left,
                 event.pageY-img.offset().top, 3, 4 );
-            icon.attr("class","fa fa-2x fa-minify");
+        }
+        else if ( level >= 0 )
+        {
+            container.attr("class",numberToLevel(level+1));
+            setImageScale( level+2 );
+            centreAround( event.pageX-img.offset().left,
+                event.pageY-img.offset().top, level+2, level+1 );
         }
     });
 });

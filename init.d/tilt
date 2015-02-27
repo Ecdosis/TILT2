@@ -1,0 +1,106 @@
+#!/bin/sh
+#
+# /etc/init.d/tilt -- startup script for the Tilt service
+#
+# Written by Desmond Schmidt desmond.allan.schmidt@gmail.com
+#
+
+### BEGIN INIT INFO
+# Provides:          tilt
+# Required-Start:    mongodb $remote_fs $syslog
+# Required-Stop:     mongodb $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start Tilt.
+# Description:       Start the Tilt text to image alignment service.
+### END INIT INFO
+
+# Exit if the package is not installed
+
+[ -x "/usr/local/bin/tilt/TILT2.jar" ] || exit 0
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Tilt text to image linking tool"
+NAME=tilt
+DAEMON=/usr/local/bin/tilt/TILT2.jar
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present
+. /lib/lsb/init-functions
+
+getjarpaths()
+{
+  JARPATH=""
+  for f in $1/*.jar
+  do
+    JARPATH="$JARPATH:$f"
+  done
+  echo $JARPATH
+  return
+}
+do_start() {
+  JARPATHS=`getjarpaths /usr/local/bin/tilt/lib`
+  pkill -f TILT2.jar
+  java -cp .$JARPATHS:/usr/local/bin/tilt/TILT2.jar tilt.JettyServer -w 8082 2>/dev/null &
+}
+# Stop the service tilt
+do_stop() {
+  pkill -f TILT2.jar
+  sleep 5
+}
+### main logic ###
+case "$1" in
+  start)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+        do_start
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+  stop)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        case "$?" in
+                0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+                2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+  #reload|force-reload)
+        #
+        # If do_reload() is not implemented then leave this commented out
+        # and leave 'force-reload' as an alias for 'restart'.
+        #
+        #log_daemon_msg "Reloading $DESC" "$NAME"
+        #do_reload
+        #log_end_msg $?
+        #;;
+  restart|force-reload)
+        #
+        # If the "reload" option is implemented then remove the
+        # 'force-reload' alias
+        # 
+        log_daemon_msg "Restarting $DESC" "$NAME"
+        do_stop
+        case "$?" in
+          0|1)
+                do_start
+                case "$?" in
+                        0) log_end_msg 0 ;;
+                        1) log_end_msg 1 ;; # Old process is still running
+                        *) log_end_msg 1 ;; # Failed to start
+                esac
+                ;;
+          *)
+                # Failed to stop
+                log_end_msg 1
+                ;;
+        esac
+        ;;
+  *)
+        #echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+        exit 3
+        ;;
+esac
+echo ""

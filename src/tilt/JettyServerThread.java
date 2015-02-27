@@ -35,10 +35,8 @@ public class JettyServerThread extends Thread
             Connector[] connectors = server.getConnectors();
             connectors[0].setHost(JettyServer.host);
             server.setHandler(new JettyServer());
-            System.out.println("starting...");
             server.start();
             server.join();
-            System.out.println();
         }
         catch ( Exception e )
         {
