@@ -46,7 +46,7 @@ do_start() {
 # Stop the service tilt
 do_stop() {
   pkill -f TILT2.jar
-  sleep 5
+  sleep 2
 }
 ### main logic ###
 case "$1" in

@@ -236,6 +236,32 @@ $(document).ready(function() {
                 $("#image img").css({left:"0px",top:"0px"});
         }
     });
+    function emptyDocument()
+    {
+        return {
+          type: "Feature",
+          geometry: {
+              type: "Polygon",
+                coordinates: [
+                [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
+              ]
+          },
+          properties: {
+            url: "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
+          }
+        };
+    }
+    $("#recognise-button").click(function() {
+        var geo = emptyDocument();
+        var json = JSON.stringify(geo);
+        var text = $("#text").text();
+        var obj = {geojson: json,pictype:"link",text:text};
+        $.post('http://localhost/tilt/',obj,
+            function(data){
+                console.log("posted json data");
+            }
+        );
+    });
     $("#image").click(function(event){
         var container = $("#container");
         var cursor = container.attr("class");
@@ -271,7 +297,7 @@ $(document).ready(function() {
 <li title="next page"><span class="fa fa-2x fa-chevron-right"></span></li>
 <li title="merge shapes"><span class="fa fa-2x fa-merge"></span></li>
 <li title="split shape"><span class="fa fa-2x fa-split"></span></li>
-<li title="recognise"><span class="fa fa-2x fa-recognise"></span></li>
+<li title="recognise"><span id="recognise-button" class="fa fa-2x fa-recognise"></span></li>
 <li title="re-align"><span class="fa fa-2x fa-align"></span></li>
 <li title="magnify"><span id="magnify-button" class="fa fa-2x fa-magnify"></span></li>
 <li title="justify"><span id="justify-button" class="fa fa-2x fa-justify"></span></li>

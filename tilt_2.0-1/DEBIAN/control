@@ -1,0 +1,10 @@
+Package: tilt
+Version: 2.0.1
+Section: base
+Priority: optional
+Architecture: i386
+Depends: default-jre (>= 1.6-34)
+Maintainer: Desmond Schmidt <desmond.allan.schmidt@gmail.com>
+Description: Textto Image Linking Tool
+ links word shapes in a page-image 
+ with words in a transcription
