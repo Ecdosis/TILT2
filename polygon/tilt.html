@@ -2,296 +2,17 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="tilt/tilt.css">
+<link rel="stylesheet" type="text/css" href="tilt/fonts.css">
 <link rel="stylesheet" type="text/css" href="biodiversity.css">
-<style>
-@media screen and (min-device-width : 1366px) and (max-device-width : 1920px) {
-    body {font-size:14px}
-    #toolbox {
-        display: table-cell;
-        background: white;
-        width: 41px;
-        padding:0px 4px;
-        vertical-align:top;
-        background-color:lightgrey;
-    }
-    #toolbox li { width:30px; padding:0px 4px;
-        border: 1px solid;
-        border-radius: 5px;
-        text-align:center;
-        margin: 4px 0px;
-        background-color:white;
-    }
-}
-@media screen and (min-device-width : 640px) and (max-device-width : 1024px) {
-    body {font-size:12px}
-    #toolbox {
-        display: table-cell;
-        background: white;
-        width: 34px;
-        padding:0px 2px;
-        vertical-align:top;
-        border-left:1px solid lightgrey;
-    }
-    #toolbox li { width:26px; padding:0px 2px;
-        border: 1px solid;
-        border-radius: 3px;
-        text-align:center;
-        margin: 2px 0px;}
-}
-#toolbox li:hover {background-color:palegreen;color:green;cursor:default}
-#container { 
-    display: table;
-    margin:0 auto;
-    border:0;
-}
-#image {
-    display: table-cell;
-    background: green;
-    margin: 0;
-    padding:0;
-    border:0;
-    overflow: hidden;
-    position:relative;
-}
-#image img {
-    position:absolute; 
-    display:block;
-    left: 0px;
-    top: 0px;
-};
-#test {
-    position:relative;
-    z-index:20;
-}
-img { vertical-align:text-bottom}
-#text {
-    display: table-cell;
-    vertical-align:top;
-    padding:10px;
-}
-body {margin: 0}
-#toolbox ul { list-style-type:none;margin-top:0px;padding-left:0px }
-</style>
+<link rel="stylesheet" type="text/css" href="tilt.css">
 <script type="text/javascript" src="jquery-1.11.1.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-    var iht = $("#image > img").height();
-    var iwt = $("#image > img").width();
-    var wht = $(window).height();
-    //adjusted width and height (equals window height)
-    var awt = Math.round((iwt*wht)/iht);
-    var aht = wht;
-    // save magnifications as data-magnify attr on #image
-    var mag1wt = Math.round(awt*1.5);
-    var mag1ht = Math.round(aht*1.5);
-    var mag2wt = Math.round(mag1wt*1.5);
-    var mag2ht = Math.round(mag1ht*1.5);
-    var mag3wt = Math.round(mag2wt*1.5);
-    var mag3ht = Math.round(mag2ht*1.5);
-    $("#image").attr("data-magnify",iwt+" "+iht+" "+awt+" "+aht
-        +" "+mag1wt+" "+mag1ht+" "+mag2wt+" "+mag2ht+" "+mag3wt+" "+mag3ht);
-    $("#image > img").height(aht);
-    $("#image > img").width(awt);
-    // ensure wrapper div is also scaled
-    $("#image").height(wht);
-    $("#image").width(awt);
-    $("#tilt").height(wht);
-    $("#tilt").width(awt);
-    $("#tilt").css("left","-"+awt+"px");
-    $("#text").width(awt);
-    /**
-     * Toggle between honouring line-breaks and ignoring them
-     */
-    $("#justify-button").click(function()
-    {
-        var classtr = $("#justify-button").attr("class");
-        var classNames = classtr.split(" ");
-        if ( classNames[classNames.length-1]=="fa-justify" )
-        {
-            $("br").css("display","none");
-            $(this).attr("title","line-breaks");
-            $(this).attr("class","fa fa-2x fa-linebreaks");
-            $("span.hard").attr("class","soft");
-        }
-        else
-        {
-            $("br").css("display","inline");
-            $(this).attr("title","justify");
-            $(this).attr("class","fa fa-2x fa-justify");
-            $("span.soft").attr("class","hard");
-        }
-    });
-    /**
-     * Scale image
-     */
-    function setImageScale( factor )
-    {
-        var dataMagnify = $("#image").attr("data-magnify");
-        var scales = dataMagnify.split(" ");
-        if ( scales.length == 10 )
-        {
-            //console.log("old width="+$("#image").width());
-            var img = $("#image > img");
-            var awt = parseInt(scales[factor*2]);
-            var aht = parseInt(scales[factor*2+1]);
-            img.width(awt);
-            img.height(aht);
-            //console.log("new width="+$("#image").width());
-            //console.log("overflow="+$("#image").css("overflow"));
-        }
-    }
-    /**
-     * Centre image around location
-     * @param globalX the global (window relative) X click location
-     * @param globalY the global Y click location
-     * @param factor the target scale factor between 1 and 4
-     * @param oldFactor the current scale factor between 1 and 4
-     */ 
-    function centreAround( globalX, globalY, factor, oldFactor )
-    {
-        if ( factor >= 1 && factor <= 4 )
-        {
-            var dataMagnify = $("#image").attr("data-magnify");
-            var scales = dataMagnify.split(" ");
-            var currW = parseInt(scales[oldFactor*2]);
-            var currH = parseInt(scales[oldFactor*2+1]);
-            var nextW = parseInt(scales[factor*2]);
-            var nextH = parseInt(scales[factor*2+1]);
-            var pic = $("#image img");
-            var top = parseInt(pic.css("top").split("px")[0]);
-            var left = parseInt(pic.css("left").split("px")[0]);
-            // localise global coordinates
-            var localX = globalX-left;
-            var localY = globalY-top;
-            // scale localX and localY to new mag
-            localX = (localX*nextW)/currW; 
-            localY = (localY*nextH)/currH; 
-            // actual window height and width
-            var aWt = scales[2];
-            var aHt = scales[3];
-            // centre click 
-            top = Math.round((aHt/2)-localY);
-            left = Math.round((aWt/2)-localX);
-            // sanity checks
-            var minTop = aHt-nextH;
-            var minLeft = aWt-nextW;
-            if ( top < minTop )
-                top = minTop;
-            if ( left < minLeft )
-                left = minLeft;
-            if ( left > 0 )
-                left = 0;
-            if ( top > 0 )
-                top = 0;
-            pic.css("top", top+"px");
-            pic.css("left",left+"px");
-        }
-    }
-    function decLevel( level )
-    {
-        if ( level == -1 )
-            return 0;
-        else
-            return level-1;
-    }
-    function levelToNumber( str ) 
-    {
-        if ( str == "standard" )
-            return -1;
-        else
-            return parseInt(str.split("-")[1]);
-    }
-    function numberToLevel( number )
-    {
-        if ( number == -1 )
-            return "standard";
-        else
-            return "level-"+number;
-    }
-    /**
-     * Change the cursor and react to clicks when magnifying or minifying
-     */
-    $("#magnify-button").click(function()
-    {
-        var container = $("#container");
-        var icon = $("#magnify-button");
-        var cursor = container.attr("class");
-        var level = decLevel(levelToNumber(cursor));
-        if ( level < 0 )
-        {
-            container.attr("class","standard");
-            icon.attr("class","fa fa-2x fa-magnify");
-        }
-        else if ( level >= 0 )
-        {
-            icon.attr("class","fa fa-2x fa-minify");
-            container.attr("class","level-"+level);
-            setImageScale( level+1 );
-            if ( level > 0 )
-                centreAround( container.width()/2+container.offset().left,
-                    container.height()/2+container.offset().top, level+1, 
-                    level+2 );
-            else
-                $("#image img").css({left:"0px",top:"0px"});
-        }
-    });
-    function emptyDocument()
-    {
-        return {
-          type: "Feature",
-          geometry: {
-              type: "Polygon",
-                coordinates: [
-                [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
-              ]
-          },
-          properties: {
-            url: "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
-          }
-        };
-    }
-    $("#recognise-button").click(function() {
-        var geo = emptyDocument();
-        var json = JSON.stringify(geo);
-        var text = $("#text").text();
-        var obj = {geojson: json,pictype:"link",text:text};
-        $.post('http://localhost/tilt/',obj,
-            function(data){
-                console.log("posted json data");
-            }
-        );
-    });
-    $("#image").click(function(event){
-        var container = $("#container");
-        var cursor = container.attr("class");
-        var img = $("#image");
-        var icon = $("#magnify-button");
-        var level = levelToNumber(cursor);
-        if ( level == 3 )
-        {
-            container.attr("class",numberToLevel(level-1));
-            setImageScale( 3 );
-            centreAround( event.pageX-img.offset().left,
-                event.pageY-img.offset().top, 3, 4 );
-        }
-        else if ( level >= 0 )
-        {
-            container.attr("class",numberToLevel(level+1));
-            setImageScale( level+2 );
-            centreAround( event.pageX-img.offset().left,
-                event.pageY-img.offset().top, level+2, level+1 );
-        }
-    });
-});
-
-</script>
+<script type="text/javascript" src="tilt.js"></script>
 </head>
 <body>
 <div id="container" class="standard">
 <div id="toolbox">
 <ul>
-<li title="open..."><span class="fa fa-2x fa-folder-open-o"></span></li>
+<li title="open..."><span id="open-button" class="fa fa-2x fa-folder-open-o"></span></li>
 <li title="save"><span class="fa fa-2x fa-save"></span></li>
 <li title="previous page"><span class="fa fa-2x fa-chevron-left"></span></li>
 <li title="next page"><span class="fa fa-2x fa-chevron-right"></span></li>
@@ -302,9 +23,6 @@ $(document).ready(function() {
 <li title="magnify"><span id="magnify-button" class="fa fa-2x fa-magnify"></span></li>
 <li title="justify"><span id="justify-button" class="fa fa-2x fa-justify"></span></li>
 </ul>
-<!--
-we need to: realign, re-recognise
--->
 </div>
 <div id="image">
 <img src="43746034.jpg">
@@ -347,6 +65,13 @@ were dozens in sight, all of the red-banded<br>
 ("soldier turtle") species. One came along<br>
 past me feeding. It would raise it's head a<span class="hard">-</span><br>bove the the water, look warily about for a moment,<br>
 then sink and walk along the bottom exploring it,</p>
+</div>
+<div id="overlay">
+<div>
+<table><tr><td><input type="text" id="host-record"></input><span id="refresh" class="fa fa-refresh"></span></td></tr>
+<tr><td><select id="documents" size="4"></select></td></tr>
+<tr><td><input type="button" id="dismiss-button" value="open"></input></td></tr></table>
+</div>
 </div>
 </body>
 </html>
