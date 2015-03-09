@@ -1,0 +1,102 @@
+@media screen and (min-device-width : 1366px) and (max-device-width : 1920px) {
+    body {font-size:14px;margin:0}
+    #toolbox {
+        display: table-cell;
+        background: white;
+        width: 41px;
+        padding:0px 4px;
+        vertical-align:top;
+        background-color:lightgrey;
+    }
+    #toolbox li { width:30px; padding:0px 4px;
+        border: 1px solid;
+        border-radius: 5px;
+        text-align:center;
+        margin: 4px 0px;
+        background-color:white;
+    }
+    #overlay div {
+     margin: 200px auto;
+    }
+}
+@media screen and (min-device-width : 640px) and (max-device-width : 1024px) {
+    body {font-size:12px;margin:0}
+    #toolbox {
+        display: table-cell;
+        background: white;
+        width: 34px;
+        padding:0px 2px;
+        vertical-align:top;
+        border-left:1px solid lightgrey;
+    }
+    #toolbox li { width:26px; padding:0px 2px;
+        border: 1px solid;
+        border-radius: 3px;
+        text-align:center;
+        margin: 2px 0px;}
+    #overlay div {
+        margin: 100px auto;
+    }
+}
+#container { 
+    display: table;
+    margin:0 auto;
+    border:0;
+    border-collapse:collapse;
+}
+#image {
+    display: table-cell;
+    background: green;
+    margin: 0;
+    padding:0;
+    border:0;
+    overflow: hidden;
+    position:relative;
+}
+#image img {
+    position:absolute; 
+    display:inline;
+    left: 0px;
+    top: 0px;
+}
+img { vertical-align:text-bottom }
+canvas { vertical-align:text-bottom}
+#text {
+    display: table-cell;
+    padding:0px;
+    margin:0px;
+    border:0px;
+}
+#flow {
+    display:inline-block;
+    overflow: auto;
+    padding-left:10px;
+    vertical-align:text-bottom;
+}
+#toolbox ul { list-style-type:none;margin-top:0px;padding-left:0px }
+#toolbox li:hover {background-color:palegreen;color:green;cursor:default}
+#overlay {
+     visibility: hidden;
+     position: absolute;
+     left: 0px;
+     top: 0px;
+     width:100%;
+     height:100%;
+     text-align:center;
+     z-index: 10;
+     background-image:url(background-trans.png);
+}
+#overlay div {
+     width:300px;
+     background-color: #fff;
+     border:1px solid #000;
+     padding:15px;
+     text-align:center;
+	 border: 2px solid;
+     border-radius: 5px;
+}
+#documents {width: 290px;margin-top:10px;margin-bottom:10px;}
+#refresh {border:1px solid; border-radius:3px; width:25px;height: 16px; margin-bottom:0px;padding-bottom:1px;padding-top:4px}
+#refresh:hover {cursor:pointer}
+#host-record {text-align: left;width:255px}
+tr:nth-child(3) {text-align:right}

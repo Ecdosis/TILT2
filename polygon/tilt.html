@@ -2,15 +2,15 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="tilt/fonts.css">
-<link rel="stylesheet" type="text/css" href="biodiversity.css">
-<link rel="stylesheet" type="text/css" href="tilt.css">
-<script type="text/javascript" src="jquery-1.11.1.js"></script>
-<script type="text/javascript" src="tilt.js"></script>
+<link rel="stylesheet" type="text/css" href="../static/css/fonts.css">
+<link rel="stylesheet" type="text/css" href="../static/css/biodiversity.css">
+<link rel="stylesheet" type="text/css" href="../static/css/tilt.css">
+<script type="text/javascript" src="../static/js/jquery-1.11.1.js"></script>
+<script type="text/javascript" src="../static/js/tilt.js"></script>
 </head>
 <body>
-<div id="container" class="standard">
-<div id="toolbox">
+<table id="container"><tr>
+<td id="toolbox">
 <ul>
 <li title="open..."><span id="open-button" class="fa fa-2x fa-folder-open-o"></span></li>
 <li title="save"><span class="fa fa-2x fa-save"></span></li>
@@ -23,12 +23,13 @@
 <li title="magnify"><span id="magnify-button" class="fa fa-2x fa-magnify"></span></li>
 <li title="justify"><span id="justify-button" class="fa fa-2x fa-justify"></span></li>
 </ul>
-</div>
-<div id="image">
+</td>
+<td id="image">
 <img src="43746034.jpg">
 <canvas id="tilt"></canvas>
-</div>
-<div id="text">
+</td>
+<td id="text">
+<div id="flow">
 <div class="date">1886<br>
 May 2<br>
 <br>
@@ -66,6 +67,7 @@ were dozens in sight, all of the red-banded<br>
 past me feeding. It would raise it's head a<span class="hard">-</span><br>bove the the water, look warily about for a moment,<br>
 then sink and walk along the bottom exploring it,</p>
 </div>
+</td></tr></table>
 <div id="overlay">
 <div>
 <table><tr><td><input type="text" id="host-record"></input><span id="refresh" class="fa fa-refresh"></span></td></tr>

@@ -13,7 +13,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
- *  (c) copyright Desmond Schmidt 2014
+ *  (c) copyright Desmond Schmidt 2015
  */
 package tilt.handler;
 
@@ -23,7 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import tilt.Utils;
 import tilt.test.Test;
-
+import tilt.editor.TiltEditor;
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 /**
  * Handle a GET request for various image types, text, GeoJSON
  *
@@ -58,13 +61,51 @@ public class TiltGetHandler extends TiltHandler {
                 } catch (Exception e) {
                     throw new TiltException(e);
                 }
-            } else if (service.equals(Service.IMAGE)) {
+            } 
+            else if (service.equals(Service.EDITOR))
+            {
+                new TiltEditor().handle(request, response, Utils.pop(urn));
+            }
+            else if (service.equals(Service.IMAGE)) {
                 new TiltImageHandler().handle(request, response, Utils.pop(urn));
             }
             else if ( service.equals(Service.GEOJSON) )
             {
                 new GeoJsonHandler().handle(request, response, Utils.pop(urn));
             }
+            else
+            {
+                File file = new File(System.getProperty("user.dir"));
+                file = new File(file,urn);
+                if ( file.exists())
+                {
+                    FileInputStream fis = new FileInputStream(file);
+                    int len = (int)file.length();
+                    byte[] data = new byte[len];
+                    fis.read( data );
+                    fis.close();
+                    if ( file.getName().endsWith(".png") )
+                        response.setContentType("image/png");
+                    else if ( file.getName().endsWith(".jpg") )
+                        response.setContentType("image/jpg");
+                    else if ( file.getName().endsWith(".json") )
+                        response.setContentType("application/json");
+                    else if ( file.getName().endsWith(".html") )
+                        response.setContentType("text/html");
+                    else if ( file.getName().endsWith(".js") )
+                        response.setContentType("text/javascript");
+                    else if ( file.getName().endsWith(".css") )
+                        response.setContentType("text/css");
+                    else if ( file.getName().endsWith(".txt"))
+                        response.setContentType("text/plain");
+                    else
+                        response.setContentType("application/octet-stream");
+                    response.getOutputStream().write(data);
+                }
+                else
+                    throw new FileNotFoundException(urn);
+            }
+                
         } catch (Exception e) {
             throw new TiltException(e);
         }

@@ -24,6 +24,7 @@ package tilt.constants;
 public class Params 
 {
     public static String DOCID="docid";
+    public static String PAGEID= "pageid";
     public static String ENCODING="encoding";
     public static String GEOJSON="geojson";
     public static String PICTYPE="pictype";

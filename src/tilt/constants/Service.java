@@ -32,4 +32,6 @@ public class Service
     public static final String GEOJSON = "geojson";
     /** sub-service that returns a particular type of image */
     public static final String IMAGE = "image";
+    /** the tilt gui editor */
+    public static final String EDITOR = "editor";
 }

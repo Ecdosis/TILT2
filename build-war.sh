@@ -30,8 +30,7 @@ fi
 rm -f tilt/WEB-INF/lib/*.jar
 cp dist/TILT2.jar tilt/WEB-INF/lib/
 cp lib/*.jar tilt/WEB-INF/lib/
-cp *.js tilt/static/
-cp polygon/* tilt/static/
+cp -r static tilt
 cp web.xml tilt/WEB-INF/
 jar cf tilt.war -C tilt WEB-INF -C tilt static
 echo "NB: you MUST copy the contents of tomcat-bin to \$tomcat_home/bin"
