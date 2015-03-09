@@ -95,6 +95,11 @@ canvas { vertical-align:text-bottom}
 	 border: 2px solid;
      border-radius: 5px;
 }
+#warning {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
 #documents {width: 290px;margin-top:10px;margin-bottom:10px;}
 #refresh {border:1px solid; border-radius:3px; width:25px;height: 16px; margin-bottom:0px;padding-bottom:1px;padding-top:4px}
 #refresh:hover {cursor:pointer}

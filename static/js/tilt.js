@@ -348,22 +348,40 @@ function Tilt(docid,pageid) {
      * @param pageId theid of the page-image
      */
     this.loadPage = function( docId, pageId ) {
-        var url = $("#host-record").val()+"/html?docid="
-            +docId+"&pageid="+pageId;
-        $.get(url,function(data){
+        if ( docId != "null" )
+        {
+            var url = $("#host-record").val()+"/html?docid="
+                +docId+"&pageid="+pageId;
+            $.get(url,function(data){
+                $("#flow").empty();
+                $("#flow").append(data);
+            }).fail(function(){
+                $("#flow").empty();
+                $("#flow").append("<p>Failed to load data</p>");
+            });
+        }
+        else
+        {
             $("#flow").empty();
-            $("#flow").append(data);
-        }).fail(function(){
-            console.log("failed to get text");
-        });
-        // get image
-        url = $("#host-record").val()+"/image?docid="+docId+"&pageid="+pageId
-        $.get(url,function(data){
-            $("#image img").attr("src",data.trim());
+            $("#flow").append("<p id=\"warning\">Use Open... to choose a document and page</p>");
+        }
+        if ( pageId!="null" )
+        {
+            // get image
+            url = $("#host-record").val()+"/image?docid="+docId+"&pageid="+pageId
+            $.get(url,function(data){
+                $("#image img").attr("src",data.trim());
+                self.scaleImageAndText();
+            }).fail(function(){
+                $("#image img").attr("src","/static/images/default.jpg");
+                self.scaleImageAndText();
+            });
+        }
+        else
+        {
+            $("#image img").attr("src","/static/images/default.jpg");
             self.scaleImageAndText();
-        }).fail(function(){
-            console.log("failed to get image");
-        });
+        }
     };
     /**
      * Create an empty GeoJSON document
