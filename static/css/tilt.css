@@ -84,7 +84,7 @@ canvas { vertical-align:text-bottom}
      height:100%;
      text-align:center;
      z-index: 10;
-     background-image:url(background-trans.png);
+     background-image:url(../images/background-trans.png);
 }
 #overlay div {
      width:300px;
