@@ -108,7 +108,7 @@ function Container() {
     var list = new Element("ul");
     this.addButton(list,"Open...","open-button","fa fa-2x fa-folder-open-o");
     this.addButton(list,"save","save-button","fa fa-2x fa-save");
-    this.addButton(list,"previous page","prev-button","fa fa-2x fa-chevron-left");
+    this.addButton(list,"previous page","previous-button","fa fa-2x fa-chevron-left");
     this.addButton(list,"next page","next-button","fa fa-2x fa-chevron-right");
     this.addButton(list,"merge shapes","merge-button","fa fa-2x fa-merge");
     this.addButton(list,"split shape","split-button","fa fa-2x fa-split");
@@ -193,8 +193,6 @@ function Overlay()
 }
 /**
  * Here we handle the container resizing and toolbar events.
- * @param docid initial doument identifier or "null"
- * @param initial page identifier or "null"
  */
 function Tilt(docid,pageid) {
     var self = this;
@@ -403,22 +401,6 @@ function Tilt(docid,pageid) {
         };
     };
     /**
-     * Update the next and previous button's color
-     */
-    this.checkNextAndPrev = function() {
-        var nextLimit = $("#pages option").length;
-        var next = $("#next-button");
-        var prev = $("#prev-button");
-        if ( $("#pages")[0].selectedIndex+1 == nextLimit )
-            next.css("color","lightgrey");
-        else
-            next.css("color","black");
-        if ( $("#pages")[0].selectedIndex == 0 )
-            prev.css("color","lightgrey");
-        else
-            prev.css("color","black");
-    };
-    /**
      * Scale image and text block to match
      */
     this.scaleImageAndText = function(){
@@ -509,19 +491,15 @@ function Tilt(docid,pageid) {
     $("#open-button").click(function()
     {
         var overlay = $("#overlay");
-        //self.refreshList();
+        self.refreshList();
         var visibility = overlay.css("visibility","visible");
     });
-    /**
-     * This controls the OK button on the modal dialog
-     */
     $("#dismiss-button").click(function()
     {
         var overlay = $("#overlay");
         var doc = $("#documents").val();
         self.loadPage(doc,$("#pages").val());
-        self.checkNextAndPrev();
-        overlay.css("visibility","hidden");
+        var visibility = overlay.css("visibility","hidden");
     });
     $("#recognise-button").click(function() {
         var geo = self.emptyDocument();
@@ -533,30 +511,6 @@ function Tilt(docid,pageid) {
                 console.log("posted json data");
             }
         );
-    });
-    $("#next-button").click(function(event){
-        var pageNo = $("#pages")[0].selectedIndex+1;
-        var limit = $("#pages option").length;
-        if ( pageNo < limit )
-        {
-            $("#pages")[0].selectedIndex++;
-            var pageId = $("#pages").val();
-            var docId = $("#documents").val();
-            self.loadPage( docId, pageId );
-            self.checkNextAndPrev();
-        }
-    });
-    $("#prev-button").click(function(event){
-        var pageNo = $("#pages")[0].selectedIndex+1;
-        var limit = $("#pages option").length;
-        if ( pageNo > 1 )
-        {
-            $("#pages")[0].selectedIndex--;
-            var pageId = $("#pages").val();
-            var docId = $("#documents").val();
-            self.loadPage( docId, pageId );
-            self.checkNextAndPrev();
-        }
     });
     $("#image").click(function(event){
         var container = $("#container");
@@ -581,7 +535,6 @@ function Tilt(docid,pageid) {
     });
     $("#host-record").val("http://localhost/pages");
     this.loadPage( docid, pageid );
-    this.refreshList();
 }
 /**
  * This reads the "arguments" to the javascript file

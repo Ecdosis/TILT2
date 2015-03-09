@@ -1,0 +1,17 @@
+span.soft { display: none; }
+span.hard { display: inline; }
+.date {float:left}
+h4 { color: purple; font: 14px courier, monospace;text-align:right }
+.metamark{color:lightgrey}
+p {margin-left: 100px;text-indent:1em;margin-bottom:0px;margin-top:0px}
+span.ul {text-decoration: underline}
+.del{text-decoration:line-through}
+.add{color:blue}
+.standard { cursor: auto; }
+.level-0,.level-1,.level-2 { cursor: -moz-zoom-in; 
+    cursor: -webkit-zoom-in; 
+    cursor: zoom-in; }
+.level-3 { cursor: -moz-zoom-out; 
+    cursor: -webkit-zoom-out; 
+    cursor: zoom-out; }
+div.lg { margin-top:10px;}

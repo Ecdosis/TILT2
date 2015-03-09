@@ -8,4 +8,5 @@ if [ -e dist/TILT2.jar ]; then
   cp dist/TILT2.jar "$TILT_DIR/usr/local/bin/tilt/"
 fi
 rsync -az ./lib/ "./$TILT_DIR/usr/local/bin/tilt/lib"
+rsync -az ./static/ "./$TILT_DIR/usr/local/bin/tilt/static"
 dpkg-deb --build "$TILT_DIR"

@@ -1,2 +1,17 @@
 4d6c55a04e6c986e31e576519afe6477  etc/init.d/tilt
+ed9cdb7a21bd0ba982a0f341520f3183  usr/local/bin/tilt/lib/jetty-util-8.1.15.v20140411.jar
+a2d0df2ebc8c428c62a152682f4c42ad  usr/local/bin/tilt/lib/jetty-http-8.1.15.v20140411.jar
+f1535657ebe122f89bad3f75a2dcedad  usr/local/bin/tilt/lib/json-simple-1.1.1.jar
+ea68eeedc8b072964f9736dbce9d6fe2  usr/local/bin/tilt/lib/texhyphj.jar
+71fb472ab981482ff6b7e2e31bdccfb9  usr/local/bin/tilt/lib/slf4j-api-1.7.10.jar
+d5fa0d9d4c890d0d08dbc00cbe613569  usr/local/bin/tilt/lib/jetty-io-8.1.15.v20140411.jar
+08ead3940161d9b74a16ea1832c662ed  usr/local/bin/tilt/lib/jetty-continuation-8.1.15.v20140411.jar
+0379ecf1568b50497494e4f6be1eb8c0  usr/local/bin/tilt/lib/jetty-server-8.1.15.v20140411.jar
+f8e61ace5135ef2a775a0b80ac7012e9  usr/local/bin/tilt/lib/servlet-api-3.0.jar
+7f97854dc04c119d461fed14f5d8bb96  usr/local/bin/tilt/lib/commons-io-2.4.jar
+68fa3276d2597b97d7a76162f743de01  usr/local/bin/tilt/lib/HTML.jar
+41b7979cd7530faeb44da0cb6b0772bb  usr/local/bin/tilt/lib/jetty-servlet-8.1.15.v20140411.jar
+b87aa66fe75685c82d082e750ab51b2e  usr/local/bin/tilt/lib/commons-codec-1.8.jar
+fd24e83d8f62085f84c0622087872f36  usr/local/bin/tilt/lib/commons-fileupload-1.3.jar
+105d68493fb5c76823d77f3490bb7864  usr/local/bin/tilt/lib/calliope.core.jar
 6e85013449848fede37cfb3640a2af23  usr/local/bin/tilt/TILT2.jar
