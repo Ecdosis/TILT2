@@ -74,6 +74,8 @@ public class TiltGetHandler extends TiltHandler {
                 new GeoJsonHandler().handle(request, response, Utils.pop(urn));
             }
             else
+            // serve up any other form of data in its native format
+            // this is for secondary requests made by this service itself
             {
                 File file = new File(System.getProperty("user.dir"));
                 file = new File(file,urn);
@@ -98,7 +100,7 @@ public class TiltGetHandler extends TiltHandler {
                         response.setContentType("text/css");
                     else if ( file.getName().endsWith(".txt"))
                         response.setContentType("text/plain");
-                    else
+                    else    // else assume binary data
                         response.setContentType("application/octet-stream");
                     response.getOutputStream().write(data);
                 }

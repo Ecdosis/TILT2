@@ -49,7 +49,7 @@ function Element( name )
      * @param elem the element
      */
     this.addElement = function( elem ) {
-        contents += elem.toString();
+        this.contents += elem.toString();
     };
     /**
      * Compose a HTML element for output
@@ -59,12 +59,12 @@ function Element( name )
         sb = "";
         sb += "<";
         sb += this.name;
-        for ( var i=0;i<attrs.length;i++ )
-            sb += attrs[i].toString();
+        for ( var i=0;i<this.attrs.length;i++ )
+            sb += this.attrs[i].toString();
         sb += ">";
-        sb += contents;
+        sb += this.contents;
         sb += "</";
-        sb += name;
+        sb += this.name;
         sb += ">\n";
         return sb;
     };
@@ -95,13 +95,13 @@ function Container() {
      * @return an HTMLstring being the page contents
      */
     this.toString = function() {
-        return this.element.toString();
+        return this.table.toString();
     };
     /**
      * Create an outer container for the editor, and fill it
      */
-    this.element = new Element("table");
-    this.addAttribute("id", "container");
+    this.table = new Element("table");
+    this.table.addAttribute("id", "container");
     var row = new Element("tr");
     var toolbox = new Element("td");
     toolbox.addAttribute("id","toolbox");
@@ -117,17 +117,79 @@ function Container() {
     this.addButton(list,"magnify","magnify-button","fa fa-2x fa-magnify");
     this.addButton(list,"justify","justify-button","fa fa-2x fa-justify");
     var image = new Element("td");
+    image.addAttribute("id","image");
     var img = new Element("img");
     image.addElement( img );
     var canvas = new Element( "canvas" );
     canvas.addAttribute( "id", "tilt" );
     image.addElement( canvas );
-    row.addElement( list );
+    toolbox.addElement( list );
+    row.addElement( toolbox );
     row.addElement( image );
     var text = new Element( "td" );
     text.addAttribute( "id","flow" );
     row.addElement( text );
-    this.element.addElement( row );
+    this.table.addElement( row );
+}
+/**
+ * Generates and "overlay", which is a modal dialog for file open
+ */
+function Overlay()
+{
+    this.div = new Element("div");
+    this.div.addAttribute("id","overlay");
+    var inner = new Element("div");
+    var table = new Element("table");
+    //row 1: pages service url text box and refresh button
+    var row1 = new Element( "tr" );
+    var cell1 = new Element("td");
+    var host =new Element("input");
+    host.addAttribute("type","text");
+    host.addAttribute("id","host-record");
+    cell1.addElement(host);
+    var refreshButton = new Element("span");
+    refreshButton.addAttribute("id","refresh");
+    refreshButton.addAttribute("class","fa fa-refresh");
+    cell1.addElement(refreshButton);
+    row1.addElement(cell1);
+    table.addElement(row1);
+    // row 2: dropdown of available documents
+    var row2 = new Element("tr");
+    cell1 = new Element("td");
+    var documents = new Element("select");
+    documents.addAttribute("id","documents");
+    documents.addAttribute("size","4");
+    cell1.addElement(documents);
+    row2.addElement(cell1);
+    table.addElement(row2);
+    // row 3: page numbers dropdown
+    var row3= new Element("tr");
+    cell1 = new Element("td");
+    cell1.addText("Page: ");
+    var pages = new Element("select");
+    pages.addAttribute("id","pages");
+    cell1.addElement(pages);
+    row3.addElement(cell1);
+    table.addElement(row3);
+    // row4: dismiss button
+    var row4 = new Element("tr");
+    cell1= new Element("td");
+    var okButton= new Element("input");
+    okButton.addAttribute("type","button");
+    okButton.addAttribute("id","dismiss-button");
+    okButton.addAttribute("value","open");
+    cell1.addElement(okButton);
+    row4.addElement(cell1);
+    table.addElement(row4);
+    inner.addElement(table);
+    this.div.addElement(inner);
+    /**
+     * Convert the entire overlay to a string of HTML
+     * @return a HTMLstring being the overlay contents
+     */
+    this.toString = function() {
+        return this.div.toString();
+    };
 }
 /**
  * Here we handle the container resizing and toolbar events.
@@ -286,20 +348,19 @@ function Tilt(docid,pageid) {
      * @param pageId theid of the page-image
      */
     this.loadPage = function( docId, pageId ) {
-        $.get($("#host-record").val()+"/html?docid="
-            +docId+"&pageid="+pageId,function(data){
-            var height = $("#image img").height();
+        var url = $("#host-record").val()+"/html?docid="
+            +docId+"&pageid="+pageId;
+        $.get(url,function(data){
             $("#flow").empty();
             $("#flow").append(data);
-            var diff=$("#image").height()-$("#image img").height();
-            $("#flow").height(aht-diff);
         }).fail(function(){
             console.log("failed to get text");
         });
         // get image
-        $.get($("#host-record").val()+"/image?docid="+docId+"&pageid="+pageId,function(data){
+        url = $("#host-record").val()+"/image?docid="+docId+"&pageid="+pageId
+        $.get(url,function(data){
             $("#image img").attr("src",data.trim());
-            self.loadImage();
+            self.scaleImageAndText();
         }).fail(function(){
             console.log("failed to get image");
         });
@@ -322,9 +383,9 @@ function Tilt(docid,pageid) {
         };
     };
     /**
-     * Load image and scale text block to match
+     * Scale image and text block to match
      */
-    this.loadImage = function(){
+    this.scaleImageAndText = function(){
         var iht = $("#image > img").height();
         var iwt = $("#image > img").width();
         var wht = $(window).height();
@@ -455,7 +516,7 @@ function Tilt(docid,pageid) {
         }
     });
     $("#host-record").val("http://localhost/pages");
-    this.loadImage();
+    this.loadPage( docid, pageid );
 }
 /**
  * This reads the "arguments" to the javascript file
@@ -501,6 +562,7 @@ $(document).ready(function(){
     if ( content != undefined )
     {
         content.append( new Container().toString() );
+        content.append( new Overlay().toString() );
         var tilt = new Tilt(params['docid'],params['pageid']);
     }
     else

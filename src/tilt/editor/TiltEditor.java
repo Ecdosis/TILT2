@@ -41,7 +41,8 @@ public class TiltEditor extends TiltGetHandler
     void addFilesInDir( String suffix )
     {
         Head h = doc.getHead();
-        File cssDir = new File("/static/"+suffix);
+        File parent = new File(System.getProperty("user.dir"));
+        File cssDir = new File(parent,"/static/"+suffix);
         if ( cssDir.exists() )
         {
             File[] css = cssDir.listFiles();
@@ -49,10 +50,12 @@ public class TiltEditor extends TiltGetHandler
             {
                 String name = css[i].getName();
                 if ( name.endsWith("."+suffix) )
-                if ( suffix.equals("css") )
-                    h.addCssFile( "/static/"+suffix+"/"+name );
-                else if ( suffix.equals("js") )
-                    h.addScriptFile( "/static/"+suffix+"/"+name );
+                {
+                    if ( suffix.equals("css") )
+                        h.addCssFile( "/static/"+suffix+"/"+name );
+                    else if ( suffix.equals("js") && !name.equals("tilt.js") )
+                        h.addScriptFile( "/static/"+suffix+"/"+name );
+                }
             }
         }
         else
