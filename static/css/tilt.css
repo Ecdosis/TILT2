@@ -96,6 +96,7 @@ canvas { vertical-align:text-bottom}
      border-radius: 5px;
 }
 #warning {
+  font-size:18px;
   position: relative;
   top: 50%;
   transform: translateY(-50%);

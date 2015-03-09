@@ -363,7 +363,7 @@ function Tilt(docid,pageid) {
         else
         {
             $("#flow").empty();
-            $("#flow").append("<p id=\"warning\">Use Open... to choose a document and page</p>");
+            $("#flow").append("<p id=\"warning\">Use <b>Open...</b> to choose a document and page</p>");
         }
         if ( pageId!="null" )
         {
