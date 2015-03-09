@@ -446,7 +446,8 @@ function Tilt(docid,pageid) {
         $("#tilt").height(aht);
         $("#tilt").width(awt);
         $("#tilt").css("left","-"+awt+"px");
-        $("#text").width(awt);
+        $("#flow").width(awt);
+        console.log("setting text column width="+awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
         $("#flow").height(aht-diff);
