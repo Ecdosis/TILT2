@@ -286,7 +286,7 @@ function Tilt(docid,pageid) {
             return parseInt(str.split("-")[1]);
     };
     /**
-     * Workout the current zoom level name from its numerical level
+     * Work out the current zoom level name from its numerical level
      * @param number
      * @return the level name
      */
@@ -406,14 +406,17 @@ function Tilt(docid,pageid) {
      * Update the next and previous button's color
      */
     this.checkNextAndPrev = function() {
-        var nextLimit = $("#pages option").length;
+        var pagesOptions = $("#pages option");
+        var nextLimit = pagesOptions.length;
         var next = $("#next-button");
         var prev = $("#prev-button");
-        if ( $("#pages")[0].selectedIndex+1 == nextLimit )
+        var pages = $("#pages");
+        console.log("pagesOptions.length="+pagesOptions.length);
+        if ( pagesOptions.length==0 || pages[0].selectedIndex+1 == nextLimit )
             next.css("color","lightgrey");
         else
             next.css("color","black");
-        if ( $("#pages")[0].selectedIndex == 0 )
+        if ( pagesOptions.length==0 || pages[0].selectedIndex == 0 )
             prev.css("color","lightgrey");
         else
             prev.css("color","black");
@@ -447,7 +450,6 @@ function Tilt(docid,pageid) {
         $("#tilt").width(awt);
         $("#tilt").css("left","-"+awt+"px");
         $("#flow").width(awt);
-        console.log("setting text column width="+awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
         $("#flow").height(aht-diff);
@@ -598,6 +600,7 @@ function Tilt(docid,pageid) {
     $("#host-record").val("http://localhost/pages");
     this.loadPage( docid, pageid );
     this.refreshList();
+    this.checkNextAndPrev();
 }
 /**
  * This reads the "arguments" to the javascript file
@@ -644,6 +647,8 @@ $(document).ready(function(){
     {
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
+        $("#pages").empty();
+        $("#documents").empty();
         var tilt = new Tilt(params['docid'],params['pageid']);
     }
     else
