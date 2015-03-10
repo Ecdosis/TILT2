@@ -84,9 +84,9 @@ function Container() {
     {
         var li = new Element("li");
         li.addAttribute("title",title);
+        li.addAttribute("id",id);
         var span = new Element( "span" );
         span.addAttribute("class",button);
-        span.addAttribute("id",id);
         li.addElement( span );
         list.addElement( li );
     }
@@ -411,7 +411,6 @@ function Tilt(docid,pageid) {
         var next = $("#next-button");
         var prev = $("#prev-button");
         var pages = $("#pages");
-        console.log("pagesOptions.length="+pagesOptions.length);
         if ( pagesOptions.length<=1 || pages[0].selectedIndex+1 == nextLimit )
             next.css("color","lightgrey");
         else
