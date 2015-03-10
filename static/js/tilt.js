@@ -412,11 +412,11 @@ function Tilt(docid,pageid) {
         var prev = $("#prev-button");
         var pages = $("#pages");
         console.log("pagesOptions.length="+pagesOptions.length);
-        if ( pagesOptions.length==0 || pages[0].selectedIndex+1 == nextLimit )
+        if ( pagesOptions.length<=1 || pages[0].selectedIndex+1 == nextLimit )
             next.css("color","lightgrey");
         else
             next.css("color","black");
-        if ( pagesOptions.length==0 || pages[0].selectedIndex == 0 )
+        if ( pagesOptions.length<=1 || pages[0].selectedIndex == 0 )
             prev.css("color","lightgrey");
         else
             prev.css("color","black");
