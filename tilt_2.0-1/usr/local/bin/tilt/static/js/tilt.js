@@ -84,9 +84,9 @@ function Container() {
     {
         var li = new Element("li");
         li.addAttribute("title",title);
+        li.addAttribute("id",id);
         var span = new Element( "span" );
         span.addAttribute("class",button);
-        span.addAttribute("id",id);
         li.addElement( span );
         list.addElement( li );
     }
@@ -108,7 +108,7 @@ function Container() {
     var list = new Element("ul");
     this.addButton(list,"Open...","open-button","fa fa-2x fa-folder-open-o");
     this.addButton(list,"save","save-button","fa fa-2x fa-save");
-    this.addButton(list,"previous page","previous-button","fa fa-2x fa-chevron-left");
+    this.addButton(list,"previous page","prev-button","fa fa-2x fa-chevron-left");
     this.addButton(list,"next page","next-button","fa fa-2x fa-chevron-right");
     this.addButton(list,"merge shapes","merge-button","fa fa-2x fa-merge");
     this.addButton(list,"split shape","split-button","fa fa-2x fa-split");
@@ -193,6 +193,8 @@ function Overlay()
 }
 /**
  * Here we handle the container resizing and toolbar events.
+ * @param docid initial doument identifier or "null"
+ * @param initial page identifier or "null"
  */
 function Tilt(docid,pageid) {
     var self = this;
@@ -278,13 +280,13 @@ function Tilt(docid,pageid) {
      * @return the elvel number
      */
     this.levelToNumber = function( str ) {
-        if ( str == "standard" )
+        if ( str == undefined || str == "standard" )
             return -1;
         else
             return parseInt(str.split("-")[1]);
     };
     /**
-     * Workout the current zoom level name from its numerical level
+     * Work out the current zoom level name from its numerical level
      * @param number
      * @return the level name
      */
@@ -401,6 +403,24 @@ function Tilt(docid,pageid) {
         };
     };
     /**
+     * Update the next and previous button's color
+     */
+    this.checkNextAndPrev = function() {
+        var pagesOptions = $("#pages option");
+        var nextLimit = pagesOptions.length;
+        var next = $("#next-button");
+        var prev = $("#prev-button");
+        var pages = $("#pages");
+        if ( pagesOptions.length<=1 || pages[0].selectedIndex+1 == nextLimit )
+            next.css("color","lightgrey");
+        else
+            next.css("color","black");
+        if ( pagesOptions.length<=1 || pages[0].selectedIndex == 0 )
+            prev.css("color","lightgrey");
+        else
+            prev.css("color","black");
+    };
+    /**
      * Scale image and text block to match
      */
     this.scaleImageAndText = function(){
@@ -428,7 +448,7 @@ function Tilt(docid,pageid) {
         $("#tilt").height(aht);
         $("#tilt").width(awt);
         $("#tilt").css("left","-"+awt+"px");
-        $("#text").width(awt);
+        $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
         $("#flow").height(aht-diff);
@@ -491,15 +511,19 @@ function Tilt(docid,pageid) {
     $("#open-button").click(function()
     {
         var overlay = $("#overlay");
-        self.refreshList();
+        //self.refreshList();
         var visibility = overlay.css("visibility","visible");
     });
+    /**
+     * This controls the OK button on the modal dialog
+     */
     $("#dismiss-button").click(function()
     {
         var overlay = $("#overlay");
         var doc = $("#documents").val();
         self.loadPage(doc,$("#pages").val());
-        var visibility = overlay.css("visibility","hidden");
+        self.checkNextAndPrev();
+        overlay.css("visibility","hidden");
     });
     $("#recognise-button").click(function() {
         var geo = self.emptyDocument();
@@ -511,6 +535,45 @@ function Tilt(docid,pageid) {
                 console.log("posted json data");
             }
         );
+    });
+    $("#next-button").click(function(event){
+        var pageNo = $("#pages")[0].selectedIndex+1;
+        var limit = $("#pages option").length;
+        if ( pageNo < limit )
+        {
+            $("#pages")[0].selectedIndex++;
+            var pageId = $("#pages").val();
+            var docId = $("#documents").val();
+            self.loadPage( docId, pageId );
+            self.checkNextAndPrev();
+        }
+    });
+    /*$("#next-button").mousedown(function(event){
+        if ( event.which == 3 )
+        {
+            var x = event.pageX+"px";
+            var y = event.pageY+"px";
+            $('#pages').css({left:x,top:y,position:"fixed"});
+            $("#pages").css({visibility:"visible"});  
+        }
+    });*/
+    /**
+     * Prevent context menu on right mouse click on next
+     */
+    /*$("#next-button").on("contextmenu", function(evt) {
+        evt.preventDefault();
+    });*/
+    $("#prev-button").click(function(event){
+        var pageNo = $("#pages")[0].selectedIndex+1;
+        var limit = $("#pages option").length;
+        if ( pageNo > 1 )
+        {
+            $("#pages")[0].selectedIndex--;
+            var pageId = $("#pages").val();
+            var docId = $("#documents").val();
+            self.loadPage( docId, pageId );
+            self.checkNextAndPrev();
+        }
     });
     $("#image").click(function(event){
         var container = $("#container");
@@ -535,6 +598,8 @@ function Tilt(docid,pageid) {
     });
     $("#host-record").val("http://localhost/pages");
     this.loadPage( docid, pageid );
+    this.refreshList();
+    this.checkNextAndPrev();
 }
 /**
  * This reads the "arguments" to the javascript file
@@ -581,6 +646,8 @@ $(document).ready(function(){
     {
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
+        $("#pages").empty();
+        $("#documents").empty();
         var tilt = new Tilt(params['docid'],params['pageid']);
     }
     else
