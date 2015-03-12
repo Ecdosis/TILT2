@@ -57,7 +57,7 @@ public class TiltEditor extends TiltGetHandler
                 {
                     if ( suffix.equals("css") )
                         h.addCssFile( "/tilt/static/"+suffix+"/"+name );
-                    else if ( suffix.equals("js") && !name.startsWith("jquery") )
+                    else if ( suffix.equals("js") && !name.startsWith("jquery") && !name.equals("tilt.js") )
                         h.addScriptFile( "/tilt/static/"+suffix+"/"+name );
                 }
             }

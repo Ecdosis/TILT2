@@ -457,20 +457,21 @@ function Tilt(docid,pageid) {
      */
     $("#justify-button").click(function()
     {
-        var classtr = $("#justify-button").attr("class");
+        var span = $("#justify-button span");
+        var classtr = span.attr("class");
         var classNames = classtr.split(" ");
         if ( classNames[classNames.length-1]=="fa-justify" )
         {
             $("br").css("display","none");
             $(this).attr("title","line-breaks");
-            $(this).attr("class","fa fa-2x fa-linebreaks");
+            span.attr("class","fa fa-2x fa-linebreaks");
             $("span.hard").attr("class","soft");
         }
         else
         {
             $("br").css("display","inline");
             $(this).attr("title","justify");
-            $(this).attr("class","fa fa-2x fa-justify");
+            span.attr("class","fa fa-2x fa-justify");
             $("span.soft").attr("class","hard");
         }
     });
