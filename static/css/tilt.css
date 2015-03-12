@@ -72,6 +72,7 @@ canvas { vertical-align:text-bottom}
     overflow: auto;
     padding-left:10px;
     vertical-align:text-bottom;
+    white-space:pre;
 }
 #toolbox ul { list-style-type:none;margin-top:0px;padding-left:0px }
 #toolbox li:hover {background-color:palegreen;color:green;cursor:default}

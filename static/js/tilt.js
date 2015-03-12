@@ -476,14 +476,18 @@ function Tilt(docid,pageid) {
             $("br").css("display","none");
             $(this).attr("title","line-breaks");
             span.attr("class","fa fa-2x fa-linebreaks");
-            $("span.hard").attr("class","soft");
+            $("#flow").css("white-space","normal");
+            $("span.soft").css("display","none");
+            $("#flow p").css("margin-bottom","1em");
         }
         else
         {
             $("br").css("display","inline");
             $(this).attr("title","justify");
             span.attr("class","fa fa-2x fa-justify");
-            $("span.soft").attr("class","hard");
+            $("#flow").css("white-space","pre");
+            $("span.soft").css("display","inline");
+            $("#flow p").css("margin-bottom","0px");
         }
     });
     /**

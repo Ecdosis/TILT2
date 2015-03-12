@@ -1,5 +1,5 @@
-span.soft { display: none; }
-span.hard { display: inline; }
+span.soft { display: inline; }
+body {white-space:pre}
 .date {float:left}
 h4 { color: purple; font: 14px courier, monospace;text-align:right }
 .metamark{color:lightgrey}
