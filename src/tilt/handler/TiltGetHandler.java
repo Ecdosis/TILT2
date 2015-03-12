@@ -77,9 +77,13 @@ public class TiltGetHandler extends TiltHandler {
             // serve up any other form of data in its native format
             // this is for secondary requests made by this service itself
             {
-                File file = new File(System.getProperty("user.dir"));
-                file = new File(file,urn);
-                if ( file.exists())
+                File parent1 = new File(System.getProperty("user.dir"));
+                String path = TiltGetHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+                File parent2 = new File(path).getParentFile();
+                File file = new File(parent1,urn);
+                if ( !file.exists())
+                    file = new File(parent2,urn);
+                if ( file.exists() )
                 {
                     FileInputStream fis = new FileInputStream(file);
                     int len = (int)file.length();
@@ -105,7 +109,7 @@ public class TiltGetHandler extends TiltHandler {
                     response.getOutputStream().write(data);
                 }
                 else
-                    throw new FileNotFoundException(urn);
+                    throw new FileNotFoundException(file.getAbsolutePath());
             }
                 
         } catch (Exception e) {

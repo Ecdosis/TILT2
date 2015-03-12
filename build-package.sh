@@ -6,6 +6,7 @@ find . -type f ! -regex '.*.hg.*' ! -regex '.*?debian-binary.*' \
 cd ..
 if [ -e dist/TILT2.jar ]; then
   cp dist/TILT2.jar "$TILT_DIR/usr/local/bin/tilt/"
+  chmod +x "$TILT_DIR/usr/local/bin/tilt/TILT2.jar"
 fi
 rsync -az ./lib/ "./$TILT_DIR/usr/local/bin/tilt/lib"
 rsync -az ./static/ "./$TILT_DIR/usr/local/bin/tilt/static"

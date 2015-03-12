@@ -41,8 +41,12 @@ public class TiltEditor extends TiltGetHandler
     void addFilesInDir( String suffix )
     {
         Head h = doc.getHead();
-        File parent = new File(System.getProperty("user.dir"));
-        File cssDir = new File(parent,"/static/"+suffix);
+        File parent1 = new File(System.getProperty("user.dir"));
+        String path = TiltEditor.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        File parent2 = new File(path).getParentFile();
+        File cssDir = new File(parent1,"/static/"+suffix);
+        if ( !cssDir.exists())
+            cssDir = new File(parent2,"/static/"+suffix);
         if ( cssDir.exists() )
         {
             File[] css = cssDir.listFiles();
@@ -52,9 +56,9 @@ public class TiltEditor extends TiltGetHandler
                 if ( name.endsWith("."+suffix) )
                 {
                     if ( suffix.equals("css") )
-                        h.addCssFile( "/static/"+suffix+"/"+name );
-                    else if ( suffix.equals("js") && !name.equals("tilt.js") )
-                        h.addScriptFile( "/static/"+suffix+"/"+name );
+                        h.addCssFile( "/tilt/static/"+suffix+"/"+name );
+                    else if ( suffix.equals("js") && !name.startsWith("jquery") )
+                        h.addScriptFile( "/tilt/static/"+suffix+"/"+name );
                 }
             }
         }
@@ -68,7 +72,7 @@ public class TiltEditor extends TiltGetHandler
     {
         Head h = doc.getHead();
         h.addEncoding("text/html; charset=UTF-8");
-        h.addJQuery( "1.11.1", "/static/js", true );
+        h.addJQuery( "1.11.1", "/tilt/static/js", true );
         addFilesInDir( "css" );
         addFilesInDir( "js" );
     }
@@ -97,7 +101,7 @@ public class TiltEditor extends TiltGetHandler
             String pageid = request.getParameter(Params.PAGEID);
             script.addAttribute("type","text/javascript");
             // if docid and pageid are unset handle it in the javascript
-            script.addAttribute("src","/static/js/tilt.js?docid="+docid
+            script.addAttribute("src","/tilt/static/js/tilt.js?docid="+docid
                 +"&pageid="+pageid+"&target=content");
             // simulate a CMS page
             Element div = new Element("div");

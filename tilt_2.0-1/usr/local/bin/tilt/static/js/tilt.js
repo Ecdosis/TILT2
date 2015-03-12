@@ -306,8 +306,7 @@ function Tilt(docid,pageid) {
             pages.empty();
             for ( var i=0;i<data.length;i++ )
             {
-                var pageNo = i+1;
-                pages.append("<option value=\""+data[i]+"\">"+pageNo+"</option>");
+                pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
             }
         }).fail(function(){
             console.log("failed to create pages list");
@@ -375,13 +374,13 @@ function Tilt(docid,pageid) {
                 $("#image img").attr("src",data.trim());
                 self.scaleImageAndText();
             }).fail(function(){
-                $("#image img").attr("src","/static/images/default.jpg");
+                $("#image img").attr("src","/tilt/static/images/default.jpg");
                 self.scaleImageAndText();
             });
         }
         else
         {
-            $("#image img").attr("src","/static/images/default.jpg");
+            $("#image img").attr("src","/tilt/static/images/default.jpg");
             self.scaleImageAndText();
         }
     };
@@ -530,7 +529,7 @@ function Tilt(docid,pageid) {
         var json = JSON.stringify(geo);
         var text = $("#flow").text();
         var obj = {geojson: json,pictype:"link",text:text};
-        $.post('http://localhost/tilt/',obj,
+        $.post('http://'+window.location.hostname+'/tilt/',obj,
             function(data){
                 console.log("posted json data");
             }
@@ -596,7 +595,7 @@ function Tilt(docid,pageid) {
                 event.pageY-img.offset().top, level+2, level+1 );
         }
     });
-    $("#host-record").val("http://localhost/pages");
+    $("#host-record").val("http://"+window.location.hostname+"/pages");
     this.loadPage( docid, pageid );
     this.refreshList();
     this.checkNextAndPrev();
