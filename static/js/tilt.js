@@ -371,17 +371,26 @@ function Tilt(docid,pageid) {
             // get image
             url = $("#host-record").val()+"/image?docid="+docId+"&pageid="+pageId
             $.get(url,function(data){
-                $("#image img").attr("src",data.trim());
-                self.scaleImageAndText();
+                var img = $("#image img");
+                img.attr("src",data.trim());
+                img.load(function(){
+                    self.scaleImageAndText();
+                });
             }).fail(function(){
-                $("#image img").attr("src","/tilt/static/images/default.jpg");
-                self.scaleImageAndText();
+                var img = $("#image img");
+                img.attr("src","/tilt/static/images/default.jpg");
+                img.load(function(){
+                    self.scaleImageAndText();
+                });
             });
         }
         else
         {
-            $("#image img").attr("src","/tilt/static/images/default.jpg");
-            self.scaleImageAndText();
+            var img = $("#image img");
+            img.attr("src","/tilt/static/images/default.jpg");
+            img.load(function(){
+                self.scaleImageAndText();
+            });
         }
     };
     /**
@@ -426,9 +435,11 @@ function Tilt(docid,pageid) {
         var iht = $("#image > img").height();
         var iwt = $("#image > img").width();
         var wht = $(window).height();
+        //console.log("wht="+wht+" iht="+iht+" iwt="+iwt);
         // adjust image width and height to window height
         var awt = Math.round((iwt*wht)/iht);
         var aht = wht;
+        //console.log("aht="+aht);
         // save magnifications as data-magnify attr on #image
         var mag1wt = Math.round(awt*1.5);
         var mag1ht = Math.round(aht*1.5);
