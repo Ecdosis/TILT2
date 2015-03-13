@@ -22,7 +22,7 @@ ProxyPass /tilt/ http://localhost:8082/tilt/ retry=0
 
 TILT in standalone form runs on TCP port 8082, so this should be free of 
 other applications listening on that port. As a webapp within Tomcat it 
-runs on whatever port Tomcat runs on. In that case,andif Tomcat was 
+runs on whatever port Tomcat runs on. In that case, and if Tomcat was 
 running on port 8080, then the proxy line should be altered to:
 
 ProxyPass /tilt/ http://localhost:8080/tilt/ retry=0
