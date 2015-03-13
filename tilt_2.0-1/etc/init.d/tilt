@@ -22,6 +22,8 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Tilt text to image linking tool"
 NAME=tilt
 DAEMON=/usr/local/bin/tilt/TILT2.jar
+LIBPATH=`java -cp /usr/local/bin/tilt/ LibPath`:/usr/local/lib
+
 # Load the VERBOSE setting and other rcS variables
 . /lib/init/vars.sh
 # Define LSB log_* functions.
@@ -41,7 +43,7 @@ getjarpaths()
 do_start() {
   JARPATHS=`getjarpaths /usr/local/bin/tilt/lib`
   pkill -f TILT2.jar
-  java -cp .$JARPATHS:/usr/local/bin/tilt/TILT2.jar tilt.JettyServer -w 8082 2>/dev/null &
+  java -Djava.library.path=$LIBPATH -cp .$JARPATHS:/usr/local/bin/tilt/TILT2.jar tilt.JettyServer -w 8082 >> /var/log/tilt.log 2>&1 &
 }
 # Stop the service tilt
 do_stop() {
