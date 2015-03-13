@@ -563,23 +563,8 @@ function Tilt(docid,pageid) {
             self.checkNextAndPrev();
         }
     });
-    /*$("#next-button").mousedown(function(event){
-        if ( event.which == 3 )
-        {
-            var x = event.pageX+"px";
-            var y = event.pageY+"px";
-            $('#pages').css({left:x,top:y,position:"fixed"});
-            $("#pages").css({visibility:"visible"});  
-        }
-    });*/
-    /**
-     * Prevent context menu on right mouse click on next
-     */
-    /*$("#next-button").on("contextmenu", function(evt) {
-        evt.preventDefault();
-    });*/
     $("#prev-button").click(function(event){
-        var pageNo = $("#pages")[0].selectedIndex+1;
+        var pageNo = $("#pages")[0].selectedIndex-1;
         var limit = $("#pages option").length;
         if ( pageNo > 1 )
         {

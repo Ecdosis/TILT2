@@ -1,6 +1,6 @@
 #/bin/sh
 update-rc.d tilt defaults
-pgrep(){ ps -ax -o pid,command | grep "$@" | grep -v 'grep' | awk '{print $1;}'; }
+pgrep(){ ps ax -o pid,command | grep "$@" | grep -v 'grep' | awk '{print $1;}'; }
   HPID=`pgrep TILT2.jar`
   if [ -n "$HPID" ]; then
     /etc/init.d/tilt stop
