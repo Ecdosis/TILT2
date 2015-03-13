@@ -496,7 +496,7 @@ function Tilt(docid,pageid) {
     $("#magnify-button").click(function()
     {
         var container = $("#container");
-        var icon = $("#magnify-button");
+        var icon = $("#magnify-button span");
         var cursor = container.attr("class");
         var level = self.decLevel(self.levelToNumber(cursor));
         if ( level < 0 )
