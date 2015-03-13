@@ -1,12 +1,12 @@
 About TILT
 __________
 
-A revision of TILT, which was solely a Java applet, by splitting it into 
-two halves. The first half handles all image-processing on the server 
-using Java, and the second half handles the GUI using Javascript and 
-HTML5 (and a canvas).
+TILT2 is a revision of TILT1, which was solely a Java applet, by 
+splitting it into two halves. The first half handles all 
+image-processing on the server using Java, and the second half handles 
+the GUI using Javascript, jQuery and HTML5 (and a canvas).
 
-REQUIREMENTS
+Requirements
 ___________
 
 TILT requires installation of aspell and libaspell-dev on Ubuntu, or their
@@ -20,10 +20,15 @@ and mod-proxy you should add the folllowing line to proxy.conf:
 
 ProxyPass /tilt/ http://localhost:8082/tilt/ retry=0
 
-TILT runs on TCP port 8082, so this should be free of other applications 
-listening on that port.
+TILT in standalone form runs on TCP port 8082, so this should be free of 
+other applications listening on that port. As a webapp within Tomcat it 
+runs on whatever port Tomcat runs on. In that case,andif Tomcat was 
+running on port 8080, then the proxy line should be altered to:
 
-DOCUMENTATION
+ProxyPass /tilt/ http://localhost:8080/tilt/ retry=0
+
+
+Documentation
 ____________
 
 The full documentation is in dist/javadoc, including the simple API.
