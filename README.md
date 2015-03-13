@@ -44,7 +44,7 @@ ____________
 
 TILT can run either as a self-contained web-app on Tomcat or a similar 
 container, or as a standalone Jetty based web-service. For the former, 
-copy tilt.war into the TOmcat webapps directory and restart Tomcat.
+copy tilt.war into the Tomcat webapps directory and restart Tomcat.
 
 For the standalone version run the following command on Debian/Ubuntu systems:
 
