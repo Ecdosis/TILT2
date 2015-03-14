@@ -1,5 +1,7 @@
 span.soft { display: inline; }
-
+span.delete {text-decoration:line-through;color:red}
+span.species {font-style:italic}
+div.location {float:right}
 .date {float:left}
 h4 { color: purple; font: 14px courier, monospace;text-align:right }
 .metamark{color:lightgrey}

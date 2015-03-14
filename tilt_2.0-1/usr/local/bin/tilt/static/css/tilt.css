@@ -71,6 +71,7 @@ canvas { vertical-align:text-bottom}
     display:inline-block;
     overflow: auto;
     padding-left:10px;
+    margin-top:10px;
     vertical-align:text-bottom;
     white-space:pre;
 }
