@@ -429,6 +429,15 @@ function Tilt(docid,pageid) {
             prev.css("color","black");
     };
     /**
+     * Remove trailing "px" from a css value
+     * @param value a raw css value with "px" on the end
+     * @return a pure number
+     */
+    this.pixelLen = function( value ) {
+        var param = value.replace("px","");
+        return parseInt(param);
+    };
+    /**
      * Scale image and text block to match
      */
     this.scaleImageAndText = function(){
@@ -453,6 +462,8 @@ function Tilt(docid,pageid) {
         $("#image > img").height(aht);
         $("#image > img").width(awt);
         // scale wrapper divs to same values
+        var marginTop = this.pixelLen($("#flow").css("margin-top"));
+        var padTop = this.pixelLen($("#flow").css("padding-top"));
         $("#image").height(aht);
         $("#image").width(awt);
         $("#tilt").height(aht);
@@ -461,7 +472,8 @@ function Tilt(docid,pageid) {
         $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
-        $("#flow").height(aht-diff);
+        aht -= (diff+marginTop+padTop);
+        $("#flow").height(aht);
     };
     /**
      * Toggle between honouring line-breaks and ignoring them
