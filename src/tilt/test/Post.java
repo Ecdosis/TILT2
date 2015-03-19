@@ -31,23 +31,6 @@ import java.util.HashMap;
  */
 public class Post extends Test
 {
-    static String POST_CSS =
-    "#left {float:left;margin:10px}\n"
-    +"#right {float:left;margin:10px}\n"
-    +"#toolbar {clear:both}\n"
-    +"#content { width: 500px}\n"
-    +"#content table tr td { font-size:small}\n"
-    +"#content p { font-size:small}\n"
-    +"#content table tr td ul { margin: 0 }\n"
-    +".hidden { display: none}\n"
-    +"textarea { display: none }\n"
-    +"#title { font-weight: bold}\n"
-    +"#container{ display:inline-block;\n"
-    +"margin: 0 auto;\n"
-    +"position: relative }\n"
-    +"img{position:absolute;z-index:1;border:1px solid black}\n"
-    +"canvas{position:relative;z-index:2}\n"
-    +".highlight{background-color: #FFFF88}\n";
     static int TEXT = 1;
     static int HTML = 2;
     /**
@@ -129,7 +112,7 @@ public class Post extends Test
             doc.getHead().addScriptFile( "/tilt/static/js/jquery-1.11.1.js" );
             doc.getHead().addScriptFile( "/tilt/static/js/jquery.highlight.js" );
             doc.getHead().addScriptFile( "/tilt/static/js/post.js" );
-            doc.getHead().addCss(POST_CSS);
+            doc.getHead().addCssFile("/tilt/static/css/post.css");
             HashMap<String,String> selections = new HashMap<>();
             for ( int i=0;i<Texts.samples.length;i++ )
             {
@@ -160,7 +143,7 @@ public class Post extends Test
             textarea.addAttribute("id","geojson");
             textarea.addAttribute("rows","8");
             textarea.addAttribute("cols","80");
-            textarea.addText(Texts.samples[0][2]);
+            textarea.addText(Texts.samples[0][3]);
             f.addElement( textarea );
             p = new Element("p");
             p.addElement( new Input("upload","button","upload",true) );

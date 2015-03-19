@@ -30,7 +30,7 @@ import tilt.exception.ImageException;
  * Handle an Ajax request for geoJson data about a picture
  * @author desmond
  */
-public class GeoJsonHandler extends TiltHandler
+public class TiltRecogniseHandler extends TiltHandler
 {
     /** the image URL */
     String docid;

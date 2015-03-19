@@ -386,4 +386,16 @@ public class Utils
         Iterable<Point2D> points4 = gs.hull();
         return pointsToPolygon( points4 );
     }
+    /**
+     * Add a "/"to the end of a path if needed
+     * @param path the original path
+     * @return the path with ONE trailing slash
+     */
+    public static String ensureSlash( String path )
+    {
+        if ( path.endsWith("/") )
+            return path;
+        else
+            return path+"/";
+    }
 }

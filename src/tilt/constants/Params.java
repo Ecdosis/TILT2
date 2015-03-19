@@ -29,4 +29,5 @@ public class Params
     public static String GEOJSON="geojson";
     public static String PICTYPE="pictype";
     public static String TEXT="text";
+    public static String SERVER = "server";
 }

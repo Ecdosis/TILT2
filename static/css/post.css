@@ -1,0 +1,16 @@
+#left {float:left;margin:10px}
+#right {float:left;margin:10px}
+#toolbar {clear:both}
+#content { width: 500px}
+#content table tr td { font-size:small}
+#content p { font-size:small}
+#content table tr td ul { margin: 0 }
+.hidden { display: none}
+textarea { display: none }
+#title { font-weight: bold}
+#container{ display:inline-block;
+margin: 0 auto;
+position: relative }
+img{position:absolute;z-index:1;border:1px solid black}
+canvas{position:relative;z-index:2}
+.highlight{background-color: #FFFF88}

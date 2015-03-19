@@ -532,9 +532,15 @@ function Tilt(docid,pageid) {
     $("#refresh").click(function(){
         self.refreshList();
     });
+    /**
+     * Scrolling list of documents containing pages
+     */
     $("#documents").change(function(){
         self.refreshPages();
     });
+    /**
+     * Make invisible open dialog visible
+     */
     $("#open-button").click(function()
     {
         var overlay = $("#overlay");
