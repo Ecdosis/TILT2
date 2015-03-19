@@ -18,8 +18,11 @@
 
 package tilt;
 
+import calliope.core.database.Connector;
+import calliope.core.database.Repository;
 import calliope.core.exception.CalliopeExceptionMessage;
 import calliope.core.exception.CalliopeException;
+import java.util.Enumeration;
 import tilt.handler.*;
 import tilt.exception.TiltException;
 import javax.servlet.ServletException;
@@ -33,6 +36,50 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class TiltWebApp extends HttpServlet
 {
+    public static String host;
+    public static int wsPort;
+    public static String database;
+    static String user ="admin";
+    static String password = "jabberw0cky";
+    static int dbPort = 27017;
+    static Repository repository = Repository.MONGO;
+    static boolean inited = false;
+    /**
+     * Safely convert a string to a Repository enum
+     * @param value the value probably a repo type
+     * @param def the default if it is not
+     * @return the value or the default
+     */
+    private Repository getRepository( String value, Repository def )
+    {
+        Repository res = def;
+        try
+        {
+            res = Repository.valueOf(value);
+        }
+        catch ( IllegalArgumentException e )
+        {
+        }
+        return res;
+    }
+    /**
+     * Safely convert a string to an integer
+     * @param value the value probably an integer
+     * @param def the default if it is not
+     * @return the value or the default
+     */
+    private int getInteger( String value, int def )
+    {
+        int res = def;
+        try
+        {
+            res = Integer.parseInt(value);
+        }
+        catch ( NumberFormatException e )
+        {
+        }
+        return res;
+    }
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, java.io.IOException
@@ -41,6 +88,34 @@ public class TiltWebApp extends HttpServlet
         {
             String method = req.getMethod();
             String target = req.getRequestURI();
+            if( !inited )
+            {
+                Enumeration params = 
+                    getServletConfig().getInitParameterNames();
+                while (params.hasMoreElements()) 
+                {
+                    String param = (String) params.nextElement();
+                    String value = 
+                        getServletConfig().getInitParameter(param);
+                    if ( param.equals("dbPort") )
+                        dbPort = getInteger(value,27017);
+                    else if (param.equals("wsPort"))
+                        wsPort= getInteger(value,8080);
+                    else if ( param.equals("username") )
+                        user = value;
+                    else if ( param.equals("password") )
+                        password = value;
+                    else if ( param.equals("repository") )
+                        repository = getRepository(value,Repository.MONGO);
+                    else if ( param.equals("dbName") )
+                        database = value;
+                    else if ( param.equals("host") )
+                        host = value;
+                }
+                Connector.init( repository, user, 
+                    password, host, database, dbPort, wsPort, "/var/www" );
+                inited = true;
+            }
             target = Utils.pop( target );
             TiltHandler handler;
             if ( method.equals("GET") )

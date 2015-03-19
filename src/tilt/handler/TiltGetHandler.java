@@ -69,9 +69,13 @@ public class TiltGetHandler extends TiltHandler {
             else if (service.equals(Service.IMAGE)) {
                 new TiltImageHandler().handle(request, response, Utils.pop(urn));
             }
-            else if ( service.equals(Service.GEOJSON) )
+            else if ( service.equals(Service.RECOGNISE) )
             {
                 new TiltRecogniseHandler().handle(request, response, Utils.pop(urn));
+            }
+            else if ( service.equals(Service.GEOJSON) )
+            {
+                new TiltGeoJsonHandler().handle(request, response, Utils.pop(urn));
             }
             else
             // serve up any other form of data in its native format

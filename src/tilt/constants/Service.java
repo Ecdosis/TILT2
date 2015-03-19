@@ -34,4 +34,6 @@ public class Service
     public static final String IMAGE = "image";
     /** the tilt gui editor */
     public static final String EDITOR = "editor";
+    /** recognise the page */
+    public static final String RECOGNISE = "recognise";
 }

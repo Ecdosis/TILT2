@@ -31,9 +31,9 @@ public class JettyServerThread extends Thread
     {
         try
         {
-            Server server = new Server(JettyServer.wsPort);
+            Server server = new Server(TiltWebApp.wsPort);
             Connector[] connectors = server.getConnectors();
-            connectors[0].setHost(JettyServer.host);
+            connectors[0].setHost(TiltWebApp.host);
             server.setHandler(new JettyServer());
             server.start();
             server.join();
