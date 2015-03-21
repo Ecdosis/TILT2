@@ -23,7 +23,7 @@ import java.util.Comparator;
 import java.util.Arrays;
 import tilt.exception.MatrixException;
 import java.util.Iterator;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 /**
  * A rewrite of the line-joining algorithm.We use a greedy approach. 
  * Differences between all points on the left and right are stored on a 

@@ -127,7 +127,7 @@ public class Post extends Test
                 doc.addElement( hiddenDiv(id+"_JSON",json) );
             }
             Form f = new Form( "POST", "http://"+request.getServerName()
-                +"/tilt/test","multipart/form-data" );
+                +"/tilt/test/","multipart/form-data" );
             f.addAttribute("id","main");
             Select s = new Select( selections, "selections", 
                 Texts.samples[0][1] );

@@ -26,11 +26,11 @@ import javax.imageio.ImageIO;
 import java.util.Stack;
 import java.util.ArrayList;
 import tilt.Utils;
-import tilt.handler.TextIndex;
+import tilt.handler.post.TextIndex;
 import tilt.image.convexhull.*;
 import org.json.simple.*;
 import tilt.image.page.Polygon;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 
 
 /**
@@ -326,8 +326,8 @@ public class Blob
         try
         {
             Options opts = new Options(new JSONObject());
-            opts.url = "http://ecdosis.net/test.png";
-            Picture p = new Picture( opts, new TextIndex("",""), 
+            String url = "http://ecdosis.net/test.png";
+            Picture p = new Picture( opts, url, new TextIndex("",""), 
                 InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);

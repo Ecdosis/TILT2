@@ -563,12 +563,23 @@ function Tilt(docid,pageid) {
         var geo = $("#geojson").val();
         var json = JSON.stringify(geo);
         var text = $("#flow").text();
-        var obj = {geojson: json,pictype:"link",text:text};
-        $.post('http://'+window.location.hostname+'/tilt/',obj,
+        var obj = {geojson: json,pictype:"link",text:text,
+            docid:$("#documents").val(),
+            pageid:$("#pages").val()};
+        $.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
             function(data){
-                console.log("posted json data");
+                $.get('http://'+window.hostname+'/tilt//?docid='
+                +$("#documents").val()+'&pageid='+$("#pages").val(),
+                function(data){
+                    
+                });
             }
         );
+    });
+    /**
+     * Save geojson description to database
+     */
+    $("#save-button").click(function() {
     });
     $("#next-button").click(function(event){
         var pageNo = $("#pages")[0].selectedIndex+1;

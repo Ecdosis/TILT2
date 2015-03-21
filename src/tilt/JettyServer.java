@@ -64,11 +64,11 @@ public class JettyServer extends AbstractHandler
                 if ( method.equals("GET") )
                     new TiltGetHandler().handle( request, response, urn );
                 else if ( method.equals("PUT") )
-                    new TiltPutHandler().handle( request, response, urn );
-                else if ( method.equals("DELETE") )
-                    new TiltDeleteHandler().handle( request, response, urn );
+                     new TiltPutHandler().handle( request, response, urn );
                 else if ( method.equals("POST") )
                     new TiltPostHandler().handle( request, response, urn );
+               else if ( method.equals("DELETE") )
+                    new TiltDeleteHandler().handle( request, response, urn );
                 else
                     throw new TiltException("Unknown http method "+method);
             }

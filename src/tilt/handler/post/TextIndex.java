@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2014
  */     
 
-package tilt.handler;
+package tilt.handler.post;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import calliope.AeseSpeller;

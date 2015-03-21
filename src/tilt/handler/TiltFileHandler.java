@@ -23,8 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.URLConnection;
-import javax.servlet.ServletOutputStream;
+import java.io.FileNotFoundException;
 
 /**
  * Handle requests for ordinary files like scripts
@@ -32,19 +31,62 @@ import javax.servlet.ServletOutputStream;
  */
 public class TiltFileHandler extends TiltHandler 
 {
+    /**
+     * Look in all the likely places for this relatively specified file
+     * @param relPath the relative path from somewhere
+     * @return the file object or null
+     */
+    private File getStaticFile( String relPath )
+    {
+        File parent1 = new File(System.getProperty("user.dir"));
+        String path = TiltGetHandler.class.getProtectionDomain()
+            .getCodeSource().getLocation().getPath();
+        File parent2 = new File(path).getParentFile();
+        File file = new File(parent1,relPath);
+        if ( !file.exists())
+            file = new File(parent2,relPath);
+        while( file != null && !file.exists() )
+        {
+            File parent3 = parent2.getParentFile();
+            file = new File(parent3,relPath);
+        }
+        return file;
+    }
     public void handle(HttpServletRequest request,
         HttpServletResponse response, String urn) throws TiltException {
         File f = new File(urn);
         try
+        // serve up any other form of data in its native format
+        // this is for secondary requests made by this service itself
         {
-            FileInputStream fis = new FileInputStream(f);
-            byte[] data = new byte[(int)f.length()];
-            fis.read(data);
-            String mimeType = URLConnection.guessContentTypeFromStream(fis);
-            response.setContentType(mimeType);
-            ServletOutputStream sos = response.getOutputStream();
-            sos.write( data );
-            sos.close();
+            File file = getStaticFile(urn);
+            if ( file != null )
+            {
+                FileInputStream fis = new FileInputStream(file);
+                int len = (int)file.length();
+                byte[] data = new byte[len];
+                fis.read( data );
+                fis.close();
+                if ( file.getName().endsWith(".png") )
+                    response.setContentType("image/png");
+                else if ( file.getName().endsWith(".jpg") )
+                    response.setContentType("image/jpg");
+                else if ( file.getName().endsWith(".json") )
+                    response.setContentType("application/json");
+                else if ( file.getName().endsWith(".html") )
+                    response.setContentType("text/html");
+                else if ( file.getName().endsWith(".js") )
+                    response.setContentType("text/javascript");
+                else if ( file.getName().endsWith(".css") )
+                    response.setContentType("text/css");
+                else if ( file.getName().endsWith(".txt"))
+                    response.setContentType("text/plain");
+                else    // else assume binary data
+                    response.setContentType("application/octet-stream");
+                response.getOutputStream().write(data);
+            }
+            else
+                throw new FileNotFoundException(file.getAbsolutePath());
         }
         catch ( Exception e )
         {

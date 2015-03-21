@@ -23,7 +23,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.awt.geom.Area;
 import tilt.Utils;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 /**
  * Remove big black blobs from two-tone pictures. The border
  * @author desmond

@@ -30,4 +30,5 @@ public class Params
     public static String PICTYPE="pictype";
     public static String TEXT="text";
     public static String SERVER = "server";
+    public static String URL = "url";
 }

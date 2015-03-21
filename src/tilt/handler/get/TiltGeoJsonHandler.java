@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2015
  */
 
-package tilt.handler;
+package tilt.handler.get;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,6 +26,7 @@ import calliope.core.constants.Database;
 import calliope.core.constants.JSONKeys;
 import java.io.InputStream;
 import tilt.constants.Params;
+import tilt.handler.TiltGetHandler;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
@@ -86,23 +87,7 @@ public class TiltGeoJsonHandler extends TiltGetHandler
                     geometry.put("coordinates",coordinates);
                     empty.put("geometry",geometry);
                     JSONObject properties = new JSONObject();
-                    URL pages = new URL("http://"+request.getServerName()
-                        +"/pages/uri_template");
-                    URLConnection pagesService = pages.openConnection();
-                    InputStream is = pagesService.getInputStream();
-                    StringBuilder sb = new StringBuilder();
-                    while ( is.available() != 0 )
-                    {
-                        byte[] data = new byte[is.available()];
-                        is.read( data );
-                        sb.append( new String(data) );
-                    }
-                    String template = sb.toString();
-                    if  ( template.contains("{pageid}") )
-                        template= template.replace("{pageid}",pageid);
-                    if ( template.contains("{docid}") )
-                        template = template.replace("{docid}",docid);
-                    properties.put( JSONKeys.URL, template );
+                    properties.put( JSONKeys.DOCID, docid );
                     empty.put("properties",properties );
                     response.setContentType("application/json");
                     response.getWriter().print( empty.toJSONString() );

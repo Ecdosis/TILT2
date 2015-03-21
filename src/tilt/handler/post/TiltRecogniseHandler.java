@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2014
  */     
 
-package tilt.handler;
+package tilt.handler.post;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +25,8 @@ import tilt.exception.TiltException;
 import tilt.image.Picture;
 import tilt.image.PictureRegistry;
 import tilt.exception.ImageException;
+import tilt.Utils;
+import tilt.handler.TiltHandler;
 
 /**
  * Handle an Ajax request for geoJson data about a picture
@@ -48,9 +50,11 @@ public class TiltRecogniseHandler extends TiltHandler
     {
         try
         {
-            docid = request.getParameter(Params.DOCID);
-            if ( docid != null )
+            String docId = request.getParameter(Params.DOCID);
+            String pageId = request.getParameter(Params.PAGEID);
+            if ( docId != null && pageId != null )
             {
+                this.docid = Utils.ensureSlash(docId)+pageId;
                 Picture p = null;
                 try
                 {

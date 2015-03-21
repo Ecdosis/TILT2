@@ -23,7 +23,7 @@ import tilt.image.page.Page;
 import java.util.ArrayList;
 import tilt.image.page.Line;
 import java.awt.Point;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 
 /**
  * Remove lines that intersect with blobs that already have a longer line

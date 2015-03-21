@@ -22,7 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import tilt.image.page.Page;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 
 /**
  * Find the lines based on a Gaussian-blurred image

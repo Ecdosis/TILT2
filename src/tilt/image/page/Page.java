@@ -33,7 +33,7 @@ import tilt.exception.*;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import org.json.simple.*;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 
 /**
  * Represent a collection of lines already recognised on a page

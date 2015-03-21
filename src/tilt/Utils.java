@@ -27,6 +27,12 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import javax.servlet.http.HttpServletRequest;
 import tilt.image.convexhull.*;
 import tilt.image.page.Polygon;
 
@@ -398,4 +404,26 @@ public class Utils
         else
             return path+"/";
     }
+    public static String getUrl( String serverName, String docid, 
+        String pageid ) throws MalformedURLException, IOException
+    {
+        URL pages = new URL("http://"+serverName
+            +"/pages/uri_template");
+        URLConnection pagesService = pages.openConnection();
+        InputStream is = pagesService.getInputStream();
+        StringBuilder sb = new StringBuilder();
+        while ( is.available() != 0 )
+        {
+            byte[] data = new byte[is.available()];
+            is.read( data );
+            sb.append( new String(data) );
+        }
+        String template = sb.toString();
+        if  ( template.contains("{pageid}") )
+            template= template.replace("{pageid}",pageid);
+        if ( template.contains("{docid}") )
+            template = template.replace("{docid}",docid);
+        return template;
+    }
+    
 }

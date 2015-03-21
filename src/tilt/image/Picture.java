@@ -40,11 +40,12 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import javax.servlet.http.HttpServletRequest;
 import tilt.image.page.Page;
-import tilt.handler.TextIndex;
+import tilt.handler.post.TextIndex;
 import tilt.align.Matchup;
 import tilt.image.page.Word;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 
 /**
  * Handle everything related to the abstract image in all its forms
@@ -76,20 +77,20 @@ public class Picture {
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
-    public Picture( Options options, TextIndex text, 
+    public Picture( Options options, String url, TextIndex text, 
         InetAddress poster ) throws TiltException
     {
         try
         {
-            URL url = new URL( options.url );
+            URL netUrl = new URL( url );
             // use url as id for now
-            id = options.url;
+            id = url;
             this.text = text;
             this.poster = poster;
             // try to register the picture
-            PictureRegistry.register( this, options.url );
+            PictureRegistry.register( this, url );
             // fetch picture from url
-            ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+            ReadableByteChannel rbc = Channels.newChannel(netUrl.openStream());
             orig = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             FileOutputStream fos = new FileOutputStream(orig);

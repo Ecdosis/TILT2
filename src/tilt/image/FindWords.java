@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.awt.Point;
 import tilt.image.page.Polygon;
 import java.awt.Rectangle;
-import tilt.handler.Options;
+import tilt.handler.post.Options;
 /**
  * Using the lines lists search for words
  * @author desmond

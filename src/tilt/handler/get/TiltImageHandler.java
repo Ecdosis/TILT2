@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 
-package tilt.handler;
+package tilt.handler.get;
 
 import java.io.ByteArrayInputStream;
 import java.net.URLConnection;
@@ -29,16 +29,19 @@ import tilt.exception.TiltException;
 import tilt.exception.ImageException;
 import tilt.image.Picture;
 import tilt.image.PictureRegistry;
+import tilt.handler.TiltGetHandler;
+import tilt.Utils;
 
 /**
  * Handles requests for various image types, including linked images
  * @author desmond
  */
-public class TiltImageHandler extends TiltHandler 
+public class TiltImageHandler extends TiltGetHandler 
 {
     String docid;
+    String pageid;
+    String url;
     ImageType imageType;
-    
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {
@@ -46,9 +49,13 @@ public class TiltImageHandler extends TiltHandler
         {
             imageType = ImageType.read(request.getParameter(Params.PICTYPE));
             docid = request.getParameter(Params.DOCID);
-            if ( docid != null )
+            pageid = request.getParameter(Params.PAGEID);
+            url = request.getParameter(Params.URL);
+            if ( (docid != null && pageid != null) || url != null )
             {
-                Picture p = PictureRegistry.get(docid);
+                if ( url == null || url.length()==0 )
+                    url = Utils.getUrl(request.getServerName(),docid,pageid);
+                Picture p = PictureRegistry.get(url);
                 byte[]pic = null;
                 switch (imageType) 
                 {
@@ -94,7 +101,7 @@ public class TiltImageHandler extends TiltHandler
             }
             else
                 response.getOutputStream().println(
-                    "<p>please specify a docid</p>");
+                    "<p>please specify a docid and pageid, or a url</p>");
         }
         catch ( Exception e )
         {
