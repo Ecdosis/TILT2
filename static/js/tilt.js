@@ -130,7 +130,6 @@ function Container() {
     text.addAttribute( "id","flow" );
     row.addElement( text );
     this.table.addElement( row );
-    var 
 }
 /**
  * Generates an "overlay", which is a modal dialog for file open
@@ -466,7 +465,7 @@ function Tilt(docid,pageid) {
      */
     this.getGeoJson = function( docid, pageid ) {
         var url = $("#host-record").val()+"/geojson?docid="
-            +docId+"&pageid="+pageId;
+            +docid+"&pageid="+pageid;
         $.get(url,function(data){
             $("#geojson").val(data);
         }).fail(function(){
