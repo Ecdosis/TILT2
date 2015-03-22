@@ -132,7 +132,7 @@ function Container() {
     this.table.addElement( row );
 }
 /**
- * Generates and "overlay", which is a modal dialog for file open
+ * Generates an "overlay", which is a modal dialog for file open
  */
 function Overlay()
 {
@@ -394,23 +394,6 @@ function Tilt(docid,pageid) {
         }
     };
     /**
-     * Create an empty GeoJSON document
-     */
-    this.emptyDocument = function() {
-        return {
-          type: "Feature",
-          geometry: {
-              type: "Polygon",
-                coordinates: [
-                [ [0.0, 0.0], [100.0, 0.0], [100.0, 100.0], [0.0, 100.0] ]
-              ]
-          },
-          properties: {
-            url: "http://setis.library.usyd.edu.au/ozedits/harpur/A87-1/00000005.jpg"
-          }
-        };
-    };
-    /**
      * Update the next and previous button's color
      */
     this.checkNextAndPrev = function() {
@@ -474,6 +457,20 @@ function Tilt(docid,pageid) {
         var diff=$("#image").height()-$("#image img").height();
         aht -= (diff+marginTop+padTop);
         $("#flow").height(aht);
+    };
+    /**
+     * Get and set the geojson for this document
+     * @param docid the document identifier
+     * @param pageid the page identifier
+     */
+    this.getGeoJson = function( docid, pageid ) {
+        var url = $("#host-record").val()+"/geojson?docid="
+            +docid+"&pageid="+pageid;
+        $.get(url,function(data){
+            $("#geojson").val(data);
+        }).fail(function(){
+            console.log("Failed to load geojson");
+        });
     };
     /**
      * Toggle between honouring line-breaks and ignoring them
@@ -558,16 +555,30 @@ function Tilt(docid,pageid) {
         self.checkNextAndPrev();
         overlay.css("visibility","hidden");
     });
+    /**
+     * Send the current geojson and text to server for recognition
+     */
     $("#recognise-button").click(function() {
-        var geo = self.emptyDocument();
+        var geo = $("#geojson").val();
         var json = JSON.stringify(geo);
         var text = $("#flow").text();
-        var obj = {geojson: json,pictype:"link",text:text};
-        $.post('http://'+window.location.hostname+'/tilt/',obj,
+        var obj = {geojson: json, pictype:"link",text:text,
+            docid:$("#documents").val(),
+            pageid:$("#pages").val()};
+        $.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
             function(data){
-                console.log("posted json data");
+                $.get('http://'+window.hostname+'/tilt//?docid='
+                +$("#documents").val()+'&pageid='+$("#pages").val(),
+                function(data){
+                    
+                });
             }
         );
+    });
+    /**
+     * Save geojson description to database
+     */
+    $("#save-button").click(function() {
     });
     $("#next-button").click(function(event){
         var pageNo = $("#pages")[0].selectedIndex+1;
@@ -615,6 +626,7 @@ function Tilt(docid,pageid) {
         }
     });
     $("#host-record").val("http://"+window.location.hostname+"/pages");
+    this.getGeoJson( docid, pageid );
     this.loadPage( docid, pageid );
     this.refreshList();
     this.checkNextAndPrev();
@@ -664,6 +676,7 @@ $(document).ready(function(){
     {
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
+        content.append('<textarea id="geojson"></textarea>');
         $("#pages").empty();
         $("#documents").empty();
         var tilt = new Tilt(params['docid'],params['pageid']);
