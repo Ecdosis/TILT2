@@ -23,7 +23,7 @@ import tilt.image.*;
 import tilt.Utils;
 import tilt.constants.Params;
 import tilt.constants.ImageType;
-import tilt.handler.TiltHandler;
+import tilt.handler.TiltPostHandler;
 import java.net.InetAddress;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +37,7 @@ import tilt.constants.Service;
  * Handle a POST request
  * @author desmond
  */
-public class TiltTestHandler extends TiltHandler
+public class TiltTestHandler extends TiltPostHandler
 {
     String geoJSON;
     TextIndex text;
@@ -113,21 +113,6 @@ public class TiltTestHandler extends TiltHandler
         {
             throw new TiltException( e );
         }
-    }
-    /**
-     * Get the sender's IP-address (prevent DoS via too many uploads)
-     * @param request raw request
-     * @return the server'sIP as a string
-     */
-    private InetAddress getIPAddress( HttpServletRequest request ) 
-        throws Exception
-    {
-        String ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
-        if (ipAddress == null) {
-            ipAddress = request.getRemoteAddr();
-        }
-        InetAddress addr = InetAddress.getByName(ipAddress);
-        return addr;
     }
     /**
      * Create a HTML IMG element referring to the image we need

@@ -143,7 +143,7 @@ public class PictureRegistry
         if ( key != null )
             return map.get(key);
         else
-            throw new ImageException("Picture "+url+" not found");
+            return null;
     }
     /**
      * Update an individual picture object, using its url as an id

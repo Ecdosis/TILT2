@@ -562,7 +562,7 @@ function Tilt(docid,pageid) {
         var geo = $("#geojson").val();
         var json = JSON.stringify(geo);
         var text = $("#flow").text();
-        var obj = {geojson: json,pictype:"link",text:text,
+        var obj = {geojson: json, pictype:"link",text:text,
             docid:$("#documents").val(),
             pageid:$("#pages").val()};
         $.post('http://'+window.location.hostname+'/tilt/recognise/',obj,

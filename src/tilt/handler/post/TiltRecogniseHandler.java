@@ -20,26 +20,36 @@ package tilt.handler.post;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import tilt.constants.Params;
 import tilt.exception.TiltException;
 import tilt.image.Picture;
 import tilt.image.PictureRegistry;
-import tilt.exception.ImageException;
 import tilt.Utils;
-import tilt.handler.TiltHandler;
+import tilt.constants.ImageType;
+import tilt.handler.TiltPostHandler;
+import java.net.InetAddress;
 
 /**
  * Handle an Ajax request for geoJson data about a picture
  * @author desmond
  */
-public class TiltRecogniseHandler extends TiltHandler
+public class TiltRecogniseHandler extends TiltPostHandler
 {
     /** the image URL */
     String docid;
+    /** the image page id */
+    String pageid;
     /** the GeoJson we extract from the picture */
     String geoJson;
+    ImageType picType;
+    String geoJSON;
+    TextIndex text;
+    
     /**
-     * Handle a request for a GeoJon description of the text to image links
+     * Handle a request for geoJEON text-t-image links from editor
      * @param request the http request
      * @param response the http response
      * @param urn the remaining urn of the request
@@ -50,24 +60,45 @@ public class TiltRecogniseHandler extends TiltHandler
     {
         try
         {
-            String docId = request.getParameter(Params.DOCID);
-            String pageId = request.getParameter(Params.PAGEID);
-            if ( docId != null && pageId != null )
+            this.docid = request.getParameter(Params.DOCID);
+            this.pageid = request.getParameter(Params.PAGEID);
+            this.geoJSON = request.getParameter(Params.GEOJSON);
+            String textParam = request.getParameter( Params.TEXT );
+            if ( docid != null && pageid != null && geoJSON != null && textParam != null )
             {
-                this.docid = Utils.ensureSlash(docId)+pageId;
-                Picture p = null;
-                try
+                String url = Utils.getUrl(request.getServerName(),docid,pageid);
+                text = new TextIndex( textParam, "en_GB" );
+                Picture p = PictureRegistry.get(url);
+                if ( p == null )
                 {
-                    p = PictureRegistry.get(docid);
-                }
-                catch ( ImageException pe )
-                {
-                    throw new TiltException("Please do a POST first");
+                    picType = ImageType.read(request.getParameter(Params.PICTYPE));
+                    geoJSON = request.getParameter(Params.GEOJSON );
+                    Object obj = JSONValue.parse(geoJSON);
+                    if ( obj instanceof JSONObject )
+                    {
+                        JSONObject g = (JSONObject)obj;
+                        Options opts = new Options((JSONObject)g.get("properties"));
+                        JSONObject geometry = (JSONObject)g.get("geometry");
+                        if ( geometry != null && geometry.get("coordinates") 
+                            instanceof JSONArray )
+                        {
+                            InetAddress poster = getIPAddress(request);
+                            JSONArray cc = (JSONArray)geometry.get("coordinates");
+                            opts.setCoords(cc);
+                            p = new Picture( opts, url, text, poster);
+                            PictureRegistry.update( url, p );
+                            // it will be identified later by its url during GET
+                        }
+                        else
+                            throw new Exception("Invalid geoJSON");
+                    }
+                    else
+                        throw new Exception("Invalid geoJSON");
                 }
                 String geoJson = p.getGeoJson();
                 if ( geoJson != null )
                 {
-                    response.setContentType("text/plain;charset=UTF-8");
+                    response.setContentType("application/json;charset=UTF-8");
                     response.getWriter().println(geoJson);
                 }
                 else
