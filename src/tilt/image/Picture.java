@@ -266,7 +266,7 @@ public class Picture {
      * Convert from the original png file to greyscale png. Save original.
      * @throws ImageException 
      */
-    void convertToGreyscale() throws ImageException 
+    public void convertToGreyscale() throws ImageException 
     {
         try
         {
@@ -321,7 +321,7 @@ public class Picture {
      * http://ocropus.googlecode.com/svn/trunk/ocr-binarize/ocr-binarize-sauvola.cc
      * @throws Exception 
      */
-    void convertToTwoTone() throws ImageException 
+    public void convertToTwoTone() throws ImageException 
     {
         try
         {
@@ -460,7 +460,7 @@ public class Picture {
      * Convert to cleaned from twotone
      * @throws Exception 
      */
-    void convertToCleaned() throws ImageException 
+    public void convertToCleaned() throws ImageException 
     {
         try
         {
@@ -482,7 +482,7 @@ public class Picture {
      * Convert to cleaned from twotone
      * @throws Exception 
      */
-    void convertToBlurred() throws ImageException 
+    public void convertToBlurred() throws ImageException 
     {
         try
         {
@@ -501,10 +501,10 @@ public class Picture {
         }
     }
     /**
-     * Convert to show lines from cleaned
+     * Convert to show lines from blurred
      * @throws ImageException 
      */
-    void convertToBaselines() throws ImageException
+    public void convertToBaselines() throws ImageException
     {
         try
         {
@@ -528,7 +528,7 @@ public class Picture {
      * Convert to reduced lines from baselines
      * @throws ImageException 
      */
-    void convertToReduced() throws ImageException
+    public void convertToReduced() throws ImageException
     {
         try
         {
@@ -550,7 +550,7 @@ public class Picture {
      * Convert to show identified words
      * @throws ImageException 
      */
-    void convertToWords() throws ImageException 
+    public void convertToWords() throws ImageException 
     {
         try
         {
@@ -573,7 +573,7 @@ public class Picture {
      * Generate the text to image links
      * @throws ImageException 
      */
-    void convertToLinks() throws ImageException
+    public void convertToLinks() throws ImageException
     {
         if ( this.linked )
         {
@@ -707,10 +707,9 @@ public class Picture {
         try
         {
             // do this always, because the user will want it redone
-            convertToLinks();
             BufferedImage image = ImageIO.read(words);
-            double hScale = (coords[2][0].doubleValue()-coords[0][0].doubleValue())/100.0;
-            double vScale = (coords[3][1].doubleValue()-coords[1][1].doubleValue())/100.0;
+//            double hScale = (coords[2][0].doubleValue()-coords[0][0].doubleValue())/100.0;
+//            double vScale = (coords[3][1].doubleValue()-coords[1][1].doubleValue())/100.0;
 //            return page.toGeoJson( (int)Math.round(hScale*image.getWidth()), 
 //                (int)Math.round(vScale*image.getHeight()) );
             return page.toGeoJson( image.getWidth(),image.getHeight() );

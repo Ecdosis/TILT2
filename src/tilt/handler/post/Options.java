@@ -90,6 +90,6 @@ public class Options
      */
     public void setCoords( JSONArray array )
     {
-        this.coords = (JSONArray)((JSONArray)array).get(0);
+        this.coords = array;
     }
 }

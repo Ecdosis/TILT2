@@ -31,6 +31,8 @@ import tilt.Utils;
 import tilt.constants.ImageType;
 import tilt.handler.TiltPostHandler;
 import java.net.InetAddress;
+import calliope.core.database.*;
+import calliope.core.constants.Database;
 
 /**
  * Handle an Ajax request for geoJson data about a picture
@@ -70,7 +72,6 @@ public class TiltRecogniseHandler extends TiltPostHandler
                 Picture p = PictureRegistry.get(url);
                 if ( p == null )
                 {
-                    picType = ImageType.read(request.getParameter(Params.PICTYPE));
                     Object obj = JSONValue.parse(geoJson);
                     if ( obj instanceof JSONObject )
                     {
@@ -93,17 +94,67 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     else
                         throw new Exception("Invalid geoJSON");
                 }
-                String geoJson = p.getGeoJson();
-                if ( geoJson != null )
+                picType = ImageType.original;
+                response.setContentType("text/plain");
+                response.setCharacterEncoding("UTF-8");
+                float progress = 0.0f;
+                do
                 {
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().println(geoJson);
+                    switch ( picType )
+                    {
+                        case original:
+                            p.convertToGreyscale();
+                            picType = ImageType.greyscale;
+                            progress = 12.5f;
+                            break;
+                        case greyscale:
+                            p.convertToTwoTone();
+                            picType = ImageType.twotone;
+                            progress = 25.0f;
+                            break;
+                        case twotone:
+                            p.convertToCleaned();
+                            picType = ImageType.cleaned;
+                            progress = 37.5f;
+                            break;
+                        case cleaned:
+                            p.convertToBlurred();
+                            picType = ImageType.blurred;
+                            progress = 50.0f;
+                            break;
+                        case blurred:
+                            p.convertToBaselines();
+                            picType = ImageType.baselines;
+                            progress = 62.5f;
+                            break;
+                        case baselines:
+                            p.convertToWords();
+                            picType = ImageType.words;
+                            progress = 75.0f;
+                            break;
+                        case reduced:
+                            p.convertToReduced();
+                            picType = ImageType.reduced;
+                            progress = 87.5f;
+                            break;
+                        case words:
+                            p.convertToLinks();
+                            picType = ImageType.link;
+                            progress = 100.0f;
+                            break;
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    sb.append( Math.round(progress) );
+                    sb.append( " " );
+                    sb.append( picType.toString() );
+                    response.getWriter().println(sb.toString());
+                    response.getWriter().flush();
                 }
-                else
-                {
-                    response.getOutputStream().println("<p>docid "+
-                        docid+" not found</p>");
-                }
+                while ( picType != ImageType.link );
+                Connection conn = Connector.getConnection();
+                geoJson = p.getGeoJson();
+                conn.putToDb( Database.TILT, 
+                    Utils.ensureSlash(docid)+pageid, geoJson );
             }
             else
                 throw new Exception("Need a docid param: an image url!");
