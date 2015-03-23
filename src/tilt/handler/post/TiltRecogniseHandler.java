@@ -45,7 +45,6 @@ public class TiltRecogniseHandler extends TiltPostHandler
     /** the GeoJson we extract from the picture */
     String geoJson;
     ImageType picType;
-    String geoJSON;
     TextIndex text;
     
     /**
@@ -62,9 +61,9 @@ public class TiltRecogniseHandler extends TiltPostHandler
         {
             this.docid = request.getParameter(Params.DOCID);
             this.pageid = request.getParameter(Params.PAGEID);
-            this.geoJSON = request.getParameter(Params.GEOJSON);
+            this.geoJson = request.getParameter(Params.GEOJSON);
             String textParam = request.getParameter( Params.TEXT );
-            if ( docid != null && pageid != null && geoJSON != null && textParam != null )
+            if ( docid != null && pageid != null && geoJson != null && textParam != null )
             {
                 String url = Utils.getUrl(request.getServerName(),docid,pageid);
                 text = new TextIndex( textParam, "en_GB" );
@@ -72,8 +71,7 @@ public class TiltRecogniseHandler extends TiltPostHandler
                 if ( p == null )
                 {
                     picType = ImageType.read(request.getParameter(Params.PICTYPE));
-                    geoJSON = request.getParameter(Params.GEOJSON );
-                    Object obj = JSONValue.parse(geoJSON);
+                    Object obj = JSONValue.parse(geoJson);
                     if ( obj instanceof JSONObject )
                     {
                         JSONObject g = (JSONObject)obj;

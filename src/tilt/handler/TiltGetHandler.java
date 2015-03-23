@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import tilt.Utils;
 import tilt.test.Test;
-import tilt.editor.TiltEditor;
 import tilt.handler.get.*;
 /**
  * Handle a GET request for various image types, text, GeoJSON

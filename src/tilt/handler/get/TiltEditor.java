@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2015
  */     
 
-package tilt.editor;
+package tilt.handler.get;
 import html.HTML;
 import html.Element;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +25,7 @@ import tilt.exception.TiltException;
 import tilt.handler.TiltGetHandler;
 import tilt.constants.Params;
 import java.io.File;
+import java.util.HashSet;
 import html.Head;
 
 /**
@@ -34,11 +35,21 @@ import html.Head;
 public class TiltEditor extends TiltGetHandler 
 {
     HTML doc;
+    static HashSet<String> cssExceptions;
+    static HashSet<String> jsExceptions;
+    static
+    {
+        jsExceptions = new HashSet<String>();
+        jsExceptions.add("jquery-1.11.1.js");
+        jsExceptions.add("tilt.js");
+        cssExceptions = new HashSet<String>();
+        cssExceptions.add("post.css");
+    }
     /**
      * Add all the css or js files in the given directory to the header
      * @param suffix the file type suffix (minus the dot)
      */
-    void addFilesInDir( String suffix )
+    void addFilesInDir( String suffix, HashSet<String> exceptions )
     {
         Head h = doc.getHead();
         File parent1 = new File(System.getProperty("user.dir"));
@@ -55,9 +66,9 @@ public class TiltEditor extends TiltGetHandler
                 String name = css[i].getName();
                 if ( name.endsWith("."+suffix) )
                 {
-                    if ( suffix.equals("css") )
+                    if ( suffix.equals("css") && !exceptions.contains(name) )
                         h.addCssFile( "/tilt/static/"+suffix+"/"+name );
-                    else if ( suffix.equals("js") && !name.startsWith("jquery") && !name.equals("tilt.js") )
+                    else if ( suffix.equals("js") && !exceptions.contains(name) )
                         h.addScriptFile( "/tilt/static/"+suffix+"/"+name );
                 }
             }
@@ -73,8 +84,8 @@ public class TiltEditor extends TiltGetHandler
         Head h = doc.getHead();
         h.addEncoding("text/html; charset=UTF-8");
         h.addJQuery( "1.11.1", "/tilt/static/js", true );
-        addFilesInDir( "css" );
-        addFilesInDir( "js" );
+        addFilesInDir( "css", cssExceptions );
+        addFilesInDir( "js", jsExceptions );
     }
     /**
      * Tilt editor is a basic HTML document with an embedded script
