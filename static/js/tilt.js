@@ -466,6 +466,7 @@ function Tilt(docid,pageid) {
     this.getGeoJson = function( docid, pageid ) {
         var url = "http://"+window.location.hostname
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
+        console.log(url);
         $.get(url,function(data){
             $("#geojson").val(data);
         }).fail(function(){
@@ -559,18 +560,19 @@ function Tilt(docid,pageid) {
      * Send the current geojson and text to server for recognition
      */
     $("#recognise-button").click(function() {
+        // json in text form
         var json = $("#geojson").val();
-        //var json = JSON.stringify(geo);
         var text = $("#flow").text();
         var obj = {geojson: json, pictype:"link",text:text,
             docid:$("#documents").val(),
             pageid:$("#pages").val()};
         $.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
             function(data){
-                $.get('http://'+window.hostname+'/tilt/geojson/?docid='
+                $.get('http://'+window.location.hostname+'/tilt/geojson/?docid='
                 +$("#documents").val()+'&pageid='+$("#pages").val(),
                 function(data){
-                    
+                    // display progress bar
+                    console.log(data);
                 });
             }
         );
