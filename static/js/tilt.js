@@ -514,14 +514,14 @@ function Tilt(docid,pageid) {
         for (var key in obj) 
         {
             postData += "--"+boundary+"\r\n";
-            postData += "content-type: text/plain; charset=\"utf-8\"";
+            postData += "content-type: text/plain; charset=\"utf-8\"\r\n";
             postData += "content-disposition: form-data; name=\""
                 +key+"\"\r\n\r\n";
             postData += obj[key];
             postData += "\r\n";
         }
         postData = postData.substr(0,postData.length-2);
-        postData += "--\r\n"
+        postData += "\r\n--"+boundary+"--\r\n"
         return postData;
     };
     /**
@@ -613,7 +613,7 @@ function Tilt(docid,pageid) {
     $("#recognise-button").click(function() {
         // json in text form
         var json = $("#geojson").val();
-        var text = $("#flow").text();
+        var text = $("#flow").html().trim();
         var obj = {geojson: json, text:text, docid:$("#documents").val(),
             pageid:$("#pages").val()};
         var readSoFar=0;
@@ -622,8 +622,7 @@ function Tilt(docid,pageid) {
         var boundary = self.createBoundary();
         client.setRequestHeader("Content-type", "multipart/form-data; boundary="+boundary);
         var postData = self.composePostData( obj, boundary );
-        client.setRequestHeader("Content-Length", self.utf8ByteLength(postData) );
-        client.send();
+        client.send(postData);
         client.onreadystatechange = function(){
             // Ready state 3 means that data is ready
             if (client.readyState == 3) {
@@ -645,7 +644,7 @@ function Tilt(docid,pageid) {
                 else if ( client.status >= 300 )
                    console.log("Error:"+client.status);
             }
-            else if ( client.status >= 300 && clientreadyState==4 )
+            else if ( client.status >= 300 && client.readyState==4 )
                console.log("Error:"+client.status);
         };
         /*$.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
