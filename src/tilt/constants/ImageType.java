@@ -36,12 +36,12 @@ public enum ImageType
     blurred,
     /** cleaned image with lines draw over the top */
     baselines,
+    /** reduced lines */
+    reduced,
     /** original image with word shapes in alternating colours */
     words,
     /** original image and key to requesting linkage to text */
-    link,
-    /** reduced lines */
-    reduced;
+    link;
     /**
      * Convert a string into
      * @param str a string representation perhaps in upper or mixed case

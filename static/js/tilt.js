@@ -474,6 +474,57 @@ function Tilt(docid,pageid) {
         });
     };
     /**
+     * Generate a segment of a uuid
+     */
+    this.s4 = function() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16).substring(1);
+    };
+    /**
+     * Compute byte length of an entire string
+     */
+    this.utf8ByteLength = function( str ) {
+        var s = str.length;
+        for (var i=str.length-1; i>=0; i--) 
+        {
+            var code = str.charCodeAt(i);
+            if (code > 0x7f && code <= 0x7ff) s++;
+            else if (code > 0x7ff && code <= 0xffff) 
+                s+=2;
+            if (code >= 0xDC00 && code <= 0xDFFF) 
+                i--;
+        }
+        return s;
+    };
+    /**
+     * Create a uuid separator for a multipart post request
+     * @return a suitable boundary separator
+     */
+    this.createBoundary = function() {
+        return this.s4() + this.s4() + '-' + this.s4() + '-' + this.s4() + '-' +
+            this.s4() + '-' + this.s4() + this.s4() + this.s4();
+    };
+    /**
+     * Turn a plain javascript object into a postable data block
+     * @param obj an object with no recursive structures
+     * @param boundary the boundary separator between segments
+     */
+    this.composePostData = function( obj, boundary ) {
+        postData ="";
+        for (var key in obj) 
+        {
+            postData += "--"+boundary+"\r\n";
+            postData += "content-type: text/plain; charset=\"utf-8\"";
+            postData += "content-disposition: form-data; name=\""
+                +key+"\"\r\n\r\n";
+            postData += obj[key];
+            postData += "\r\n";
+        }
+        postData = postData.substr(0,postData.length-2);
+        postData += "--\r\n"
+        return postData;
+    };
+    /**
      * Toggle between honouring line-breaks and ignoring them
      */
     $("#justify-button").click(function()
@@ -565,7 +616,39 @@ function Tilt(docid,pageid) {
         var text = $("#flow").text();
         var obj = {geojson: json, text:text, docid:$("#documents").val(),
             pageid:$("#pages").val()};
-        $.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
+        var readSoFar=0;
+        client = new XMLHttpRequest();
+        client.open("POST", "http://"+window.location.hostname+"/tilt/recognise/");
+        var boundary = self.createBoundary();
+        client.setRequestHeader("Content-type", "multipart/form-data; boundary="+boundary);
+        var postData = self.composePostData( obj, boundary );
+        client.setRequestHeader("Content-Length", self.utf8ByteLength(postData) );
+        client.send();
+        client.onreadystatechange = function(){
+            // Ready state 3 means that data is ready
+            if (client.readyState == 3) {
+                // <300 is a successful return
+                if(client.status ==200) {
+                    var len = client.responseText.length-readSoFar;
+                    var num = client.responseText.substr(readSoFar,len);
+                    var numbers = num.split("\n");
+                    for ( var i=0;i<numbers.length;i++ )
+                    {
+                        if ( numbers[i].length > 0 )
+                        {
+                            var val = parseInt(numbers[i]);
+                            self.draw_slider( 100, val );
+                        }
+                    }
+                    readSoFar = client.responseText.length;
+                }
+                else if ( client.status >= 300 )
+                   console.log("Error:"+client.status);
+            }
+            else if ( client.status >= 300 && clientreadyState==4 )
+               console.log("Error:"+client.status);
+        };
+        /*$.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
             function(data){
                 $.get('http://'+window.location.hostname+'/tilt/geojson/?docid='
                 +$("#documents").val()+'&pageid='+$("#pages").val(),
@@ -574,7 +657,7 @@ function Tilt(docid,pageid) {
                     console.log(data);
                 });
             }
-        );
+        );*/
     });
     /**
      * Save geojson description to database

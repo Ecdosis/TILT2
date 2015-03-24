@@ -30,9 +30,17 @@ import tilt.image.PictureRegistry;
 import tilt.Utils;
 import tilt.constants.ImageType;
 import tilt.handler.TiltPostHandler;
+import tilt.exception.ImageException;
 import java.net.InetAddress;
 import calliope.core.database.*;
 import calliope.core.constants.Database;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.util.List;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.FileUploadException;
 
 /**
  * Handle an Ajax request for geoJson data about a picture
@@ -48,7 +56,99 @@ public class TiltRecogniseHandler extends TiltPostHandler
     String geoJson;
     ImageType picType;
     TextIndex text;
-    
+    void parseRequest( HttpServletRequest request ) throws FileUploadException, 
+        Exception
+    {
+        if ( ServletFileUpload.isMultipartContent(request) )
+        {
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            List<FileItem> items = upload.parseRequest(request);
+            for ( int i=0;i<items.size();i++ )
+            {
+                FileItem item = (FileItem) items.get( i );
+                if ( item.isFormField() )
+                {
+                    String fieldName = item.getFieldName();
+                    if ( fieldName != null )
+                    {
+                        String contents = item.getString();
+                        if ( fieldName.equals(Params.DOCID) )
+                            this.docid = contents;
+                        else if ( fieldName.equals(Params.PAGEID) )
+                            this.pageid = contents;
+                        else if ( fieldName.equals(Params.GEOJSON) )
+                            this.geoJson = contents;
+                        else if ( fieldName.equals(Params.TEXT) )
+                        {
+                            String textParam = contents;
+                            text = new TextIndex( textParam, "en_GB" );
+                        }
+                    }
+                }
+                // we're not uploading files
+            }
+        }       
+    }
+    void doRecogniseProgress( Picture p, HttpServletResponse response ) 
+        throws ImageException, IOException
+    {
+        picType = ImageType.original;
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+        float progress = 0.0f;
+        do
+        {
+            switch ( picType )
+            {
+                case original:
+                    p.convertToGreyscale();
+                    picType = ImageType.greyscale;
+                    progress = 12.5f;
+                    break;
+                case greyscale:
+                    p.convertToTwoTone();
+                    picType = ImageType.twotone;
+                    progress = 25.0f;
+                    break;
+                case twotone:
+                    p.convertToCleaned();
+                    picType = ImageType.cleaned;
+                    progress = 37.5f;
+                    break;
+                case cleaned:
+                    p.convertToBlurred();
+                    picType = ImageType.blurred;
+                    progress = 50.0f;
+                    break;
+                case blurred:
+                    p.convertToBaselines();
+                    picType = ImageType.baselines;
+                    progress = 62.5f;
+                    break;
+                case baselines:
+                    p.convertToWords();
+                    picType = ImageType.words;
+                    progress = 75.0f;
+                    break;
+                case reduced:
+                    p.convertToReduced();
+                    picType = ImageType.reduced;
+                    progress = 87.5f;
+                    break;
+                case words:
+                    p.convertToLinks();
+                    picType = ImageType.link;
+                    progress = 100.0f;
+                    break;
+            }
+            PrintWriter pw = response.getWriter();
+            pw.print( Math.round(progress) );
+            pw.print( " " );
+            pw.println( picType.toString() );
+            pw.flush();
+        } while ( picType != ImageType.link );
+    }
     /**
      * Handle a request for geoJEON text-t-image links from editor
      * @param request the http request
@@ -61,14 +161,11 @@ public class TiltRecogniseHandler extends TiltPostHandler
     {
         try
         {
-            this.docid = request.getParameter(Params.DOCID);
-            this.pageid = request.getParameter(Params.PAGEID);
-            this.geoJson = request.getParameter(Params.GEOJSON);
-            String textParam = request.getParameter( Params.TEXT );
-            if ( docid != null && pageid != null && geoJson != null && textParam != null )
+            parseRequest( request );
+            if ( docid != null && pageid != null && geoJson != null 
+                    && text != null )
             {
                 String url = Utils.getUrl(request.getServerName(),docid,pageid);
-                text = new TextIndex( textParam, "en_GB" );
                 Picture p = PictureRegistry.get(url);
                 if ( p == null )
                 {
@@ -94,65 +191,10 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     else
                         throw new Exception("Invalid geoJSON");
                 }
-                picType = ImageType.original;
-                response.setContentType("text/plain");
-                response.setCharacterEncoding("UTF-8");
-                float progress = 0.0f;
-                do
-                {
-                    switch ( picType )
-                    {
-                        case original:
-                            p.convertToGreyscale();
-                            picType = ImageType.greyscale;
-                            progress = 12.5f;
-                            break;
-                        case greyscale:
-                            p.convertToTwoTone();
-                            picType = ImageType.twotone;
-                            progress = 25.0f;
-                            break;
-                        case twotone:
-                            p.convertToCleaned();
-                            picType = ImageType.cleaned;
-                            progress = 37.5f;
-                            break;
-                        case cleaned:
-                            p.convertToBlurred();
-                            picType = ImageType.blurred;
-                            progress = 50.0f;
-                            break;
-                        case blurred:
-                            p.convertToBaselines();
-                            picType = ImageType.baselines;
-                            progress = 62.5f;
-                            break;
-                        case baselines:
-                            p.convertToWords();
-                            picType = ImageType.words;
-                            progress = 75.0f;
-                            break;
-                        case reduced:
-                            p.convertToReduced();
-                            picType = ImageType.reduced;
-                            progress = 87.5f;
-                            break;
-                        case words:
-                            p.convertToLinks();
-                            picType = ImageType.link;
-                            progress = 100.0f;
-                            break;
-                    }
-                    StringBuilder sb = new StringBuilder();
-                    sb.append( Math.round(progress) );
-                    sb.append( " " );
-                    sb.append( picType.toString() );
-                    response.getWriter().println(sb.toString());
-                    response.getWriter().flush();
-                }
-                while ( picType != ImageType.link );
+                doRecogniseProgress( p, response );
                 Connection conn = Connector.getConnection();
                 geoJson = p.getGeoJson();
+                // caller should now GET the geojson result
                 conn.putToDb( Database.TILT, 
                     Utils.ensureSlash(docid)+pageid, geoJson );
             }
