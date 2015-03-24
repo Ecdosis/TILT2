@@ -520,8 +520,7 @@ function Tilt(docid,pageid) {
             postData += obj[key];
             postData += "\r\n";
         }
-        postData = postData.substr(0,postData.length-2);
-        postData += "\r\n--"+boundary+"--\r\n"
+        postData += "--"+boundary+"--\r\n";
         return postData;
     };
     /**
@@ -613,7 +612,7 @@ function Tilt(docid,pageid) {
     $("#recognise-button").click(function() {
         // json in text form
         var json = $("#geojson").val();
-        var text = $("#flow").html().trim();
+        var text = $("#flow").html();
         var obj = {geojson: json, text:text, docid:$("#documents").val(),
             pageid:$("#pages").val()};
         var readSoFar=0;
@@ -647,16 +646,6 @@ function Tilt(docid,pageid) {
             else if ( client.status >= 300 && client.readyState==4 )
                console.log("Error:"+client.status);
         };
-        /*$.post('http://'+window.location.hostname+'/tilt/recognise/',obj,
-            function(data){
-                $.get('http://'+window.location.hostname+'/tilt/geojson/?docid='
-                +$("#documents").val()+'&pageid='+$("#pages").val(),
-                function(data){
-                    // display progress bar
-                    console.log(data);
-                });
-            }
-        );*/
     });
     /**
      * Save geojson description to database
