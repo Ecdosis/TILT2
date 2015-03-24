@@ -466,7 +466,6 @@ function Tilt(docid,pageid) {
     this.getGeoJson = function( docid, pageid ) {
         var url = "http://"+window.location.hostname
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
-        console.log(url);
         $.get(url,function(data){
             $("#geojson").val(data);
         }).fail(function(){
@@ -479,22 +478,6 @@ function Tilt(docid,pageid) {
     this.s4 = function() {
         return Math.floor((1 + Math.random()) * 0x10000)
           .toString(16).substring(1);
-    };
-    /**
-     * Compute byte length of an entire string
-     */
-    this.utf8ByteLength = function( str ) {
-        var s = str.length;
-        for (var i=str.length-1; i>=0; i--) 
-        {
-            var code = str.charCodeAt(i);
-            if (code > 0x7f && code <= 0x7ff) s++;
-            else if (code > 0x7ff && code <= 0xffff) 
-                s+=2;
-            if (code >= 0xDC00 && code <= 0xDFFF) 
-                i--;
-        }
-        return s;
     };
     /**
      * Create a uuid separator for a multipart post request
