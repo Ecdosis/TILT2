@@ -302,11 +302,16 @@ function Tilt(docid,pageid) {
     this.refreshPages = function() {
         var doc = $("#documents").val();
         $.get($("#host-record").val()+"/list?docid="+doc,function(data){
-            var pages = $("#pages");
-            pages.empty();
-            for ( var i=0;i<data.length;i++ )
+            if ( data.length==0 )
+                console.log("failed to load pages data");
+            else
             {
-                pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                var pages = $("#pages");
+                pages.empty();
+                for ( var i=0;i<data.length;i++ )
+                {
+                    pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                }
             }
         }).fail(function(){
             console.log("failed to create pages list");
@@ -617,8 +622,8 @@ function Tilt(docid,pageid) {
                     {
                         if ( numbers[i].length > 0 )
                         {
-                            var val = parseInt(numbers[i]);
-                            self.draw_slider( 100, val );
+                            console.log(numbers[i]);
+                            //self.draw_slider( 100, val );
                         }
                     }
                     readSoFar = client.responseText.length;

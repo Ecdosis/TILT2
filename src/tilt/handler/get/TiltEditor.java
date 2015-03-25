@@ -42,6 +42,7 @@ public class TiltEditor extends TiltGetHandler
         jsExceptions = new HashSet<String>();
         jsExceptions.add("jquery-1.11.1.js");
         jsExceptions.add("tilt.js");
+        jsExceptions.add("post.js");
         cssExceptions = new HashSet<String>();
         cssExceptions.add("post.css");
     }

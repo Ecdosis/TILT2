@@ -24,6 +24,8 @@ package tilt.constants;
  */
 public enum ImageType 
 {
+    /** before a picture can be viewed, it must be loaded */
+    load,
     /** original image unchanged by tilt */
     original,
     /** original image reduced to 256 shades of grey */
@@ -59,5 +61,31 @@ public enum ImageType
             it= original;
         }
         return it;
+    }
+    public String getMessage()
+    {
+        switch ( this )
+        {
+            case load:
+                return "loading image";
+            case original:
+                return "converting to greyscale";
+            case greyscale:
+                return "converting to twotone";
+            case twotone:
+                return "cleaning borders";
+            case cleaned:
+                return "applying Gaussian blur";
+            case blurred:
+                return "finding baselines";
+            case baselines:
+                return "removing duplicate baselines";
+            case reduced:
+                return "finding words";
+            case words:
+                return "linking word shapes to text";
+            case link: default:
+                return "done";
+        }
     }
 }

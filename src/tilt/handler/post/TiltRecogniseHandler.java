@@ -90,64 +90,78 @@ public class TiltRecogniseHandler extends TiltPostHandler
             }
         }       
     }
-    void doRecogniseProgress( Picture p, HttpServletResponse response ) 
+    /**
+     * Run through the recognition phases and send back progress messages
+     * @param p the picture to recognise
+     * @param response the http response to write progress to
+     * @param src the start imagetype
+     * @param dest the end-image type
+     * @throws ImageException
+     * @throws IOException 
+     */
+    void doRecogniseProgress( Picture p, HttpServletResponse response, 
+        ImageType src, ImageType dest ) 
         throws ImageException, IOException
     {
-        picType = ImageType.original;
+        picType = src;
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
-        float progress = 0.0f;
+        float nValues = (ImageType.values().length-1);
+        PrintWriter pw = response.getWriter();
         do
         {
+            float value = (float) picType.ordinal();
+            float progress = value*100.0f/nValues;
+            pw.print( Math.round(progress) );
+            pw.print( " " );
+            pw.println( picType.getMessage() );
+            pw.flush();
             switch ( picType )
             {
+                case load:
+                    p.load();
+                    picType = ImageType.original;
+                    break;
                 case original:
                     p.convertToGreyscale();
                     picType = ImageType.greyscale;
-                    progress = 12.5f;
                     break;
                 case greyscale:
                     p.convertToTwoTone();
                     picType = ImageType.twotone;
-                    progress = 25.0f;
                     break;
                 case twotone:
                     p.convertToCleaned();
                     picType = ImageType.cleaned;
-                    progress = 37.5f;
                     break;
                 case cleaned:
                     p.convertToBlurred();
                     picType = ImageType.blurred;
-                    progress = 50.0f;
                     break;
                 case blurred:
                     p.convertToBaselines();
                     picType = ImageType.baselines;
-                    progress = 62.5f;
                     break;
                 case baselines:
                     p.convertToWords();
                     picType = ImageType.words;
-                    progress = 75.0f;
                     break;
                 case reduced:
                     p.convertToReduced();
                     picType = ImageType.reduced;
-                    progress = 87.5f;
                     break;
                 case words:
                     p.convertToLinks();
                     picType = ImageType.link;
-                    progress = 100.0f;
                     break;
             }
-            PrintWriter pw = response.getWriter();
-            pw.print( Math.round(progress) );
-            pw.print( " " );
-            pw.println( picType.toString() );
+        } while ( picType != dest );
+        if ( picType == ImageType.link )
+        {
+            pw.print( "100 " );
+            pw.println( picType.getMessage() );
             pw.flush();
-        } while ( picType != ImageType.link );
+        }
     }
     /**
      * Handle a request for geoJEON text-t-image links from editor
@@ -182,6 +196,8 @@ public class TiltRecogniseHandler extends TiltPostHandler
                             JSONArray cc = (JSONArray)geometry.get("coordinates");
                             opts.setCoords(cc);
                             p = new Picture( opts, url, text, poster);
+                            doRecogniseProgress( p, response,
+                                ImageType.load,ImageType.original );
                             PictureRegistry.update( url, p );
                             // it will be identified later by its url during GET
                         }
@@ -191,7 +207,8 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     else
                         throw new Exception("Invalid geoJSON");
                 }
-                doRecogniseProgress( p, response );
+                doRecogniseProgress( p, response,ImageType.original, 
+                    ImageType.link );
                 Connection conn = Connector.getConnection();
                 geoJson = p.getGeoJson();
                 // caller should now GET the geojson result

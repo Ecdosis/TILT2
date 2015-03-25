@@ -82,23 +82,12 @@ public class Picture {
     {
         try
         {
-            URL netUrl = new URL( url );
             // use url as id for now
             id = url;
             this.text = text;
             this.poster = poster;
             // try to register the picture
             PictureRegistry.register( this, url );
-            // fetch picture from url
-            ReadableByteChannel rbc = Channels.newChannel(netUrl.openStream());
-            orig = File.createTempFile(PictureRegistry.PREFIX,
-                PictureRegistry.SUFFIX);
-            FileOutputStream fos = new FileOutputStream(orig);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            fos.close();
-            String mimeType = getFormatName();
-            if ( !mimeType.equals(PNG_TYPE) )
-                convertToPng();
             this.options = options;
             this.coords = new Double[4][2];
             for ( int i=0;i<4;i++ )
@@ -134,6 +123,31 @@ public class Picture {
             if ( words != null )
                 words.delete();
             // dispose of other temporary files here
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
+     * Fetch the image from a url and convert to png. Can take time.
+     * @throws ImageException 
+     */
+    public void load() throws ImageException
+    {
+        try
+        {
+            URL netUrl = new URL( this.id );
+            // fetch picture from url
+            ReadableByteChannel rbc = Channels.newChannel(netUrl.openStream());
+            orig = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            FileOutputStream fos = new FileOutputStream(orig);
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            fos.close();
+            String mimeType = getFormatName();
+            if ( !mimeType.equals(PNG_TYPE) )
+                convertToPng();
         }
         catch ( Exception e )
         {

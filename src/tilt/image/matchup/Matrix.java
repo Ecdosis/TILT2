@@ -214,74 +214,7 @@ public class Matrix
 //            System.out.println(qi);
 //        }
     }
-    /**
-     * Comparator for MoveItems.
-     */
-    class MoveComparator implements Comparator<MoveItem>
-    {
-        /**
-        * Compare two queue lines for y-position. Assume they don't cross.
-        * @param q1 the first line
-        * @param q2 the second line
-        * @return -1 if q1 is higher than q2, 0 if equal or 1 if greater
-        */
-        @Override
-        public int compare( MoveItem m1, MoveItem m2 )
-        {
-            if ( m1.move == Move.exch && m2.move==Move.exch )
-            {
-                if ( m1.y1<m2.y1 )
-                    return -1;
-                else if ( m1.y1 > m2.y1 )
-                    return 1;
-                else
-                {
-                    if( m1.y2 < m2.y2 )
-                        return -1;
-                    else if ( m1.y2 > m2.y2 )
-                        return 1;
-                    else
-                        return 0;
-                }
-            }
-            else if ( m1.move == Move.del && m2.move== Move.ins )
-            {
-                if ( m1.y1<m2.y2 )
-                    return -1;
-                else if ( m1.y1>m2.y2 )
-                    return 1;
-                else
-                    return 0;
-            }
-            else if ( m1.move == Move.ins && m2.move==Move.del )
-            {
-                if ( m1.y2<m2.y1 )
-                    return -1;
-                else if ( m1.y2>m2.y1 )
-                    return 1;
-                else
-                    return 0;
-            }
-            else if ( m1.move==Move.del )
-            {
-                if ( m1.y1<m2.y1 )
-                    return -1;
-                else if ( m1.y1 > m2.y1 )
-                    return 1;
-                else
-                    return 0;
-            }
-            else //m1.move==Move.ins
-            {
-                if ( m1.y2<m2.y2 )
-                    return -1;
-                else if ( m1.y2 > m2.y2 )
-                    return 1;
-                else
-                    return 0;
-            }
-        }
-    }
+    
     // now we have a map of minimal unique alignments
         // each alignment will be an exchange
         // and all the remaining elements of list1 are deletions
@@ -315,7 +248,8 @@ public class Matrix
         // now sort the moves by increasing y
         MoveItem[] array = new MoveItem[moves.size()];
         moves.toArray(array);
-        Arrays.sort(array,new MoveComparator());
+        System.out.println(array.length);
+        Arrays.sort(array);
         Move[] actual = new Move[array.length];
         for ( int i=0;i<array.length;i++ )
             actual[i] = array[i].move;
