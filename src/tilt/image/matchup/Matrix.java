@@ -248,7 +248,6 @@ public class Matrix
         // now sort the moves by increasing y
         MoveItem[] array = new MoveItem[moves.size()];
         moves.toArray(array);
-        System.out.println(array.length);
         Arrays.sort(array);
         Move[] actual = new Move[array.length];
         for ( int i=0;i<array.length;i++ )

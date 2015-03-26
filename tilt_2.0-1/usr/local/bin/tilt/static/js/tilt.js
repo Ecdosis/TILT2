@@ -191,6 +191,33 @@ function Overlay()
         return this.div.toString();
     };
 }
+function Progress()
+{
+    this.div = new Element("div");
+    this.div.addAttribute("id","progress");
+    var message = new Element("p");
+    message.addAttribute("id","progress_message");
+    var progress_bar = new Element("div");
+    progress_bar.addAttribute("id","progress_bar");
+    var slider = new Element("div");
+    slider.addAttribute("id","szlider");
+    var sliderbar = new Element("div");
+    sliderbar.addAttribute("id","szliderbar");
+    var szazalek = new Element("div");
+    szazalek.addAttribute,("id","szazalek");
+    slider.addElement(sliderbar);
+    slider.addElement(szazalek);
+    progress_bar.addElement(message);
+    progress_bar.addElement(slider);
+    this.div.addElement(progress_bar);
+    /**
+     * Convert the entire overlay to a string of HTML
+     * @return a HTMLstring being the overlay contents
+     */
+    this.toString = function() {
+        return this.div.toString();
+    };
+}
 /**
  * Here we handle the container resizing and toolbar events.
  * @param docid initial doument identifier or "null"
@@ -302,11 +329,16 @@ function Tilt(docid,pageid) {
     this.refreshPages = function() {
         var doc = $("#documents").val();
         $.get($("#host-record").val()+"/list?docid="+doc,function(data){
-            var pages = $("#pages");
-            pages.empty();
-            for ( var i=0;i<data.length;i++ )
+            if ( data.length==0 )
+                console.log("failed to load pages data");
+            else
             {
-                pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                var pages = $("#pages");
+                pages.empty();
+                for ( var i=0;i<data.length;i++ )
+                {
+                    pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                }
             }
         }).fail(function(){
             console.log("failed to create pages list");
@@ -466,7 +498,6 @@ function Tilt(docid,pageid) {
     this.getGeoJson = function( docid, pageid ) {
         var url = "http://"+window.location.hostname
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
-        console.log(url);
         $.get(url,function(data){
             $("#geojson").val(data);
         }).fail(function(){
@@ -479,22 +510,6 @@ function Tilt(docid,pageid) {
     this.s4 = function() {
         return Math.floor((1 + Math.random()) * 0x10000)
           .toString(16).substring(1);
-    };
-    /**
-     * Compute byte length of an entire string
-     */
-    this.utf8ByteLength = function( str ) {
-        var s = str.length;
-        for (var i=str.length-1; i>=0; i--) 
-        {
-            var code = str.charCodeAt(i);
-            if (code > 0x7f && code <= 0x7ff) s++;
-            else if (code > 0x7ff && code <= 0xffff) 
-                s+=2;
-            if (code >= 0xDC00 && code <= 0xDFFF) 
-                i--;
-        }
-        return s;
     };
     /**
      * Create a uuid separator for a multipart post request
@@ -522,6 +537,33 @@ function Tilt(docid,pageid) {
         }
         postData += "--"+boundary+"--\r\n";
         return postData;
+    };
+    /** 
+     * Update the progress bar and its message
+     * @param client the XHttpClient 
+     * @param readSoFar number of chars read so far
+     */
+    this.updateProgress = function( client, readSoFar ) {
+        var len = client.responseText.length-readSoFar;
+        var num = client.responseText.substr(readSoFar,len);
+        var numbers = num.split("\n");
+        for ( var i=0;i<numbers.length;i++ )
+        {
+            if ( numbers[i].length > 0 )
+            {
+                var parts = numbers[i].split(" ");
+                if ( parts != undefined && parts.length>0 )
+                {
+                    var val = parseInt(parts[0]);
+                    var rest = parts.slice(1);
+                    var text_message = rest.join(" ");
+                    $("#progress_message").text(text_message);
+                    var percent = Math.round((val*100)/100);
+                    jQuery("#szliderbar").css("width",percent+"%");
+                }
+            }
+        }
+        return client.responseText.length;
     };
     /**
      * Toggle between honouring line-breaks and ignoring them
@@ -622,29 +664,35 @@ function Tilt(docid,pageid) {
         client.setRequestHeader("Content-type", "multipart/form-data; boundary="+boundary);
         var postData = self.composePostData( obj, boundary );
         client.send(postData);
+        var progress = $("#progress");
+        //self.refreshList();
+        var visibility = progress.css("visibility","visible");
         client.onreadystatechange = function(){
             // Ready state 3 means that data is ready
-            if (client.readyState == 3) {
-                // <300 is a successful return
-                if(client.status ==200) {
-                    var len = client.responseText.length-readSoFar;
-                    var num = client.responseText.substr(readSoFar,len);
-                    var numbers = num.split("\n");
-                    for ( var i=0;i<numbers.length;i++ )
-                    {
-                        if ( numbers[i].length > 0 )
-                        {
-                            var val = parseInt(numbers[i]);
-                            self.draw_slider( 100, val );
-                        }
-                    }
-                    readSoFar = client.responseText.length;
+            if( client.readyState == 4 )
+            {
+                if ( client.status >= 300 )
+                    console.log("Error:"+client.status);
+                else
+                {
+                    readSoFar = self.updateProgress(client,readSoFar);
+                    setTimeout(function(){
+                        $("#progress").css("visibility","hidden");
+                    }, 1000);
+                }
+                
+            }
+            else if (client.readyState == 3) 
+            {
+                if (client.status ==200) 
+                {
+                    readSoFar = self.updateProgress(client,readSoFar);
                 }
                 else if ( client.status >= 300 )
+                {
                    console.log("Error:"+client.status);
+                }
             }
-            else if ( client.status >= 300 && client.readyState==4 )
-               console.log("Error:"+client.status);
         };
     });
     /**
@@ -748,6 +796,7 @@ $(document).ready(function(){
     {
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
+        content.append( new Progress().toString() );
         content.append('<textarea id="geojson"></textarea>');
         $("#pages").empty();
         $("#documents").empty();
