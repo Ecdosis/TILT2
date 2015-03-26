@@ -160,7 +160,6 @@ public class TiltRecogniseHandler extends TiltPostHandler
         {
             pw.print( "100 " );
             pw.println( picType.getMessage() );
-            pw.flush();
         }
     }
     /**
