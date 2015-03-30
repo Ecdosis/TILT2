@@ -225,6 +225,8 @@ function Progress()
  */
 function Tilt(docid,pageid) {
     var self = this;
+	/** the canvas object */
+	this.canvas = undefined;
     /**
      * Scale image
      * @param factor the mag factor
@@ -500,6 +502,11 @@ function Tilt(docid,pageid) {
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
         $.get(url,function(data){
             $("#geojson").val(data);
+			//console.log(data);
+            if ( this.canvas == undefined )
+				this.canvas = new Canvas("tilt",$("#image").height(),
+				$("#image").width());
+			this.canvas.reload($("#geojson").val());
         }).fail(function(){
             console.log("Failed to load geojson");
         });
@@ -546,6 +553,8 @@ function Tilt(docid,pageid) {
     this.updateProgress = function( client, readSoFar ) {
         var len = client.responseText.length-readSoFar;
         var num = client.responseText.substr(readSoFar,len);
+        if (num.length <= 0 )
+            num = client.responseText;
         var numbers = num.split("\n");
         for ( var i=0;i<numbers.length;i++ )
         {
@@ -658,7 +667,7 @@ function Tilt(docid,pageid) {
         var obj = {geojson: json, text:text, docid:$("#documents").val(),
             pageid:$("#pages").val()};
         var readSoFar=0;
-        client = new XMLHttpRequest();
+        var client = new XMLHttpRequest();
         client.open("POST", "http://"+window.location.hostname+"/tilt/recognise/");
         var boundary = self.createBoundary();
         client.setRequestHeader("Content-type", "multipart/form-data; boundary="+boundary);
@@ -668,20 +677,25 @@ function Tilt(docid,pageid) {
         //self.refreshList();
         var visibility = progress.css("visibility","visible");
         client.onreadystatechange = function(){
-            // Ready state 3 means that data is ready
+            // readyState 4 means that the flow has ended
             if( client.readyState == 4 )
             {
                 if ( client.status >= 300 )
+                {
                     console.log("Error:"+client.status);
+                    $("#progress").css("visibility","hidden");
+                }
                 else
                 {
                     readSoFar = self.updateProgress(client,readSoFar);
                     setTimeout(function(){
                         $("#progress").css("visibility","hidden");
+                        self.getGeoJson($("#documents").val(),$("#pages").val());
                     }, 1000);
                 }
                 
             }
+            // readyState 3 means that data is ready
             else if (client.readyState == 3) 
             {
                 if (client.status ==200) 

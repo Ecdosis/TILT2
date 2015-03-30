@@ -9,6 +9,7 @@ function QuadTree( x, y, width, height )
 {
     this.boundary = new Rect(x,y,width,height);
     this.points = new Array();
+	this.polygons = undefined;
     this.distance = function(pt1,pt2) {
         var xDiff = Math.abs(pt1.x-pt2.x);
         var yDiff= Math.abs(pt1.y-pt2.y);
@@ -350,5 +351,11 @@ function QuadTree( x, y, width, height )
      this.updatePt = function( pt ){
         this.removePt(pt);
         this.addPt( pt );
-    };      
+    };     
+    this.width = function() {
+        return this.boundary.width-this.boundary.x;
+    };
+    this.height = function() {
+        return this.boundary.height-this.boundary.y;
+    }; 
 }

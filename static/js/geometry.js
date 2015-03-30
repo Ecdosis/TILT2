@@ -29,7 +29,7 @@ function Point(x,y)
        return this.x*v.x+this.y*v.y;
     };
     this.times = function(factor) {
-        return new Point(Math.round(this.x*factor),Math.round(this.y*factor));
+        return new Point(this.x*factor,this.y*factor);
     };
     this.crossProduct = function( b ){
         return this.x*b.y-b.x*this.y;
@@ -117,6 +117,17 @@ function Rect( x, y, width, height )
     this.containsPt = function( pt ) {
         return pt.x >= this.x && pt.y >= this.y 
         && pt.x <= this.x+this.width && pt.y<= this.y+this.height;
+    };
+    /**
+     * Apply a scale to the rectangle
+     * @param dx the xfactor scale
+     * @parma dy the yfactor scale
+     */
+    this.scale = function() {
+        this.width *= dx;
+        this.height *= dy;
+        this.x *= dx;
+        this.y *= dy;
     };
 }
 /**
@@ -328,7 +339,7 @@ function Polygon( pts, id )
     for ( var i=0;i<pts.length;i++ )
     {
         var pt = new Point(pts[i].x,pts[i].y);
-        this.points[this.points.length] = pt;
+        this.points.push(pt);
     }
     /**
      * Get the points of the polygon
@@ -541,9 +552,9 @@ function Polygon( pts, id )
      * @param pt the point near the edge
      * @return true if it is else false
      */
-	this.ptOnEdge = function(pt) {
+    this.ptOnEdge = function(pt) {
         this.pos = undefined;
-    	for ( var i=0;i<this.points.length-1;i++ )
+        for ( var i=0;i<this.points.length-1;i++ )
         {
             var seg = new Segment(this.points[i],this.points[i+1]);
             var dist = seg.distFromLine(pt);
@@ -563,17 +574,16 @@ function Polygon( pts, id )
      * @return a new point on the line being closest to c
      */
     this.closestPt = function( a, b, c ) {
-		var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
-		var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
-		var r = r_num / r_den;
-		return new Point(Math.round(a.x + r*(b.x-a.x)), 
-            Math.round(a.y + r*(b.y-a.y)) );
+        var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
+        var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
+        var r = r_num / r_den;
+        return new Point(a.x + r*(b.x-a.x), a.y + r*(b.y-a.y) );
     };
-	/**
+    /**
      * Add a point to the polygon after test for ptOnEdgeor otherwise
      * @param pt the point to add
      */
-	this.addPt = function(pt) {
+    this.addPt = function(pt) {
         // have we just called ptOnEdge?
         if ( this.pos != undefined )
         {
@@ -587,7 +597,7 @@ function Polygon( pts, id )
         else    // otherwise
             this.points.push( pt );
         return pt;
-	};
+    };
     /**
      * Does a line intersect with this polygon and if so where
      * @param S the segment intersecting with us

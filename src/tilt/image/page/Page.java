@@ -254,23 +254,38 @@ public class Page
         }
     }
     /**
+     * Remove any lines that no longer contain polygons
+     * @param list the list of lines m
+     * @return the pruned list
+     */
+    private ArrayList pruneLineList( ArrayList list )
+    {
+        boolean[] remove = new boolean[list.size()];
+        for ( int i=0;i<list.size();i++ )
+        {
+            Line l = (Line)list.get(i);
+            if ( l.shapes.size() == 0 )
+                remove[i] = true;
+        }
+        for ( int j=remove.length-1;j>=0;j-- )
+            if ( remove[j] )
+                list.remove(j);
+        return list;
+    }
+    /**
      * Ensure each shape is only on the line that best suits it
      */
     public void mergeLines()
     {
-//        for ( int i=0;i<lines.size();i++ )
-//        {
-//            Line l = lines.get(i);
-//            if ( l.countShapes()== 0 )
-//                System.out.println("0");
-//        }
         Set<Polygon> keys = map.keySet();
         Iterator<Polygon> iter = keys.iterator();
         while ( iter.hasNext() )
         {
             Polygon key = iter.next();
+            // list contains lines to which the polygon belongs
             ArrayList<Line> list = map.get( key );
-            if ( list.size() > 1 )
+            list = pruneLineList(list);
+            if ( list.size() > 1  )
             {
                 Point centre = key.getCentroid();
                 int[][] deviations = new int[list.size()][];
@@ -278,6 +293,9 @@ public class Page
                 {
                     Point[] centroids = list.get(i).getCentroids();
                     deviations[i] = new int[centroids.length];
+                    // NB there may be NO centroids left on the line
+                    // since we may have already removed the last polygon
+                    // compute the distances from the line to the polygon centre
                     for ( int j=0;j<centroids.length;j++ )
                         deviations[i][j] = Math.abs(centre.y-centroids[j].y);
                     Arrays.sort( deviations[i] );
