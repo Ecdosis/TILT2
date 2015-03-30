@@ -68,9 +68,9 @@ function Rect( x, y, width, height )
     /**
      * Dump this rectangle to the console
      */
-    this.print = function(){
-        console.log("x="+this.x+",y="+this.y+",width="
-        +this.width+",height="+this.height);
+    this.toString = function(){
+        return"x="+this.x+",y="+this.y+",width="
+        +this.width+",height="+this.height;
     };
     /**
      * Outset/inset this rectangle
@@ -580,7 +580,7 @@ function Polygon( pts, id )
         return new Point(a.x + r*(b.x-a.x), a.y + r*(b.y-a.y) );
     };
     /**
-     * Add a point to the polygon after test for ptOnEdgeor otherwise
+     * Add a point to the polygon after test for ptOnEdge or otherwise
      * @param pt the point to add
      */
     this.addPt = function(pt) {

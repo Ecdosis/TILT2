@@ -684,9 +684,12 @@ public class Line implements Comparable<Line>
     void removeShape( Polygon pg )
     {
         int index = shapes.indexOf(pg);
-        if ( index < words.size() )
-            words.remove( index );
-        shapes.remove( index );
+        if ( index != -1 )
+        {
+            if ( index < words.size() )
+                words.remove( index );
+            shapes.remove( index );
+        }
     }
     /**
      * Add a shape to the line

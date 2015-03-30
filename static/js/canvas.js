@@ -170,7 +170,7 @@ function Canvas( id, wt, ht )
      * Handle key-down events for whole document
      */
     $(document).keydown(function(event){
-        if ( self.polygon.highlightPt != undefined )
+        if ( self.polygon != undefined && self.polygon.highlightPt != undefined )
             if ( event.which == 8 || event.which == 46 )
             {
                 self.qt.removePt(self.polygon.highlightPt);
@@ -221,15 +221,13 @@ function Canvas( id, wt, ht )
         if ( gjDoc.features != undefined )
         {
             var lines = gjDoc.features;
-            for ( var i=9;i<10/*lines.length*/;i++ )
+            for ( var i=0;i<lines.length;i++ )
             {
-                console.log("processing line "+i);
                 if ( lines[i].features != undefined )
                 {
                     var polys = lines[i].features;
                     for ( var j=0;j<polys.length;j++ )
                     {
-                        console.log("processing polygon "+j);
                         if ( polys[j].geometry!=undefined
                             &&polys[j].geometry.coordinates!=undefined)
                         {

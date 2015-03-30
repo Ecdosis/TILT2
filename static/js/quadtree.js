@@ -34,11 +34,13 @@ function QuadTree( x, y, width, height )
             {
                 if ( this.points.length < 4 )
                 {
-                    this.points[this.points.length] = pt;
+                    this.points.push( pt );
                     return true;
                 }
                 else
+                {
                     this.subdivide();
+                }
             }
             if ( this.nw.addPt(pt) )
                 return true;
@@ -124,12 +126,12 @@ function QuadTree( x, y, width, height )
         return this.boundary.contains(pt);
     };
     /**
-     * We are full. Split into four equal quadrants, and reassign points
+     * Split into four equal quadrants, and reassign points, polygons
      */
     this.subdivide = function() {
         // precompute x,y of se quadrant
-        var xSplit = Math.floor(this.boundary.width/2)+this.boundary.x;
-        var ySplit = Math.floor(this.boundary.height/2)+this.boundary.y;
+        var xSplit = this.boundary.width/2+this.boundary.x;
+        var ySplit = this.boundary.height/2+this.boundary.y;
         // create the four sub-trees
         this.nw = new QuadTree(this.boundary.x,this.boundary.y,
             xSplit-this.boundary.x,
@@ -149,18 +151,13 @@ function QuadTree( x, y, width, height )
             var pt = this.points[i];
             var res;
             if ( this.nw.contains(pt) )
-                res = this.nw.addPt(pt);
+                this.nw.points.push(pt);
             else if ( this.sw.contains(pt) )
-                res = this.sw.addPt(pt);
+                this.sw.points.push(pt);
             else if ( this.ne.contains(pt) )
-                res= this.ne.addPt(pt);
+                this.ne.points.push(pt);
             else
-                res = this.se.addPt(pt);
-            if ( !res )
-            {
-                console.log("failed to add point "+pt.x+","+pt.y);
-                break;
-            }
+                this.se.points.push(pt);
         }
         // clear residual points
         this.points = undefined;
@@ -258,16 +255,16 @@ function QuadTree( x, y, width, height )
      * Add a polygon to this quadtree (or quadrant)
      * @param pg the polygon
      */
-    this.addPolygon = function(pg) {
+    this.addPolygon = function(pg) {http://www.bbc.com/news
         // add the points
         var pts = pg.points;
         for ( var i=0;i<pts.length;i++ )
         {
             if ( !this.addPt(pts[i]) )
-                console.log("failed to add point "+pt.x+","+pt.y);
+                console.log("failed to add point "+pts[i].x+","+pts[i].y);
         }
         // now add the polygon to the quadrant's list
-        this.addPolygonToQuadrant(pg);
+        //this.addPolygonToQuadrant(pg);
     };
     /**
      * Remove a polygon from the quadrant (not its points)
@@ -280,7 +277,7 @@ function QuadTree( x, y, width, height )
             {
                 if ( this.polygons[i]== pg )
                 {
-                    this.polygons.splice(i,1);
+                    this.polygons.splice(i,1);http://www.bbc.com/news
                     break;
                 }
             }

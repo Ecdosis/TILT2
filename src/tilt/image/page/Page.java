@@ -415,7 +415,7 @@ public class Page
             }
         }
     }
-     /**
+    /**
      * Print the word shapes over the top of the original image
      * @param original the original raster to write to
      */
