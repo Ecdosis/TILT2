@@ -18,6 +18,7 @@ function Canvas( id, wt, ht )
     this.upPt = undefined;
     // reference to the Canvas object
     var self = this;
+    console.log($("#"+self.id).width());
     /**
      * Handle all mouse-moved events inside the canvas 
      */
