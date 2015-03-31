@@ -18,153 +18,170 @@ function Canvas( id, wt, ht )
     this.upPt = undefined;
     // reference to the Canvas object
     var self = this;
+    // remove any existing event handlers
+    $("#"+this.id).off();
     /**
      * Handle all mouse-moved events inside the canvas 
      */
     $("#"+self.id).mousemove(function( event ) {
-        var canvas = "#"+self.id;
-        var offset = $(canvas).offset();
-        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
-        if ( !self.polygon.anchored )
+        if ( self.polygon != undefined )
         {
-            var ctx = $(canvas)[0].getContext("2d");
-            if ( self.polygon.pointInPoly(pt) )
-                self.polygon.drawPolygon(ctx);
-            else
+            var canvas = "#"+self.id;
+            var offset = $(canvas).offset();
+            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            if ( !self.polygon.anchored )
             {
-                self.polygon.erase(ctx);
-                var newPoly = self.qt.pointInPolygon(pt);
-                if ( newPoly )
-                    self.polygon = newPoly;
+                var ctx = $(canvas)[0].getContext("2d");
+                if ( self.polygon.pointInPoly(pt) )
+                    self.polygon.drawPolygon(ctx);
+                else
+                {
+                    self.polygon.erase(ctx);
+                    var newPoly = self.qt.pointInPolygon(pt);
+                    if ( newPoly )
+                        self.polygon = newPoly;
+                }
             }
-        }
-        else if ( self.polygon.dragging() )
-        {
-            var quad = self.qt.getQuad(self.polygon.dragPt);
-            self.polygon.dragTo(pt);
-            quad.removePt(self.polygon.dragPt);
-            self.qt.addPt(self.polygon.dragPt);
-        }
-        else if ( self.downPt != undefined && self.polygon.anchored 
-            && !self.polygon.pointInPoly(self.downPt) )
-        {
-            var ctx = $(canvas)[0].getContext("2d");
-            if ( self.upPt != undefined )
+            else if ( self.polygon.dragging() )
             {
-                var r = self.clipRect();
+                var quad = self.qt.getQuad(self.polygon.dragPt);
+                self.polygon.dragTo(pt);
+                quad.removePt(self.polygon.dragPt);
+                self.qt.addPt(self.polygon.dragPt);
+            }
+            else if ( self.downPt != undefined && self.polygon.anchored 
+                && !self.polygon.pointInPoly(self.downPt) )
+            {
+                var ctx = $(canvas)[0].getContext("2d");
+                if ( self.upPt != undefined )
+                {
+                    var r = self.clipRect();
+                    ctx.save();
+                    ctx.rect(r.x,r.y,r.width,r.height);
+                    ctx.clip();
+                    self.polygon.redraw(ctx);
+                    ctx.restore();
+                }
                 ctx.save();
-                ctx.rect(r.x,r.y,r.width,r.height);
-                ctx.clip();
-                self.polygon.redraw(ctx);
+                ctx.beginPath();
+                ctx.moveTo(self.downPt.x,self.downPt.y);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([2,3]);
+                ctx.lineTo(pt.x,pt.y);
+                ctx.stroke();
                 ctx.restore();
+                self.upPt = pt;
             }
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(self.downPt.x,self.downPt.y);
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([2,3]);
-            ctx.lineTo(pt.x,pt.y);
-            ctx.stroke();
-            ctx.restore();
-            self.upPt = pt;
         }
     });
     /**
      * Handle all mouse-down events inside the canvas 
      */
     $("#"+this.id).mousedown(function(event) {
-        var canvas = "#"+self.id;
-        var offset = $(canvas).offset();
-        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
-        if ( self.polygon.anchored )
+        if ( self.polygon != undefined )
         {
-            var inside = self.polygon.pointInPoly(pt);
-            var closest = self.qt.hasPoint(pt,undefined);
-            var dist = (closest!=undefined)?self.qt.distance(closest,pt):Number.MAX_VALUE;
-            if ( dist<=self.polygon.radius )
+            var canvas = "#"+self.id;
+            var offset = $(canvas).offset();
+            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            if ( self.polygon.anchored )
             {
-                self.polygon.startDrag(closest);
-            }
-            else if ( self.polygon.ptOnEdge(pt) )
-            {
-                var newPt = self.polygon.addPt(pt);
-                self.qt.addPt(newPt);
-                self.qt.updatePolygon(self.polygon);
-            }
-            else 
-            {
-                if ( inside )
+                var inside = self.polygon.pointInPoly(pt);
+                var closest = self.qt.hasPoint(pt,undefined);
+                var dist = (closest!=undefined)?self.qt.distance(closest,pt):Number.MAX_VALUE;
+                if ( dist<=self.polygon.radius )
                 {
-                    self.polygon.setAnchorNormal();
+                    self.polygon.startDrag(closest);
                 }
-                self.upPt= undefined;
+                else if ( self.polygon.ptOnEdge(pt) )
+                {
+                    var newPt = self.polygon.addPt(pt);
+                    self.qt.addPt(newPt);
+                    self.qt.updatePolygon(self.polygon);
+                }
+                else
+                {
+                    if ( inside )
+                    {
+                        self.polygon.setAnchorNormal();
+                    }
+                    self.upPt= undefined;
+                }
+                self.downPt = pt;
             }
-            self.downPt = pt;
+            else
+            {
+                self.polygon.anchored = self.polygon.pointInPoly(pt);
+                if ( self.polygon.anchored )
+                {
+                    var ctx = $(canvas)[0].getContext("2d");
+                    self.polygon.drawControlPoints(ctx);
+                }
+            }
         }
         else
         {
-            self.polygon.anchored = self.polygon.pointInPoly(pt);
-            if ( self.polygon.anchored )
-            {
-                var ctx = $(canvas)[0].getContext("2d");
-                self.polygon.drawControlPoints(ctx);
-            }
+            self.polygon = self.qt.pointInPolygon(pt);
+            if ( self.polygon != undefined )
+                self.polygon.anchored = true;
         }
     });
     $("#"+this.id).mouseup(function(event) {
-        var canvas = "#"+self.id;
-        var offset = $(canvas).offset();
-        var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
-        var closest = self.qt.hasPoint(pt,undefined);
-        //this stops endDrag from being called
-        if ( closest!=undefined && closest.equals(self.polygon.dragPt) )
-            self.polygon.setHighlightPt(closest);
-        else if ( self.polygon.dragging() )
+        if ( self.polygon != undefined )
         {
-            var quad = self.qt.getQuad(self.polygon.dragPt);
-            if ( quad != undefined )
+            var canvas = "#"+self.id;
+            var offset = $(canvas).offset();
+            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var closest = self.qt.hasPoint(pt,undefined);
+            //this stops endDrag from being called
+            if ( closest!=undefined && closest.equals(self.polygon.dragPt) )
+                self.polygon.setHighlightPt(closest);
+            else if ( self.polygon.dragging() )
             {
-                quad.removePt(self.polygon.dragPt);
-                self.polygon.dragTo(pt);
-                self.qt.addPt(self.polygon.dragPt);
-                self.polygon.endDrag(qt);
+                var quad = self.qt.getQuad(self.polygon.dragPt);
+                if ( quad != undefined )
+                {
+                    quad.removePt(self.polygon.dragPt);
+                    self.polygon.dragTo(pt);
+                    self.qt.addPt(self.polygon.dragPt);
+                    self.polygon.endDrag(qt);
+                }
+                else
+                    console.log("quad for "+self.polygon.dragPt.x
+                    +":"+self.polygon.y+" is undefined");
             }
-            else
-                console.log("quad for "+self.polygon.dragPt.x
-                +":"+self.polygon.y+" is undefined");
-        }
-        else if ( self.downPt != undefined )
-        {
-             var upInPoly = self.polygon.pointInPoly(pt);
-             if ( !upInPoly )
-             {
-                 if ( self.downPt.equals(pt) )
+            else if ( self.downPt != undefined )
+            {
+                 var upInPoly = self.polygon.pointInPoly(pt);
+                 if ( !upInPoly )
                  {
-                     var ctx = $(canvas)[0].getContext("2d");
-                     self.polygon.erase(ctx);
-                     self.polygon.anchored = false;
+                     if ( self.downPt.equals(pt) )
+                     {
+                         var ctx = $(canvas)[0].getContext("2d");
+                         self.polygon.erase(ctx);
+                         self.polygon.anchored = false;
+                     }
                  }
-             }
-        }
-        if ( self.downPt != undefined && self.upPt != undefined )
-        {
-            var polygons = self.polygon.split(self.downPt,self.upPt);
-            self.qt.removePolygon( self.polygon );
-            var ctx = $(canvas)[0].getContext("2d");
-            self.polygon.erase(ctx);
-            if ( polygons != undefined )
-            {
-                for ( var i=0;i<polygons.length;i++ )
-                    self.qt.addPolygon(polygons[i]);
-                if( polygons.length>0 )
-                    self.polygon = polygons[0];
             }
-            self.polygon.anchored = true;
-            self.polygon.setAnchorNormal();
+            if ( self.downPt != undefined && self.upPt != undefined )
+            {
+                var polygons = self.polygon.split(self.downPt,self.upPt);
+                self.qt.removePolygon( self.polygon );
+                var ctx = $(canvas)[0].getContext("2d");
+                self.polygon.erase(ctx);
+                if ( polygons != undefined )
+                {
+                    for ( var i=0;i<polygons.length;i++ )
+                        self.qt.addPolygon(polygons[i]);
+                    if( polygons.length>0 )
+                        self.polygon = polygons[0];
+                }
+                self.polygon.anchored = true;
+                self.polygon.setAnchorNormal();
+            }
+            self.downPt = undefined;
+            self.upPt = undefined;
         }
-        self.downPt = undefined;
-        self.upPt = undefined;
     });
     /**
      * Handle key-down events for whole document
@@ -196,7 +213,7 @@ function Canvas( id, wt, ht )
     };
     /**
      * Scale the geojson relative points (fractions of width, height)
-     * @param pts the geo json points
+     * @param pts the geojson points
      * @return an aray of Point objects in absolute coordinates
      */
     this.scalePoints = function( pts ) {
@@ -234,8 +251,9 @@ function Canvas( id, wt, ht )
                         {
                             var pts = this.scalePoints(polys[j].geometry.coordinates);
                             var pg = new Polygon(pts,"tilt");
+                            if ( this.polygon == undefined )
+                                this.polygon = pg;
                             this.qt.addPolygon(pg);
-                            
                         }
                     }
                 }

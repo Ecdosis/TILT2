@@ -64,7 +64,7 @@
     top: 0px;
 }
 #image img { vertical-align:text-bottom }
-#tilt { vertical-align:text-bottom;z-index:20;}
+#tilt { vertical-align:text-bottom;z-index:10;position:relative;left:0px}
 #text {
     display: table-cell;
     padding:0px;
@@ -91,8 +91,8 @@
      text-align:center;
      background-image:url(../images/background-trans.png);
 }
-#overlay { z-index: 10; }
-#progress { z-index: 5; }
+#overlay { z-index: -10; }
+#progress { z-index: -11; }
 #overlay div {
      width:300px;
      background-color: #fff;

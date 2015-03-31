@@ -301,9 +301,11 @@ function QuadTree( x, y, width, height )
      * @return the polygon it is inside or false
      */
     this.pointInPolygon = function( pt ) {
-        if ( this.points != undefined )
+        if ( this.points != undefined && this.points.length > 0 )
         {
             // polygons must be defined also
+            if ( this.polygons == undefined )
+                console.log("this.polygons is undefined but it ought not");
             for ( var i=0;i<this.polygons.length;i++ )
             {
                 if ( this.polygons[i].pointInPoly(pt) )
@@ -313,7 +315,7 @@ function QuadTree( x, y, width, height )
             }
             return false;
         }
-        else  // recurse
+        else if ( this.points == undefined ) // recurse
         {
             var pg = this.nw.pointInPolygon(pt);
             if ( pg ) 
@@ -326,6 +328,8 @@ function QuadTree( x, y, width, height )
                 return pg;
             return this.se.pointInPolygon(pt);
         }
+        else
+            return false;
     };
     /**
      * Update the record of this polygon (must be called at top-level)

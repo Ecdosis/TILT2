@@ -485,7 +485,6 @@ function Tilt(docid,pageid) {
         $("#image").width(awt);
         $("#tilt").height(aht);
         $("#tilt").width(awt);
-        $("#tilt").css("left","-"+awt+"px");
         $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
@@ -503,8 +502,7 @@ function Tilt(docid,pageid) {
         $.get(url,function(data){
             $("#geojson").val(data);
 			//console.log(data);
-            if ( self.canvas == undefined )
-				self.canvas = new Canvas("tilt",$("#image img").height(),
+            self.canvas = new Canvas("tilt",$("#image img").height(),
 				$("#image img").width());
             self.canvas.reload($("#geojson").val());
         }).fail(function(){
@@ -645,6 +643,7 @@ function Tilt(docid,pageid) {
         var overlay = $("#overlay");
         //self.refreshList();
         var visibility = overlay.css("visibility","visible");
+        overlay.css("z-index","20");
     });
     /**
      * This controls the OK button on the modal dialog
@@ -656,6 +655,7 @@ function Tilt(docid,pageid) {
         self.loadPage(doc,$("#pages").val());
         self.checkNextAndPrev();
         overlay.css("visibility","hidden");
+        overlay.css("z-index","-10");
     });
     /**
      * Send the current geojson and text to server for recognition
@@ -676,6 +676,7 @@ function Tilt(docid,pageid) {
         var progress = $("#progress");
         //self.refreshList();
         var visibility = progress.css("visibility","visible");
+        progress.css("z-index","20");
         client.onreadystatechange = function(){
             // readyState 4 means that the flow has ended
             if( client.readyState == 4 )
@@ -684,12 +685,14 @@ function Tilt(docid,pageid) {
                 {
                     console.log("Error:"+client.status);
                     $("#progress").css("visibility","hidden");
+                    $("#progress").css("z-index","-11");    
                 }
                 else
                 {
                     readSoFar = self.updateProgress(client,readSoFar);
                     setTimeout(function(){
                         $("#progress").css("visibility","hidden");
+                        $("#progress").css("z-index","-11");
                         self.getGeoJson($("#documents").val(),$("#pages").val());
                     }, 1000);
                 }
