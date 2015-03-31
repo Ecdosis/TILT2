@@ -9,17 +9,9 @@ function QuadTree( x, y, width, height )
 {
     this.boundary = new Rect(x,y,width,height);
     this.points = new Array();
-	this.polygons = undefined;
+    this.polygons = undefined;
     // max points in a quadrant
     this.numPoints = 6;
-    this.distance = function(pt1,pt2) {
-        var xDiff = Math.abs(pt1.x-pt2.x);
-        var yDiff= Math.abs(pt1.y-pt2.y);
-        var ysq = yDiff*yDiff;
-        var xsq = xDiff*xDiff;
-        // good old pythagoras
-        return Math.round(Math.sqrt(ysq+xsq));
-    };
     /**
      * Add a point to the quadtree
      * @param pt the point to add
@@ -195,7 +187,7 @@ function QuadTree( x, y, width, height )
                 }
                 else if ( closest == undefined )
                     closest = this.points[i];
-                else if ( this.distance(closest,pt)>this.distance(this.points[i],pt) )
+                else if ( closest.distance(pt)>points[i].distance(pt) )
                     closest = this.points[i];
             }
         }

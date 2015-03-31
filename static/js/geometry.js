@@ -38,6 +38,14 @@ function Point(x,y)
         return this.x >= r.x && this.x <=r.x+r.width 
         && this.y >= r.y && this.y <= r.y+r.height;
     };
+    this.distance = function(pt2) {
+        var xDiff = Math.abs(this.x-pt2.x);
+        var yDiff= Math.abs(this.y-pt2.y);
+        var ysq = yDiff*yDiff;
+        var xsq = xDiff*xDiff;
+        // good old pythagoras
+        return Math.round(Math.sqrt(ysq+xsq));
+    };
 }
 /**
  * A simple rectangle class
