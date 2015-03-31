@@ -749,12 +749,12 @@ function Polygon( pts, id )
             else
             {
                 // 3. At least one polygon point is inside r
-                for ( var i=0;i<this.points.length-1;i++ )
+                for ( var i=0;i<this.points.length;i++ )
                 {
                     if ( r.containsPt(this.points[i]) )
                         return true;
                 }
-                // 4. Expensive: test if any edge intersects with r
+                // 4. Expensive: does any edge intersects with r
                 for ( var i=0;i<this.points.length-1;i++ )
                 {
                     var edge = new Segment(this.points[i],this.points[i+1]);
