@@ -503,10 +503,10 @@ function Tilt(docid,pageid) {
         $.get(url,function(data){
             $("#geojson").val(data);
 			//console.log(data);
-            if ( this.canvas == undefined )
-				this.canvas = new Canvas("tilt",$("#image img").height(),
+            if ( self.canvas == undefined )
+				self.canvas = new Canvas("tilt",$("#image img").height(),
 				$("#image img").width());
-			this.canvas.reload($("#geojson").val());
+            self.canvas.reload($("#geojson").val());
         }).fail(function(){
             console.log("Failed to load geojson");
         });

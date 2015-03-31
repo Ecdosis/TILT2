@@ -748,13 +748,13 @@ function Polygon( pts, id )
                 return true;
             else
             {
-                // 3. At least one polygon point is inside r
+                // 3. at least one polygon point is inside r
                 for ( var i=0;i<this.points.length;i++ )
                 {
                     if ( r.containsPt(this.points[i]) )
                         return true;
                 }
-                // 4. Expensive: does any edge intersects with r
+                // 4. at least one edge intersects with r
                 for ( var i=0;i<this.points.length-1;i++ )
                 {
                     var edge = new Segment(this.points[i],this.points[i+1]);

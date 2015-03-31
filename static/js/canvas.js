@@ -217,7 +217,7 @@ function Canvas( id, wt, ht )
     this.resize = function( wt, ht ) {
     };
     this.reload = function( geojson ) {
-        var consumed = 0;
+        //var start = new Date().getTime();   
         var gjDoc = JSON.parse(geojson);
         if ( gjDoc.features != undefined )
         {
@@ -234,15 +234,14 @@ function Canvas( id, wt, ht )
                         {
                             var pts = this.scalePoints(polys[j].geometry.coordinates);
                             var pg = new Polygon(pts,"tilt");
-                            var start = new Date().getTime();
                             this.qt.addPolygon(pg);
-                            var end = new Date().getTime();
-                            consumed += (end-start);
+                            
                         }
                     }
                 }
             }
-            console.log("time taken="+consumed+" milliseconds");
         }
+        //var end = new Date().getTime();   
+        //alert("time taken="+(end-start)+" milliseconds");
     };
 }
