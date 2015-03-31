@@ -129,6 +129,15 @@ function Rect( x, y, width, height )
         this.x *= dx;
         this.y *= dy;
     };
+    /**
+     * Is this rectangle entire inside another?
+     * @param r the other rectangle
+     * @return true if it is
+     */
+    this.inside = function( r ) {
+        return this.x >= r.x && this.x+this.width<=r.x+r.width 
+            && this.y>=r.y&&this.y+this.height<=r.y+r.height;
+    };
 }
 /**
  * Segment class. A portion of a line
@@ -729,20 +738,33 @@ function Polygon( pts, id )
      * @return true if it does else false
      */
     this.intersectsWithRect = function( r ) {
-        // 1. at least one edge of polygon intersects rect
-        for ( var i=0;i<this.points.length-1;i++ )
+        if ( this.bounds.intersects(r) )
         {
-            var edge = new Segment(this.points[i],this.points[i+1]);
-            if ( edge.intersectsWithRect(r) ) 
+            // test simple cases first
+            // 1. r is completely inside us
+            if ( r.inside(this.bounds) )
                 return true;
+            // 2. we are entirely inside r
+            else if ( this.bounds.inside(r) )
+                return true;
+            else
+            {
+                // 3. At least one polygon point is inside r
+                for ( var i=0;i<this.points.length-1;i++ )
+                {
+                    if ( r.containsPt(this.points[i]) )
+                        return true;
+                }
+                // 4. Expensive: test if any edge intersects with r
+                for ( var i=0;i<this.points.length-1;i++ )
+                {
+                    var edge = new Segment(this.points[i],this.points[i+1]);
+                    if ( edge.intersectsWithRect(r) ) 
+                        return true;
+                }
+            }
         }
-        // 2. polygon completely within rect
-        if ( this.points.length>0 && this.points[0].inRect(r) )
-            return true;
-        // 3. rect completely within the polygon
-        var p = new Point(r.x,r.y);
-        if ( this.pointInPoly(p) )
-            return true;
+        // else: most cases will fall through to here
         return false;
     };
     this.print = function() {

@@ -266,7 +266,7 @@ function QuadTree( x, y, width, height )
                 console.log("failed to add point "+pts[i].x+","+pts[i].y);
         }
         // now add the polygon to the quadrant's list
-        //this.addPolygonToQuadrant(pg);
+        this.addPolygonToQuadrant(pg);
     };
     /**
      * Remove a polygon from the quadrant (not its points)

@@ -18,7 +18,6 @@ function Canvas( id, wt, ht )
     this.upPt = undefined;
     // reference to the Canvas object
     var self = this;
-    console.log($("#"+self.id).width());
     /**
      * Handle all mouse-moved events inside the canvas 
      */
@@ -234,7 +233,11 @@ function Canvas( id, wt, ht )
                         {
                             var pts = this.scalePoints(polys[j].geometry.coordinates);
                             var pg = new Polygon(pts,"tilt");
+                            var start = new Date().getTime();
                             this.qt.addPolygon(pg);
+                            var end = new Date().getTime();
+                            console.log("added polygon "+j+" of line "
+                                +i+" in "+(end-start)+" milliseconds");
                         }
                     }
                 }
