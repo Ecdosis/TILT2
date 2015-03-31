@@ -740,7 +740,6 @@ function Polygon( pts, id )
     this.intersectsWithRect = function( r ) {
         if ( this.bounds.intersects(r) )
         {
-            // test simple cases first
             // 1. r is completely inside us
             if ( r.inside(this.bounds) )
                 return true;

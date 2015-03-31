@@ -217,6 +217,7 @@ function Canvas( id, wt, ht )
     this.resize = function( wt, ht ) {
     };
     this.reload = function( geojson ) {
+        var consumed = 0;
         var gjDoc = JSON.parse(geojson);
         if ( gjDoc.features != undefined )
         {
@@ -236,12 +237,12 @@ function Canvas( id, wt, ht )
                             var start = new Date().getTime();
                             this.qt.addPolygon(pg);
                             var end = new Date().getTime();
-                            console.log("added polygon "+j+" of line "
-                                +i+" in "+(end-start)+" milliseconds");
+                            consumed += (end-start);
                         }
                     }
                 }
             }
+            console.log("time taken="+consumed+" milliseconds");
         }
     };
 }
