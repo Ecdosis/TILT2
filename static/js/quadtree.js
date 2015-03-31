@@ -245,11 +245,20 @@ function QuadTree( x, y, width, height )
             this.se.addPolygonToQuadrant(pg);
         }
     };
+    this.hasPoly = function( pg ) {
+        if ( this.polygons != undefined )
+        {
+            for ( var i=0;i<this.polygons.length;i++ )
+                if ( this.polygons[i] == pg )
+                    return true;
+        }
+        return false;        
+    };
     /**
      * Add a polygon to this quadtree (or quadrant)
      * @param pg the polygon
      */
-    this.addPolygon = function(pg) {http://www.bbc.com/news
+    this.addPolygon = function(pg) {
         // add the points
         var pts = pg.points;
         for ( var i=0;i<pts.length;i++ )
@@ -259,6 +268,14 @@ function QuadTree( x, y, width, height )
         }
         // now add the polygon to the quadrant's list
         this.addPolygonToQuadrant(pg);
+        // check that all the points of the polygon 
+        // are in quadrants with that polygon
+        //for ( var i=0;i<pts.length;i++ )
+        //{
+        //    var quad = this.getQuad(pts[i]);
+        //    if ( quad == undefined || !quad.hasPoly(pg) )
+        //        console.log("quad not found or wrong quad. i="+i);
+        //}
     };
     /**
      * Remove a polygon from the quadrant (not its points)
@@ -271,7 +288,7 @@ function QuadTree( x, y, width, height )
             {
                 if ( this.polygons[i]== pg )
                 {
-                    this.polygons.splice(i,1);http://www.bbc.com/news
+                    this.polygons.splice(i,1);
                     break;
                 }
             }
@@ -305,14 +322,16 @@ function QuadTree( x, y, width, height )
         {
             // polygons must be defined also
             if ( this.polygons == undefined )
-                console.log("this.polygons is undefined but it ought not");
-            for ( var i=0;i<this.polygons.length;i++ )
-            {
-                if ( this.polygons[i].pointInPoly(pt) )
+                console.log("this.polygons is undefined! this.points.length="
+                +this.points.length);
+            else
+                for ( var i=0;i<this.polygons.length;i++ )
                 {
-                    return this.polygons[i];
+                    if ( this.polygons[i].pointInPoly(pt) )
+                    {
+                        return this.polygons[i];
+                    }
                 }
-            }
             return false;
         }
         else if ( this.points == undefined ) // recurse

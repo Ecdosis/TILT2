@@ -446,8 +446,8 @@ function Polygon( pts, id )
                 minY = pt.y;
             if ( pt.x > maxX )
                 maxX = pt.x;
-            if ( pt.x >maxY )
-                maxY = pt.x;
+            if ( pt.y > maxY )
+                maxY = pt.y;
         }
         this.bounds = new Rect( minX, minY, maxX-minX, maxY-minY );
     };

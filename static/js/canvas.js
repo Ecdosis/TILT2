@@ -233,6 +233,10 @@ function Canvas( id, wt, ht )
      */
     this.resize = function( wt, ht ) {
     };
+    /**
+     * Rebuild the quadtree based on fresh geojson document
+     * @param geojson the new geojson data
+     */
     this.reload = function( geojson ) {
         //var start = new Date().getTime();   
         var gjDoc = JSON.parse(geojson);
