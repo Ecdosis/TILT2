@@ -187,7 +187,7 @@ function QuadTree( x, y, width, height )
                 }
                 else if ( closest == undefined )
                     closest = this.points[i];
-                else if ( closest.distance(pt)>points[i].distance(pt) )
+                else if ( closest.distance(pt)>this.points[i].distance(pt) )
                     closest = this.points[i];
             }
         }

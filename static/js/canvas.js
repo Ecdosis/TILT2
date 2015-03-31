@@ -39,7 +39,9 @@ function Canvas( id, wt, ht )
                     self.polygon.erase(ctx);
                     var newPoly = self.qt.pointInPolygon(pt);
                     if ( newPoly )
+                    {
                         self.polygon = newPoly;
+                    }
                 }
             }
             else if ( self.polygon.dragging() )
@@ -227,7 +229,7 @@ function Canvas( id, wt, ht )
         return array;
     };
     /**
-     * Resize this canvas by saling everything
+     * Resize this canvas by scaling everything
      * @param wt the new canvas/image width
      * @param ht the new canvas/image height
      */
@@ -238,7 +240,6 @@ function Canvas( id, wt, ht )
      * @param geojson the new geojson data
      */
     this.reload = function( geojson ) {
-        //var start = new Date().getTime();   
         var gjDoc = JSON.parse(geojson);
         if ( gjDoc.features != undefined )
         {
@@ -263,7 +264,5 @@ function Canvas( id, wt, ht )
                 }
             }
         }
-        //var end = new Date().getTime();   
-        //alert("time taken="+(end-start)+" milliseconds");
     };
 }

@@ -485,6 +485,8 @@ function Tilt(docid,pageid) {
         $("#image").width(awt);
         $("#tilt").height(aht);
         $("#tilt").width(awt);
+        $("#tilt")[0].width = awt;
+        $("#tilt")[0].height = aht;
         $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
@@ -502,8 +504,8 @@ function Tilt(docid,pageid) {
         $.get(url,function(data){
             $("#geojson").val(data);
 			//console.log(data);
-            self.canvas = new Canvas("tilt",$("#image img").height(),
-				$("#image img").width());
+            self.canvas = new Canvas("tilt",
+				$("#image img").width(),$("#image img").height());
             self.canvas.reload($("#geojson").val());
         }).fail(function(){
             console.log("Failed to load geojson");
@@ -814,6 +816,8 @@ $(document).ready(function(){
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
         content.append( new Progress().toString() );
+        console.log("canvas width="+$("#tilt").width());
+        console.log("canvas height="+$("#tilt").height());
         content.append('<textarea id="geojson"></textarea>');
         $("#pages").empty();
         $("#documents").empty();
