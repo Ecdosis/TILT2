@@ -29,7 +29,7 @@ function Point(x,y)
        return this.x*v.x+this.y*v.y;
     };
     this.times = function(factor) {
-        return new Point(Math.round(this.x*factor),Math.round(this.y*factor));
+        return new Point(this.x*factor,this.y*factor);
     };
     this.crossProduct = function( b ){
         return this.x*b.y-b.x*this.y;
@@ -37,6 +37,14 @@ function Point(x,y)
     this.inRect = function( r ) {
         return this.x >= r.x && this.x <=r.x+r.width 
         && this.y >= r.y && this.y <= r.y+r.height;
+    };
+    this.distance = function(pt2) {
+        var xDiff = Math.abs(this.x-pt2.x);
+        var yDiff= Math.abs(this.y-pt2.y);
+        var ysq = yDiff*yDiff;
+        var xsq = xDiff*xDiff;
+        // good old pythagoras
+        return Math.round(Math.sqrt(ysq+xsq));
     };
 }
 /**
@@ -68,9 +76,9 @@ function Rect( x, y, width, height )
     /**
      * Dump this rectangle to the console
      */
-    this.print = function(){
-        console.log("x="+this.x+",y="+this.y+",width="
-        +this.width+",height="+this.height);
+    this.toString = function(){
+        return"x="+this.x+",y="+this.y+",width="
+        +this.width+",height="+this.height;
     };
     /**
      * Outset/inset this rectangle
@@ -117,6 +125,26 @@ function Rect( x, y, width, height )
     this.containsPt = function( pt ) {
         return pt.x >= this.x && pt.y >= this.y 
         && pt.x <= this.x+this.width && pt.y<= this.y+this.height;
+    };
+    /**
+     * Apply a scale to the rectangle
+     * @param dx the xfactor scale
+     * @parma dy the yfactor scale
+     */
+    this.scale = function() {
+        this.width *= dx;
+        this.height *= dy;
+        this.x *= dx;
+        this.y *= dy;
+    };
+    /**
+     * Is this rectangle entire inside another?
+     * @param r the other rectangle
+     * @return true if it is
+     */
+    this.inside = function( r ) {
+        return this.x >= r.x && this.x+this.width<=r.x+r.width 
+            && this.y>=r.y&&this.y+this.height<=r.y+r.height;
     };
 }
 /**
@@ -328,7 +356,7 @@ function Polygon( pts, id )
     for ( var i=0;i<pts.length;i++ )
     {
         var pt = new Point(pts[i].x,pts[i].y);
-        this.points[this.points.length] = pt;
+        this.points.push(pt);
     }
     /**
      * Get the points of the polygon
@@ -418,8 +446,8 @@ function Polygon( pts, id )
                 minY = pt.y;
             if ( pt.x > maxX )
                 maxX = pt.x;
-            if ( pt.x >maxY )
-                maxY = pt.x;
+            if ( pt.y > maxY )
+                maxY = pt.y;
         }
         this.bounds = new Rect( minX, minY, maxX-minX, maxY-minY );
     };
@@ -541,9 +569,9 @@ function Polygon( pts, id )
      * @param pt the point near the edge
      * @return true if it is else false
      */
-	this.ptOnEdge = function(pt) {
+    this.ptOnEdge = function(pt) {
         this.pos = undefined;
-    	for ( var i=0;i<this.points.length-1;i++ )
+        for ( var i=0;i<this.points.length-1;i++ )
         {
             var seg = new Segment(this.points[i],this.points[i+1]);
             var dist = seg.distFromLine(pt);
@@ -563,17 +591,16 @@ function Polygon( pts, id )
      * @return a new point on the line being closest to c
      */
     this.closestPt = function( a, b, c ) {
-		var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
-		var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
-		var r = r_num / r_den;
-		return new Point(Math.round(a.x + r*(b.x-a.x)), 
-            Math.round(a.y + r*(b.y-a.y)) );
+        var r_num = (c.x-a.x)*(b.x-a.x) + (c.y-a.y)*(b.y-a.y);
+        var r_den = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
+        var r = r_num / r_den;
+        return new Point(a.x + r*(b.x-a.x), a.y + r*(b.y-a.y) );
     };
-	/**
-     * Add a point to the polygon after test for ptOnEdgeor otherwise
+    /**
+     * Add a point to the polygon after test for ptOnEdge or otherwise
      * @param pt the point to add
      */
-	this.addPt = function(pt) {
+    this.addPt = function(pt) {
         // have we just called ptOnEdge?
         if ( this.pos != undefined )
         {
@@ -587,7 +614,7 @@ function Polygon( pts, id )
         else    // otherwise
             this.points.push( pt );
         return pt;
-	};
+    };
     /**
      * Does a line intersect with this polygon and if so where
      * @param S the segment intersecting with us
@@ -719,20 +746,32 @@ function Polygon( pts, id )
      * @return true if it does else false
      */
     this.intersectsWithRect = function( r ) {
-        // 1. at least one edge of polygon intersects rect
-        for ( var i=0;i<this.points.length-1;i++ )
+        if ( this.bounds.intersects(r) )
         {
-            var edge = new Segment(this.points[i],this.points[i+1]);
-            if ( edge.intersectsWithRect(r) ) 
+            // 1. r is completely inside us
+            if ( r.inside(this.bounds) )
                 return true;
+            // 2. we are entirely inside r
+            else if ( this.bounds.inside(r) )
+                return true;
+            else
+            {
+                // 3. at least one polygon point is inside r
+                for ( var i=0;i<this.points.length;i++ )
+                {
+                    if ( r.containsPt(this.points[i]) )
+                        return true;
+                }
+                // 4. at least one edge intersects with r
+                for ( var i=0;i<this.points.length-1;i++ )
+                {
+                    var edge = new Segment(this.points[i],this.points[i+1]);
+                    if ( edge.intersectsWithRect(r) ) 
+                        return true;
+                }
+            }
         }
-        // 2. polygon completely within rect
-        if ( this.points.length>0 && this.points[0].inRect(r) )
-            return true;
-        // 3. rect completely within the polygon
-        var p = new Point(r.x,r.y);
-        if ( this.pointInPoly(p) )
-            return true;
+        // else: most cases will fall through to here
         return false;
     };
     this.print = function() {

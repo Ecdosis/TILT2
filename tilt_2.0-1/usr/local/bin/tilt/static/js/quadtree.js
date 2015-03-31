@@ -9,14 +9,9 @@ function QuadTree( x, y, width, height )
 {
     this.boundary = new Rect(x,y,width,height);
     this.points = new Array();
-    this.distance = function(pt1,pt2) {
-        var xDiff = Math.abs(pt1.x-pt2.x);
-        var yDiff= Math.abs(pt1.y-pt2.y);
-        var ysq = yDiff*yDiff;
-        var xsq = xDiff*xDiff;
-        // good old pythagoras
-        return Math.round(Math.sqrt(ysq+xsq));
-    };
+    this.polygons = undefined;
+    // max points in a quadrant
+    this.numPoints = 6;
     /**
      * Add a point to the quadtree
      * @param pt the point to add
@@ -31,13 +26,15 @@ function QuadTree( x, y, width, height )
         {
             if ( this.points != undefined )
             {
-                if ( this.points.length < 4 )
+                if ( this.points.length < this.numPoints )
                 {
-                    this.points[this.points.length] = pt;
+                    this.points.push( pt );
                     return true;
                 }
                 else
+                {
                     this.subdivide();
+                }
             }
             if ( this.nw.addPt(pt) )
                 return true;
@@ -123,12 +120,12 @@ function QuadTree( x, y, width, height )
         return this.boundary.contains(pt);
     };
     /**
-     * We are full. Split into four equal quadrants, and reassign points
+     * Split into four equal quadrants, and reassign points, polygons
      */
     this.subdivide = function() {
         // precompute x,y of se quadrant
-        var xSplit = Math.floor(this.boundary.width/2)+this.boundary.x;
-        var ySplit = Math.floor(this.boundary.height/2)+this.boundary.y;
+        var xSplit = this.boundary.width/2+this.boundary.x;
+        var ySplit = this.boundary.height/2+this.boundary.y;
         // create the four sub-trees
         this.nw = new QuadTree(this.boundary.x,this.boundary.y,
             xSplit-this.boundary.x,
@@ -148,18 +145,13 @@ function QuadTree( x, y, width, height )
             var pt = this.points[i];
             var res;
             if ( this.nw.contains(pt) )
-                res = this.nw.addPt(pt);
+                this.nw.points.push(pt);
             else if ( this.sw.contains(pt) )
-                res = this.sw.addPt(pt);
+                this.sw.points.push(pt);
             else if ( this.ne.contains(pt) )
-                res= this.ne.addPt(pt);
+                this.ne.points.push(pt);
             else
-                res = this.se.addPt(pt);
-            if ( !res )
-            {
-                console.log("failed to add point "+pt.x+","+pt.y);
-                break;
-            }
+                this.se.points.push(pt);
         }
         // clear residual points
         this.points = undefined;
@@ -195,7 +187,7 @@ function QuadTree( x, y, width, height )
                 }
                 else if ( closest == undefined )
                     closest = this.points[i];
-                else if ( this.distance(closest,pt)>this.distance(this.points[i],pt) )
+                else if ( closest.distance(pt)>points[i].distance(pt) )
                     closest = this.points[i];
             }
         }
@@ -253,6 +245,15 @@ function QuadTree( x, y, width, height )
             this.se.addPolygonToQuadrant(pg);
         }
     };
+    this.hasPoly = function( pg ) {
+        if ( this.polygons != undefined )
+        {
+            for ( var i=0;i<this.polygons.length;i++ )
+                if ( this.polygons[i] == pg )
+                    return true;
+        }
+        return false;        
+    };
     /**
      * Add a polygon to this quadtree (or quadrant)
      * @param pg the polygon
@@ -263,10 +264,18 @@ function QuadTree( x, y, width, height )
         for ( var i=0;i<pts.length;i++ )
         {
             if ( !this.addPt(pts[i]) )
-                console.log("failed to add point "+pt.x+","+pt.y);
+                console.log("failed to add point "+pts[i].x+","+pts[i].y);
         }
         // now add the polygon to the quadrant's list
         this.addPolygonToQuadrant(pg);
+        // check that all the points of the polygon 
+        // are in quadrants with that polygon
+        //for ( var i=0;i<pts.length;i++ )
+        //{
+        //    var quad = this.getQuad(pts[i]);
+        //    if ( quad == undefined || !quad.hasPoly(pg) )
+        //        console.log("quad not found or wrong quad. i="+i);
+        //}
     };
     /**
      * Remove a polygon from the quadrant (not its points)
@@ -309,19 +318,23 @@ function QuadTree( x, y, width, height )
      * @return the polygon it is inside or false
      */
     this.pointInPolygon = function( pt ) {
-        if ( this.points != undefined )
+        if ( this.points != undefined && this.points.length > 0 )
         {
             // polygons must be defined also
-            for ( var i=0;i<this.polygons.length;i++ )
-            {
-                if ( this.polygons[i].pointInPoly(pt) )
+            if ( this.polygons == undefined )
+                console.log("this.polygons is undefined! this.points.length="
+                +this.points.length);
+            else
+                for ( var i=0;i<this.polygons.length;i++ )
                 {
-                    return this.polygons[i];
+                    if ( this.polygons[i].pointInPoly(pt) )
+                    {
+                        return this.polygons[i];
+                    }
                 }
-            }
             return false;
         }
-        else  // recurse
+        else if ( this.points == undefined ) // recurse
         {
             var pg = this.nw.pointInPolygon(pt);
             if ( pg ) 
@@ -334,6 +347,8 @@ function QuadTree( x, y, width, height )
                 return pg;
             return this.se.pointInPolygon(pt);
         }
+        else
+            return false;
     };
     /**
      * Update the record of this polygon (must be called at top-level)
@@ -350,5 +365,11 @@ function QuadTree( x, y, width, height )
      this.updatePt = function( pt ){
         this.removePt(pt);
         this.addPt( pt );
-    };      
+    };     
+    this.width = function() {
+        return this.boundary.width-this.boundary.x;
+    };
+    this.height = function() {
+        return this.boundary.height-this.boundary.y;
+    }; 
 }

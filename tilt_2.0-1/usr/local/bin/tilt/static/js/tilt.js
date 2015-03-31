@@ -225,6 +225,8 @@ function Progress()
  */
 function Tilt(docid,pageid) {
     var self = this;
+	/** the canvas object */
+	this.canvas = undefined;
     /**
      * Scale image
      * @param factor the mag factor
@@ -291,22 +293,22 @@ function Tilt(docid,pageid) {
         }
     };
     /**
-     * Safely decrement the level number
-     * @param level the current level
+     * Safely decrement the zoom level number
+     * @param zoomLevel the current level
      * @return the new level
      */
-    this.decLevel = function( level ) {
-        if ( level == -1 )
+    this.decLevel = function( zoomLevel ) {
+        if ( zoomLevel == -1 )
             return 0;
         else
-            return level-1;
+            return zoomLevel-1;
     };
     /**
-     * Turn this level name into a level number
+     * Turn this zoom level name into a zoom level number
      * @param str
      * @return the elvel number
      */
-    this.levelToNumber = function( str ) {
+    this.zoomLevelToNumber = function( str ) {
         if ( str == undefined || str == "standard" )
             return -1;
         else
@@ -314,10 +316,10 @@ function Tilt(docid,pageid) {
     };
     /**
      * Work out the current zoom level name from its numerical level
-     * @param number
+     * @param number the numerical zoom level
      * @return the level name
      */
-    this.numberToLevel = function( number ) {
+    this.zoomNumberToLevel = function( number ) {
         if ( number == -1 )
             return "standard";
         else
@@ -483,7 +485,6 @@ function Tilt(docid,pageid) {
         $("#image").width(awt);
         $("#tilt").height(aht);
         $("#tilt").width(awt);
-        $("#tilt").css("left","-"+awt+"px");
         $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
@@ -500,6 +501,10 @@ function Tilt(docid,pageid) {
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
         $.get(url,function(data){
             $("#geojson").val(data);
+			//console.log(data);
+            self.canvas = new Canvas("tilt",$("#image img").height(),
+				$("#image img").width());
+            self.canvas.reload($("#geojson").val());
         }).fail(function(){
             console.log("Failed to load geojson");
         });
@@ -546,6 +551,8 @@ function Tilt(docid,pageid) {
     this.updateProgress = function( client, readSoFar ) {
         var len = client.responseText.length-readSoFar;
         var num = client.responseText.substr(readSoFar,len);
+        if (num.length <= 0 )
+            num = client.responseText;
         var numbers = num.split("\n");
         for ( var i=0;i<numbers.length;i++ )
         {
@@ -600,7 +607,7 @@ function Tilt(docid,pageid) {
         var container = $("#container");
         var icon = $("#magnify-button span");
         var cursor = container.attr("class");
-        var level = self.decLevel(self.levelToNumber(cursor));
+        var level = self.decLevel(self.zoomLevelToNumber(cursor));
         if ( level < 0 )
         {
             container.attr("class","standard");
@@ -636,6 +643,7 @@ function Tilt(docid,pageid) {
         var overlay = $("#overlay");
         //self.refreshList();
         var visibility = overlay.css("visibility","visible");
+        overlay.css("z-index","20");
     });
     /**
      * This controls the OK button on the modal dialog
@@ -647,6 +655,7 @@ function Tilt(docid,pageid) {
         self.loadPage(doc,$("#pages").val());
         self.checkNextAndPrev();
         overlay.css("visibility","hidden");
+        overlay.css("z-index","-10");
     });
     /**
      * Send the current geojson and text to server for recognition
@@ -658,7 +667,7 @@ function Tilt(docid,pageid) {
         var obj = {geojson: json, text:text, docid:$("#documents").val(),
             pageid:$("#pages").val()};
         var readSoFar=0;
-        client = new XMLHttpRequest();
+        var client = new XMLHttpRequest();
         client.open("POST", "http://"+window.location.hostname+"/tilt/recognise/");
         var boundary = self.createBoundary();
         client.setRequestHeader("Content-type", "multipart/form-data; boundary="+boundary);
@@ -667,21 +676,29 @@ function Tilt(docid,pageid) {
         var progress = $("#progress");
         //self.refreshList();
         var visibility = progress.css("visibility","visible");
+        progress.css("z-index","20");
         client.onreadystatechange = function(){
-            // Ready state 3 means that data is ready
+            // readyState 4 means that the flow has ended
             if( client.readyState == 4 )
             {
                 if ( client.status >= 300 )
+                {
                     console.log("Error:"+client.status);
+                    $("#progress").css("visibility","hidden");
+                    $("#progress").css("z-index","-11");    
+                }
                 else
                 {
                     readSoFar = self.updateProgress(client,readSoFar);
                     setTimeout(function(){
                         $("#progress").css("visibility","hidden");
+                        $("#progress").css("z-index","-11");
+                        self.getGeoJson($("#documents").val(),$("#pages").val());
                     }, 1000);
                 }
                 
             }
+            // readyState 3 means that data is ready
             else if (client.readyState == 3) 
             {
                 if (client.status ==200) 
@@ -729,17 +746,17 @@ function Tilt(docid,pageid) {
         var cursor = container.attr("class");
         var img = $("#image");
         var icon = $("#magnify-button");
-        var level = self.levelToNumber(cursor);
+        var level = self.zoomLevelToNumber(cursor);
         if ( level == 3 )
         {
-            container.attr("class",self.numberToLevel(level-1));
+            container.attr("class",self.zoomNumberToLevel(level-1));
             self.setImageScale( 3 );
             self.centreAround( event.pageX-img.offset().left,
                 event.pageY-img.offset().top, 3, 4 );
         }
         else if ( level >= 0 )
         {
-            container.attr("class",self.numberToLevel(level+1));
+            container.attr("class",self.zoomNumberToLevel(level+1));
             self.setImageScale( level+2 );
             self.centreAround( event.pageX-img.offset().left,
                 event.pageY-img.offset().top, level+2, level+1 );
