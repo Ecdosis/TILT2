@@ -1,10 +1,8 @@
 /**
  * Handle mouse-events and redrawing canvas-wide
  * @param id the id ofthe HTML canvas element to bind to
- * @param wt initial width of the canvas/image
- * @param ht initial height of the canvas/image
  */
-function Canvas( id, wt, ht )
+function Canvas( id )
 {
     // the id of the html5 canvas object
     this.id = id;
@@ -13,7 +11,7 @@ function Canvas( id, wt, ht )
     // where the user moused down last
     this.downPt = undefined;
     // the quadtree for finding points and polygons on the page
-    this.qt = new QuadTree(0,0,wt,ht);
+    this.qt = new QuadTree(0,0,1.0,1.0);
     //where the user last performed mouse-up
     this.upPt = undefined;
     // reference to the Canvas object
@@ -26,22 +24,23 @@ function Canvas( id, wt, ht )
     $("#"+self.id).mousemove(function( event ) {
         if ( self.polygon != undefined )
         {
-            var canvas = "#"+self.id;
-            var offset = $(canvas).offset();
-            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var canvas = $("#"+self.id);
+            var offset = canvas.offset();
+            var ctx = canvas[0].getContext("2d");        
+            var orig = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var pt = orig.toAbsolute( ctx );
             if ( !self.polygon.anchored )
             {
-                var ctx = $(canvas)[0].getContext("2d");
                 if ( self.polygon.pointInPoly(pt) )
+                {
                     self.polygon.drawPolygon(ctx);
+                }
                 else
                 {
                     self.polygon.erase(ctx);
                     var newPoly = self.qt.pointInPolygon(pt);
                     if ( newPoly )
-                    {
                         self.polygon = newPoly;
-                    }
                 }
             }
             else if ( self.polygon.dragging() )
@@ -54,10 +53,9 @@ function Canvas( id, wt, ht )
             else if ( self.downPt != undefined && self.polygon.anchored 
                 && !self.polygon.pointInPoly(self.downPt) )
             {
-                var ctx = $(canvas)[0].getContext("2d");
                 if ( self.upPt != undefined )
                 {
-                    var r = self.clipRect();
+                    var r = self.clipRect(ctx);
                     ctx.save();
                     ctx.rect(r.x,r.y,r.width,r.height);
                     ctx.clip();
@@ -66,11 +64,12 @@ function Canvas( id, wt, ht )
                 }
                 ctx.save();
                 ctx.beginPath();
-                ctx.moveTo(self.downPt.x,self.downPt.y);
+                var down = self.downPt.toLocal(ctx);
+                ctx.moveTo(down.x,down.y);
                 ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([2,3]);
-                ctx.lineTo(pt.x,pt.y);
+                ctx.lineTo(orig.x,orig.y);
                 ctx.stroke();
                 ctx.restore();
                 self.upPt = pt;
@@ -83,14 +82,18 @@ function Canvas( id, wt, ht )
     $("#"+this.id).mousedown(function(event) {
         if ( self.polygon != undefined )
         {
-            var canvas = "#"+self.id;
-            var offset = $(canvas).offset();
-            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var canvas = $("#"+self.id);
+            var offset = canvas.offset();
+            var ctx = canvas[0].getContext("2d");        
+            var orig = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var pt = orig.toAbsolute( ctx );
             if ( self.polygon.anchored )
             {
                 var inside = self.polygon.pointInPoly(pt);
                 var closest = self.qt.hasPoint(pt,undefined);
-                var dist = (closest!=undefined)?self.qt.distance(closest,pt):Number.MAX_VALUE;
+                var dist = (closest!=undefined)?closest.distance(pt):1.0;
+                // imprecise, since vertical scale will be different
+                dist *= canvas[0].width;
                 if ( dist<=self.polygon.radius )
                 {
                     self.polygon.startDrag(closest);
@@ -116,7 +119,6 @@ function Canvas( id, wt, ht )
                 self.polygon.anchored = self.polygon.pointInPoly(pt);
                 if ( self.polygon.anchored )
                 {
-                    var ctx = $(canvas)[0].getContext("2d");
                     self.polygon.drawControlPoints(ctx);
                 }
             }
@@ -131,9 +133,11 @@ function Canvas( id, wt, ht )
     $("#"+this.id).mouseup(function(event) {
         if ( self.polygon != undefined )
         {
-            var canvas = "#"+self.id;
-            var offset = $(canvas).offset();
-            var pt = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var canvas = $("#"+self.id);
+            var offset = canvas.offset();
+            var ctx = canvas[0].getContext("2d");        
+            var orig = new Point(event.pageX-offset.left,event.pageY-offset.top);
+            var pt = orig.toAbsolute( ctx );
             var closest = self.qt.hasPoint(pt,undefined);
             //this stops endDrag from being called
             if ( closest!=undefined && closest.equals(self.polygon.dragPt) )
@@ -159,7 +163,6 @@ function Canvas( id, wt, ht )
                  {
                      if ( self.downPt.equals(pt) )
                      {
-                         var ctx = $(canvas)[0].getContext("2d");
                          self.polygon.erase(ctx);
                          self.polygon.anchored = false;
                      }
@@ -169,7 +172,6 @@ function Canvas( id, wt, ht )
             {
                 var polygons = self.polygon.split(self.downPt,self.upPt);
                 self.qt.removePolygon( self.polygon );
-                var ctx = $(canvas)[0].getContext("2d");
                 self.polygon.erase(ctx);
                 if ( polygons != undefined )
                 {
@@ -199,41 +201,44 @@ function Canvas( id, wt, ht )
         // otherwise we should remove the whole polygon
         return false;
     });
-    this.clipRect = function()
+    /**
+     * Compute the cliprect to erase when dragging a point
+     */
+    this.clipRect = function(ctx)
     {
-        var left = (this.downPt.x<this.upPt.x)?this.downPt.x:this.upPt.x;
-        var right = (this.downPt.x>this.upPt.x)?this.downPt.x:this.upPt.x;
-        var top = (this.upPt.y<this.downPt.y)?this.upPt.y:this.downPt.y;
-        var bot = (this.upPt.y>this.downPt.y)?this.upPt.y:this.downPt.y;
+        var up = this.upPt.toLocal(ctx);
+        var down = this.downPt.toLocal(ctx);
+        var left = (down.x<up.x)?down.x:up.x;
+        var right = (down.x>up.x)?down.x:up.x;
+        var top = (up.y<down.y)?up.y:down.y;
+        var bot = (up.y>down.y)?up.y:down.y;
         var r = new Rect(left,top,right-left,bot-top);
-        r.expand( 2 );
+        r.expand(2);
         return r;
     };
+    /**
+     * Add a whole new polygon
+     * @param pg the polygon to add
+     */
     this.addPolygon = function( pg ) {
         this.polygon = pg;
         this.qt.addPolygon( pg );
     };
     /**
-     * Scale the geojson relative points (fractions of width, height)
+     * Convert the geojson relative points (fractions of width, height) 
+     * to an array of Point objects
      * @param pts the geojson points
      * @return an aray of Point objects in absolute coordinates
      */
-    this.scalePoints = function( pts ) {
+    this.convertPoints = function( pts ) {
         var array = new Array();
         for ( var i=0;i<pts.length;i++ )
         {
             var xy = pts[i];
-            var pt = new Point(xy[0]*this.qt.width(),xy[1]*this.qt.height());
+            var pt = new Point(xy[0],xy[1]);
             array.push(pt);
         }
         return array;
-    };
-    /**
-     * Resize this canvas by scaling everything
-     * @param wt the new canvas/image width
-     * @param ht the new canvas/image height
-     */
-    this.resize = function( wt, ht ) {
     };
     /**
      * Rebuild the quadtree based on fresh geojson document
@@ -254,7 +259,7 @@ function Canvas( id, wt, ht )
                         if ( polys[j].geometry!=undefined
                             &&polys[j].geometry.coordinates!=undefined)
                         {
-                            var pts = this.scalePoints(polys[j].geometry.coordinates);
+                            var pts = this.convertPoints(polys[j].geometry.coordinates);
                             var pg = new Polygon(pts,"tilt");
                             if ( this.polygon == undefined )
                                 this.polygon = pg;

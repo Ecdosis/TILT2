@@ -168,3 +168,4 @@ tr:nth-child(3) {text-align:right}
     margin-left:0px;
     margin-bottom: 5px;
 }
+#geojson { visibility: hidden}

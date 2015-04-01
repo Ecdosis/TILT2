@@ -2,8 +2,8 @@
  * A 2-D binary tree
  * @param x the top-left x-position
  * @param y the top-left y position
- * @param width the width of the area covered
- * @param height the height of the area covered
+ * @param width the <em>fraction</em> of width of area covered
+ * @param height the <em>fraction</em> of height of area covered
  */
 function QuadTree( x, y, width, height )
 {

@@ -242,8 +242,9 @@ function Tilt(docid,pageid) {
             var aht = parseInt(scales[factor*2+1]);
             img.width(awt);
             img.height(aht);
-            //console.log("new width="+$("#image").width());
-            //console.log("overflow="+$("#image").css("overflow"));
+            // scale canvas also
+            $("#tilt")[0].width = awt;
+            $("#tilt")[0].height = aht
         }
     };
     /**
@@ -290,6 +291,9 @@ function Tilt(docid,pageid) {
                 top = 0;
             pic.css("top", top+"px");
             pic.css("left",left+"px");
+            canvas = $("#tilt");
+            canvas.css("top",top+"px");
+            canvas.css("left",left+"px");
         }
     };
     /**
@@ -483,10 +487,8 @@ function Tilt(docid,pageid) {
         var padTop = this.pixelLen($("#flow").css("padding-top"));
         $("#image").height(aht);
         $("#image").width(awt);
-        $("#tilt").height(aht);
-        $("#tilt").width(awt);
-        $("#tilt")[0].width = awt;
         $("#tilt")[0].height = aht;
+        $("#tilt")[0].width = awt;
         $("#flow").width(awt);
         $("#text").height(aht);
         var diff=$("#image").height()-$("#image img").height();
@@ -503,9 +505,7 @@ function Tilt(docid,pageid) {
             +"/tilt/geojson?docid="+docid+"&pageid="+pageid;
         $.get(url,function(data){
             $("#geojson").val(data);
-			//console.log(data);
-            self.canvas = new Canvas("tilt",
-				$("#image img").width(),$("#image img").height());
+			self.canvas = new Canvas("tilt");
             self.canvas.reload($("#geojson").val());
         }).fail(function(){
             console.log("Failed to load geojson");
@@ -625,7 +625,15 @@ function Tilt(docid,pageid) {
                     container.height()/2+container.offset().top, level+1, 
                     level+2 );
             else
+            {
                 $("#image img").css({left:"0px",top:"0px"});
+                $("#tilt").css({left:"0px",top:"0px"});
+            }
+            if ( self.polygon != undefined )
+            {
+                var ctx = $("#tilt")[0].getContext("2d");
+                self.canvas.redraw(ctx);
+            }
         }
     });
     $("#refresh").click(function(){
@@ -816,8 +824,6 @@ $(document).ready(function(){
         content.append( new Container().toString() );
         content.append( new Overlay().toString() );
         content.append( new Progress().toString() );
-        console.log("canvas width="+$("#tilt").width());
-        console.log("canvas height="+$("#tilt").height());
         content.append('<textarea id="geojson"></textarea>');
         $("#pages").empty();
         $("#documents").empty();

@@ -46,6 +46,22 @@ function Point(x,y)
         // good old pythagoras
         return Math.round(Math.sqrt(ysq+xsq));
     };
+    /**
+     * Convert local to absolute coordinates
+     * @param ctx the current graphical context
+     * @return the point transformed
+     */
+    this.toAbsolute = function( ctx ) {
+        return new Point(this.x /= ctx.canvas.width,this.y /= ctx.canvas.height);
+    };
+    /**
+     * Convert absolute to local coordinates
+     * @param ctx the current graphical context
+     * @return the point transformed
+     */
+    this.toLocal = function(ctx) {
+        return new Point(this.x*ctx.canvas.width,this.y*ctx.canvas.height);
+    };
 }
 /**
  * A simple rectangle class
@@ -74,7 +90,7 @@ function Rect( x, y, width, height )
         return false;
     };
     /**
-     * Dump this rectangle to the console
+     * Convert this rectangle to a string for debugging
      */
     this.toString = function(){
         return"x="+this.x+",y="+this.y+",width="
@@ -100,10 +116,6 @@ function Rect( x, y, width, height )
             || (b.x <= this.x && b.x+b.width >= this.x))
             && ((this.y <= b.y && this.y+this.height >= b.y)
             || (b.y <= this.y && b.y+b.height >= this.y));
-        /*if ( res )
-            console.log("bounding boxes intersect");
-        else
-            console.log("Bounding boxes do NOT intersect");*/
         return res;
     };
     /**
@@ -127,15 +139,14 @@ function Rect( x, y, width, height )
         && pt.x <= this.x+this.width && pt.y<= this.y+this.height;
     };
     /**
-     * Apply a scale to the rectangle
-     * @param dx the xfactor scale
-     * @parma dy the yfactor scale
+     * Scale a rectangle from absolute to local coordinates
+     * @param ctx the drawing context
      */
-    this.scale = function() {
-        this.width *= dx;
-        this.height *= dy;
-        this.x *= dx;
-        this.y *= dy;
+    this.toLocal = function(ctx) {
+        var r = new Rect(this.x*ctx.canvas.width,
+        this.y*ctx.canvas.height,this.width*ctx.canvas.width,
+        this.height*ctx.canvas.height);
+        return r;
     };
     /**
      * Is this rectangle entire inside another?
@@ -157,7 +168,7 @@ function Segment( p0, p1 )
     this.gap = 5;
     this.p0 = p0;
     this.p1 = p1;
-    this.EPSILON = 0.000001;
+    this.EPSILON = 0.00000001;
     /**
      * Do two line segments intersect?
      * @param b the other line segment
@@ -268,17 +279,21 @@ function Segment( p0, p1 )
     /** 
      * Amount to inc/dec the x-value along a split on the 'left'
      */
-    this.x_inc_left = function() {      
-        return Math.round((this.gap*(this.p0.x-this.p1.x))/this.hypoteneuse());
+    this.x_inc_left = function(ctx) { 
+        var gap = this.gap/ctx.canvas.width;     
+        return Math.round((gap*(this.p0.x-this.p1.x))/this.hypoteneuse());
     };
-    this.y_inc_left = function() {
-        return Math.round((this.gap*(this.p0.y-this.p1.y))/this.hypoteneuse());
+    this.y_inc_left = function(ctx) {
+        var gap = this.gap/ctx.canvas.width;     
+        return Math.round((gap*(this.p0.y-this.p1.y))/this.hypoteneuse());
     };
-    this.x_inc_right = function() {
-        return Math.round((this.gap*(this.p1.x-this.p0.x))/this.hypoteneuse());
+    this.x_inc_right = function(ctx) {
+        var gap = this.gap/ctx.canvas.width;     
+        return Math.round((gap*(this.p1.x-this.p0.x))/this.hypoteneuse());
     };
-    this.y_inc_right = function() {
-        return Math.round((this.gap*(this.p1.y-this.p0.y))/this.hypoteneuse());
+    this.y_inc_right = function(ctx) {
+        var gap = this.gap/ctx.canvas.width;     
+        return Math.round((gap*(this.p1.y-this.p0.y))/this.hypoteneuse());
     };
     /**
      * Compute the distance a point is from a line segment
@@ -331,7 +346,7 @@ function Polygon( pts, id )
     this.drawn = false;
     // the id of the canvas
     this.canvas = id;
-    // radius of control points
+    // local radius of control points
     this.radius = 4;
     // colour of control points
     this.controlColour = '#003300';
@@ -345,19 +360,14 @@ function Polygon( pts, id )
     this.dragPt = undefined;
     // currently highlighted point
     this.highlightPt = undefined;
-    // distance in pixels to new points from edge
+    // distance in local pixels to new points from edge
     this.tolerance = 1.5;
     // index into points of edge end-point
     this.pos = undefined;
     // array of points
-    this.points = new Array();
+    this.points = pts;
     // small number
-    this.SMALL_NUM = 0.00000001;
-    for ( var i=0;i<pts.length;i++ )
-    {
-        var pt = new Point(pts[i].x,pts[i].y);
-        this.points.push(pt);
-    }
+    this.SMALL_NUM = 0.0000000001;
     /**
      * Get the points of the polygon
      * @return an array of Point
@@ -394,10 +404,15 @@ function Polygon( pts, id )
             ctx.globalAlpha = 0.35; 
             ctx.fillStyle = this.fillColour;
             ctx.beginPath();
+            var pt0 = this.points[0].toLocal(ctx);
+            console.log("x="+pt0.x+" y="+pt0.y);
             if ( this.points.length>0 )
-                ctx.moveTo(this.points[0].x,this.points[0].y);
+                ctx.moveTo(pt0.x,pt0.y);
             for ( var i=1;i<this.points.length;i++ )
-                ctx.lineTo(this.points[i].x,this.points[i].y);
+            {
+                var pti = this.points[i].toLocal(ctx);
+                ctx.lineTo(pti.x,pti.y);
+            }
             ctx.closePath();
             ctx.fill();
             this.drawn = true;
@@ -411,9 +426,10 @@ function Polygon( pts, id )
         ctx.globalAlpha = 0.55; 
         for ( var i=0;i<this.points.length;i++ )
         {
-            var pt = this.points[i];
+            var orig = this.points[i];
+            var pt = orig.toLocal(ctx);
             ctx.beginPath();
-            if ( pt === this.highlightPt || pt === this.dragPt )
+            if ( orig === this.highlightPt || orig === this.dragPt )
             {
                 ctx.strokeStyle = this.highlightColour;
                 ctx.lineWidth = 2;
@@ -430,7 +446,7 @@ function Polygon( pts, id )
         }
     };
     /**
-     * Recomute the bounds
+     * Recompute the bounds
      */
     this.computeBounds = function() {
         var minX = Number.MAX_VALUE;
@@ -458,22 +474,27 @@ function Polygon( pts, id )
      */
     this.erase = function(ctx) {
         this.computeBounds();
+        var r = this.bounds.toLocal(ctx);
         var extra = this.radius+1;
         ctx.globalAlpha = 1.0; 
-        ctx.clearRect(this.bounds.x-extra,
-            this.bounds.y-extra,
-            this.bounds.width+extra*2,
-            this.bounds.height+extra*2);
+        ctx.clearRect(r.x-extra, r.y-extra,
+            r.width+extra*2, r.height+extra*2);
         this.drawn = false;
     };
     /**
      * We just started dragging
-     * @param pt the point that is being dragged
+     * @param pt the point that is being dragged in absolute coordinates
      */
     this.startDrag = function(pt) {
+        var ctx = $("#"+this.canvas)[0].getContext("2d");
+        var localPt = pt.toLocal(ctx);
+        localPt.x = Math.round(localPt.x);
+        localPt.y = Math.round(localPt.y);
         for ( var i=0;i<this.points.length;i++)
         {
-            if ( pt.x==this.points[i].x && pt.y==this.points[i].y )
+            var ptix = Math.round(this.points[i].x*ctx.canvas.width);
+            var ptiy = Math.round(this.points[i].y*ctx.canvas.height);
+            if ( localPt.x==ptix && localPt.y==ptiy )
             {
                 this.dragPt = this.points[i];
                 break;
@@ -515,7 +536,7 @@ function Polygon( pts, id )
     };
     /**
      * Drag the currently dragged point
-     * @param pt the new position of dragPt
+     * @param pt the new position of dragPt in absolute coordinates
      */
     this.dragTo = function(pt) {
         if ( this.dragPt.x != pt.x || this.dragPt.y != pt.y )
@@ -571,11 +592,13 @@ function Polygon( pts, id )
      */
     this.ptOnEdge = function(pt) {
         this.pos = undefined;
+        var ctx= $("#"+this.canvas)[0].getContext("2d");
+        var limit = this.tolerance/ctx.canvas.width;
         for ( var i=0;i<this.points.length-1;i++ )
         {
             var seg = new Segment(this.points[i],this.points[i+1]);
             var dist = seg.distFromLine(pt);
-            if ( dist < this.tolerance )
+            if ( dist < limit )
             {
                 this.pos = i;
                 return true;            
@@ -689,7 +712,8 @@ function Polygon( pts, id )
             var state = 0;
             var left = new Polygon(new Array(),this.canvas);
             var right = new Polygon(new Array(),this.canvas);
-            //now compose the two separate polygons
+            var ctx = $("#"+this.canvas)[0].getContext("2d");
+            // now compose the two separate polygons
             for ( var i=0;i<this.points.length-1;i++ )
             {
                 var current = this.points[i];
@@ -697,27 +721,27 @@ function Polygon( pts, id )
                 var seg = new Segment(current,next);
                 switch ( state )
                 {
-                    case 0: //looking for first break
+                    case 0: // looking for first break
                         left.addPt( current );
                         if ( seg.intersects(S) )
                         {
-                            var xdl = seg.x_inc_left();
-                            var ydl = seg.y_inc_left();
-                            var xdr = seg.x_inc_right();
-                            var ydr = seg.y_inc_right();
+                            var xdl = seg.x_inc_left(ctx);
+                            var ydl = seg.y_inc_left(ctx);
+                            var xdr = seg.x_inc_right(ctx);
+                            var ydr = seg.y_inc_right(ctx);
                             left.addPt( new Point(SI.p0.x+xdl,SI.p0.y+ydl) );
                             right.addPt( new Point(SI.p0.x+xdr,SI.p0.y+ydr) );
                             state = 1;
                         } 
                         break;
-                    case 1: //looking for second break
+                    case 1: // looking for second break
                         right.addPt( current );
                         if ( seg.intersects(S) )
                         {
-                            var xdl = seg.x_inc_left();
-                            var ydl = seg.y_inc_left();
-                            var xdr = seg.x_inc_right();
-                            var ydr = seg.y_inc_right();
+                            var xdl = seg.x_inc_left(ctx);
+                            var ydl = seg.y_inc_left(ctx);
+                            var xdr = seg.x_inc_right(ctx);
+                            var ydr = seg.y_inc_right(ctx);
                             right.addPt( new Point(SI.p1.x+xdl,SI.p1.y+ydl) );
                             left.addPt( new Point(SI.p1.x+xdr,SI.p1.y+ydr) );
                             state = 2;
