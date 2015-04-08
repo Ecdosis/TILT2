@@ -73,6 +73,7 @@ public class Picture {
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param options options from the geoJSON file
+     * @param url the url of the image
      * @param text the text to align with
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 

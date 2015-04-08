@@ -19,6 +19,7 @@
 package tilt.handler.get;
 
 import java.io.ByteArrayInputStream;
+import java.net.InetAddress;
 import java.net.URLConnection;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +32,9 @@ import tilt.image.Picture;
 import tilt.image.PictureRegistry;
 import tilt.handler.TiltGetHandler;
 import tilt.Utils;
+import tilt.handler.post.Options;
+import tilt.handler.post.TextIndex;
+import org.json.simple.JSONObject;
 
 /**
  * Handles requests for various image types, including linked images
@@ -59,6 +63,8 @@ public class TiltImageHandler extends TiltGetHandler
                 byte[]pic = null;
                 switch (imageType) 
                 {
+                    case load:
+                        p.load();
                     case original: case link:
                         pic = p.getOrigData();
                         break;

@@ -58,7 +58,7 @@ public enum ImageType
         }
         catch ( Exception e )
         {
-            it= original;
+            it = load;
         }
         return it;
     }

@@ -46,7 +46,7 @@ public class TiltTestHandler extends TiltPostHandler
     public TiltTestHandler()
     {
         encoding = "UTF-8";
-        picType = ImageType.original;
+        picType = ImageType.load;
     }
     /**
      * Parse the import params from the request
@@ -137,7 +137,10 @@ public class TiltTestHandler extends TiltPostHandler
                     instanceof JSONArray )
                 {
                     JSONArray cc = (JSONArray)geometry.get("coordinates");
-                    opts.setCoords(cc);
+                    if ( cc.size()==1 )
+                        opts.setCoords((JSONArray)cc.get(0));
+                    else
+                        throw new Exception("Missing coordinates");
                     // create the picture and store it in the picture registry
                     String url;
                     if ( opts.url != null )
