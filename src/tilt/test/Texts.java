@@ -13,6 +13,39 @@ package tilt.test;
 public class Texts 
 {
     public static String[][] samples = {
+    {"BREWSTER","Brewster Journal p.18",
+    "<div class=\"date\">1886<br>May 6<br></div>\n<div class=\"loc"
+    +"ation\">Concord, Massachusetts.</div>\n<p>A fair day, pretty"
+    +" sunny, with frequent intervals\nof cloudiness, cool with ra"
+    +"ther high north wind</p>\n<p>Starting at 9. A.M. I rowed dow"
+    +"n river. A little\nbelow the stone bridge, two snipe hunters"
+    +" asked\nto be ferried across. They had started eight Snipe\n"
+    +"and killed two. After I left them they fired two\nmore shots"
+    +", but I was too far away to see at\nwhat, or with what resul"
+    +"t. I had only my \n32 cal. pistol, and on the way to \"Balls"
+    +" Hill\"\nshot only two Red-wings of which there were\ngreat "
+    +"numbers everywhere, more it seemed\nto me, than I ever saw b"
+    +"efore.</p>\n<p>Landing at Ball's Hill I found a small\nmixed"
+    +" flock in the Oaks along the south slope\nThere were five Cr"
+    +"eepers (Mniotilta,) as many \nYellow rumps, three Palm Warbl"
+    +"ers, one Pine \nWarbler, and a high Canada Flycatcher. I mad"
+    +"e\na good bag in a short time and started \nto return.</p>\n"
+    +"<p>On the way home I shot two Red Wings, a Blue<span class=\""
+    +"soft\">-\n</span>bird, a pair of Swallows (Tachycineta) and"
+    +" a Solitary\nSandpiper, the latter I started from the river\n"
+    +"bank on my way down in the morning. It was\nback again in t"
+    +"he same place when I returned\nbut was very shy. Finally it "
+    +"alighted on the\ntopmost twig of a brush heap where I shot i"
+    +"t.</p>\n<p>The meadows were very beautiful, the\ngrass alrea"
+    +"dy a foot high in favored places,\nAlong the river the maple"
+    +"s and alders are\ndense with foliage. The marsh marigold is\n"
+    +"still in full bloom.</p>\n<p>Orioles arrived this morning. "
+    +"I heard one at\n</p>\n",
+    "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://biodiversitylibrary.org/pageimage/43746028\",\n\t"
+    +"\"blur\":3,\"smoothN\":20}\n}\n"},
     {"HARPUR","Harpur example",
     "<table><tr><td>No 17 p.253</td></tr>\n<tr><td></td><td>The 'N"
     +"evers' of Poetry<br>\n(With the very extensive original note"
