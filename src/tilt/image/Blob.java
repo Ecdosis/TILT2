@@ -47,6 +47,8 @@ public class Blob
     WritableRaster dirt; 
     /** unless they are already in here */
     WritableRaster parent;
+    /** localised grey average */
+    WritableRaster blackLevelImage;
     /** limits of pixel area */
     int minX,maxX,minY,maxY;
     /** First black pixel*/
@@ -54,12 +56,13 @@ public class Blob
     Stack<Point> stack;
     ArrayList<Point> hull;
     Options opts;
-    Blob( WritableRaster parent, Options opts )
+    Blob( WritableRaster parent, Options opts, WritableRaster bli )
     {
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
         this.stack = new Stack();
         this.opts = opts;
+        this.blackLevelImage = bli;
     }
     /**
      * Actually commit the blob to the dirty raster
@@ -232,13 +235,24 @@ public class Blob
         dirt.getPixel(loc.x,loc.y,iArray);
         return iArray[0]==0;
     }
+    int getBlackLevel(Point p)
+    {
+        if ( blackLevelImage == null )
+            return 0;
+        else
+        {
+            int[] iArray = new int[1];
+            blackLevelImage.getPixel(p.x, p.y, iArray);
+            return iArray[0];
+        }
+    }
     /**
      * Check if there is one dirty dot not already seen.
      * @param wr the raster to search
      * @param start the first blackdot
      * @param iArray the array containing the dirty dot
      */
-    void checkDirtyDot( WritableRaster wr, Point start,  int[] iArray )
+    void checkDirtyDot( WritableRaster wr, Point start, int[] iArray )
     {
         hull = new ArrayList<>();
         // do it without recursion
@@ -247,7 +261,7 @@ public class Blob
         {
             Point p = stack.pop();
             wr.getPixel( p.x, p.y, iArray );
-            if ( iArray[0] == 0 )
+            if ( iArray[0] <= getBlackLevel(p) )
             {
                 if ( dirt != null )
                     dirt.getPixel( p.x, p.y, iArray );
@@ -341,7 +355,7 @@ public class Blob
             {
                 for ( int x=0;x<wr.getWidth();x++ )
                 {
-                    Blob b = new Blob(darkRegions,opts);
+                    Blob b = new Blob(darkRegions,opts,null);
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
                     {

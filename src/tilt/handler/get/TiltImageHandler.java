@@ -77,8 +77,8 @@ public class TiltImageHandler extends TiltGetHandler
                     case cleaned:
                         pic = p.getCleanedData();
                         break;
-                    case blurred:
-                        pic = p.getBlurredData();
+                    case reconstructed:
+                        pic = p.getReconstructedData();
                         break;
                     case baselines:
                         pic = p.getBaselinesData();

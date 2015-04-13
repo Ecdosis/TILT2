@@ -40,7 +40,6 @@ import javax.imageio.stream.ImageInputStream;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import javax.servlet.http.HttpServletRequest;
 import tilt.image.page.Page;
 import tilt.handler.post.TextIndex;
 import tilt.align.Matchup;
@@ -64,6 +63,7 @@ public class Picture {
     File baselines;
     File reduced;
     File blurred;
+    File reconstructed;
     File words;
     int blur;
     Double[][] coords;
@@ -208,7 +208,6 @@ public class Picture {
             height = bi.getHeight();
         }
         return new Rectangle( x, y, width, height );
-
     }
     /**
      * Get the original Picture data
@@ -494,6 +493,31 @@ public class Picture {
         }
     }
     /**
+     * Convert to binarised to reconstructed. This replaces the blurred step.
+     * @throws Exception 
+     */
+    public void convertToReconstructed() throws ImageException 
+    {
+        try
+        {
+            if ( cleaned == null )
+                convertToCleaned();
+            BufferedImage ci = ImageIO.read(cleaned);
+            BufferedImage tt = ImageIO.read(twotone);
+            BufferedImage gi = ImageIO.read(greyscale);
+            ReconstructedImage ri = new ReconstructedImage( ci, tt, gi, 
+                getCropRect() );
+            BufferedImage out = ri.reconstruct(this.options);
+            reconstructed = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( out, "png", reconstructed );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
      * Convert to cleaned from twotone
      * @throws Exception 
      */
@@ -523,9 +547,9 @@ public class Picture {
     {
         try
         {
-            if ( blurred == null )
-                convertToBlurred();
-            BufferedImage withLines = ImageIO.read(blurred);
+            if ( reconstructed == null )
+                convertToReconstructed();
+            BufferedImage withLines = ImageIO.read(reconstructed);
             FindLinesBlurred fl = new FindLinesBlurred( withLines, 
                 text.numWords(), options );
             page = fl.getPage();
@@ -647,6 +671,12 @@ public class Picture {
         if ( blurred == null )
             convertToBlurred();
         return getPicData( blurred );
+    }
+    public byte[] getReconstructedData() throws ImageException
+    {
+        if ( reconstructed == null )
+            convertToReconstructed();
+        return getPicData( reconstructed );
     }
     /**
      * Read the cleaned image 

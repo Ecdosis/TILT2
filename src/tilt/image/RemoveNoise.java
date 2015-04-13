@@ -36,6 +36,7 @@ public class RemoveNoise
     WritableRaster darkRegions;
     /** pixel register of rejected blobs */
     WritableRaster rejectedRegions;
+    WritableRaster blurred;
     /** the border region, consisting of the outermost thin border, any blobs 
      * found starting there and any long and large blobs in the inner border */
     Border border;
@@ -52,9 +53,31 @@ public class RemoveNoise
         this.options = options;
         darkRegions = src.copyData(null);
         float average = Blob.setToWhite( darkRegions );
-        border = new Border( src.getRaster(), average );
+        border = new Border( getBlurred(), average );
         rejectedRegions = Utils.copyRaster( darkRegions, 0, 0 );
         this.rejects = new ArrayList<Blob>();
+    }
+    WritableRaster getBlurred()
+    {
+        int blurRadius = src.getHeight()/300;
+        if ( blurRadius == 0 )
+            blurRadius = 5;
+        BlurImage bi = new BlurImage( src, blurRadius );
+        BufferedImage bImage = bi.blur();
+        WritableRaster br = bImage.getRaster();
+        int width = br.getWidth();
+        int height = br.getHeight();
+        int[] iArray = new int[width];
+        // blackify
+        for ( int y=0;y<height;y++ )
+        {
+            br.getPixels(0,y,width,1,iArray);
+            for ( int x=0;x<width;x++ )
+                if ( iArray[x] != 255 )
+                    iArray[x] = 0;
+            br.setPixels(0,y,width,1,iArray);
+        }
+        return br;
     }
     /**
      * Clear pixels in the corresponding image that are marked "dark" 
@@ -131,7 +154,6 @@ public class RemoveNoise
         WritableRaster wr = src.getRaster();
         Point loc= new Point(0,0);
         int[] iArray = new int[1];
-        Point p = new Point(500,500);
         for ( int y=0;y<wr.getHeight();y++ )
         {
             loc.y = y;
@@ -145,7 +167,7 @@ public class RemoveNoise
                     {
                         if ( !isDirty(loc) && !isRejected(loc) )
                         {
-                            Blob b = new Blob(darkRegions,options);
+                            Blob b = new Blob(darkRegions,options,null);
                             b.expandArea( wr, loc );
                             if ( b.isValid(wr.getWidth(),wr.getHeight())
                                 ||b.isOddShaped(wr.getWidth(),wr.getHeight()) )

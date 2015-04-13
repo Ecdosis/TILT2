@@ -50,7 +50,7 @@ public class BlurImage
         BufferedImage dst;
         if ( blur > 0 )
         {
-            GaussianFilter gf= new GaussianFilter(blur);
+            GaussianFilter gf = new GaussianFilter(blur);
             dst = new BufferedImage(src.getColorModel(), wr, false,null);
             gf.filter( src, dst );
         }

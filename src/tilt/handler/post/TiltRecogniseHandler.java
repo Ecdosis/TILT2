@@ -138,6 +138,10 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     p.convertToBlurred();
                     picType = ImageType.blurred;
                     break;
+                case reconstructed:
+                    p.convertToReconstructed();
+                    picType = ImageType.baselines;
+                    break;
                 case blurred:
                     p.convertToBaselines();
                     picType = ImageType.baselines;

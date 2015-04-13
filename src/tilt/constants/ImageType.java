@@ -36,6 +36,7 @@ public enum ImageType
     cleaned,
     /** two-tone image with Gaussian blur for line-recognition */
     blurred,
+    reconstructed,
     /** cleaned image with lines draw over the top */
     baselines,
     /** reduced lines */

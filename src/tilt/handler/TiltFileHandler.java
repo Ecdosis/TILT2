@@ -82,7 +82,10 @@ public class TiltFileHandler extends TiltHandler
                 else if ( file.getName().endsWith(".txt"))
                     response.setContentType("text/plain");
                 else    // else assume binary data
+                {
+                    System.out.println(urn);
                     response.setContentType("application/octet-stream");
+                }
                 response.getOutputStream().write(data);
             }
             else

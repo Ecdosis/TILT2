@@ -77,7 +77,7 @@ public class ReduceLines
                         dirty.getPixel(x,y,iArray);
                         if ( iArray[0] != 0 )
                         {
-                            Blob b = new Blob( wr, options );
+                            Blob b = new Blob( wr, options, null );
                             b.save( dirty, wr, new Point(x,y) );
                             dirty.getPixel(x,y,iArray);
                             if ( iArray[0]== 0 )

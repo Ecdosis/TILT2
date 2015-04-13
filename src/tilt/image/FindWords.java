@@ -111,7 +111,7 @@ public class FindWords
                     dirty.getPixel( x, y, iArray );
                     if ( iArray[0]!= 0 )
                     {
-                        Blob b = new Blob( dirty, opts );
+                        Blob b = new Blob( dirty, opts, null );
                         b.save( dirty, wr, new Point(x,y) );
                         blobs.add( b );
                     }
