@@ -48,7 +48,7 @@ function enableAll()
 	$("#greyscale").prop('disabled', false);
 	$("#twotone").prop('disabled', false);
 	$("#cleaned").prop('disabled', false);
-	$("#blurred").prop('disabled', false);
+	$("#reconstructed").prop('disabled', false);
         $("#reduced").prop('disabled', false);
 	$("#baselines").prop('disabled', false);
 	$("#words").prop('disabled', false); 
@@ -60,7 +60,7 @@ function disableAll()
 	$("#greyscale").prop('disabled', true);
 	$("#twotone").prop('disabled', true);
 	$("#cleaned").prop('disabled', true);
-	$("#blurred").prop('disabled', true);
+	$("#reconstructed").prop('disabled', true);
         $("#reduced").prop('disabled', true);
 	$("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
@@ -410,10 +410,10 @@ $("#cleaned").click(function(){
 	$("#container").html('<img width="500" src="'+getUrlFromLoc("cleaned")+'">');
     appendCanvas();
 });
-$("#blurred").click(function(){
-	var url = escapeUrl(getUrlFromLoc("blurred"));
+$("#reconstructed").click(function(){
+	var url = escapeUrl(getUrlFromLoc("reconstructed"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("blurred")+'">');
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("reconstructed")+'">');
     appendCanvas();
 });
 $("#reduced").click(function(){

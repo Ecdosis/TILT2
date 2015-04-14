@@ -22,8 +22,10 @@ import java.awt.image.WritableRaster;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.awt.geom.Area;
+import javax.imageio.ImageIO;
 import tilt.Utils;
 import tilt.handler.post.Options;
+import java.io.File;
 /**
  * Remove big black blobs from two-tone pictures. The border
  * @author desmond
@@ -36,13 +38,15 @@ public class RemoveNoise
     WritableRaster darkRegions;
     /** pixel register of rejected blobs */
     WritableRaster rejectedRegions;
-    WritableRaster blurred;
+    /** scratch space needed for Blob */
+    WritableRaster scratch;
     /** the border region, consisting of the outermost thin border, any blobs 
      * found starting there and any long and large blobs in the inner border */
     Border border;
     /** blobs that were too small but were in the outermost border */
     ArrayList<Blob> rejects;
     Options options;
+    int speckleSize;
     /**
      * Create a new RemoveNoise object 
      * @param src the source B&W image
@@ -52,10 +56,30 @@ public class RemoveNoise
         this.src = src;
         this.options = options;
         darkRegions = src.copyData(null);
+        scratch = src.copyData(null);
         float average = Blob.setToWhite( darkRegions );
+        Blob.setToWhite( scratch );
         border = new Border( getBlurred(), average );
         rejectedRegions = Utils.copyRaster( darkRegions, 0, 0 );
         this.rejects = new ArrayList<Blob>();
+        speckleSize = Math.round(options.getFloat(Options.Keys.speckleSize)
+            *src.getWidth());
+        if ( speckleSize == 0 )
+            speckleSize = 1;        
+    }
+    void writeDarkRegions()
+    {
+        File dst = new File("/tmp/cleaned.png");
+        try
+        {
+            dst.createNewFile();
+            BufferedImage bi = new BufferedImage(src.getColorModel(), darkRegions, false,null);
+            ImageIO.write( bi, "png", dst );
+        }
+        catch ( Exception e )
+        {
+            
+        }
     }
     WritableRaster getBlurred()
     {
@@ -87,7 +111,6 @@ public class RemoveNoise
     {
         int[] iArray = new int[1];
         iArray[0] = 0;
-//        Point p = new Point(0,0);
         for ( int y=0;y<wr.getHeight();y++ )
         {
             for ( int x=0;x<wr.getWidth();x++ )
@@ -102,15 +125,11 @@ public class RemoveNoise
                         wr.setPixel(x,y,iArray );
                     }
                 }
-//                p.x = x;
-//                p.y = y;
-//                if ( border.area.contains(p) )
-//                    wr.setPixel(x,y,iArray );
             }
         }
     }
     /**
-     * Is there a matching black pixel at these coordinates in darkRegions?
+     * Is there a matching black pixel at these coordinates in rejectedRegions?
      * @param loc the point to test
      * @return true if it is already dark there
      */
@@ -143,7 +162,9 @@ public class RemoveNoise
             Blob b = rejects.get(i);
             if ( whiteArea.contains(b.topLeft()) 
                 || whiteArea.contains(b.botRight()) )
+            {
                 b.save( darkRegions, wr, b.firstBlackPixel );
+            }
         }
     }
     /**
@@ -167,14 +188,43 @@ public class RemoveNoise
                     {
                         if ( !isDirty(loc) && !isRejected(loc) )
                         {
-                            Blob b = new Blob(darkRegions,options,null);
+                            Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
+                            int bheight =  b.getHeight();
+                            int bwidth = b.getWidth();
                             if ( b.isValid(wr.getWidth(),wr.getHeight())
-                                ||b.isOddShaped(wr.getWidth(),wr.getHeight()) )
+                                || b.isOddShaped(wr.getWidth(),wr.getHeight())
+                                || ( bheight !=0 && bheight <= speckleSize 
+                                && bwidth != 0 && bwidth<= speckleSize) )
                             {
                                 b.save(darkRegions,wr,loc);
                             }
-                            
+                            else
+                            {
+                                b.save(rejectedRegions,wr,loc);
+                                rejects.add( b );
+                            }
+                        }
+                    }
+                }
+                else    // despeckle rest of image
+                {
+                    wr.getPixel(x,y,iArray);
+                    if ( iArray[0] == 0 )
+                    {
+                        if ( !isDirty(loc) && !isRejected(loc) )
+                        {
+                            Blob b = new Blob(scratch,options,null);
+                            b.expandArea( wr, loc );
+                            int bheight =  b.getHeight();
+                            int bwidth = b.getWidth();
+                            if ( bheight !=0 && bheight <= speckleSize 
+                                && bwidth != 0 && bwidth<= speckleSize )
+                            {
+                                b.save(darkRegions,wr,loc);
+                                System.out.println("Found speckle width="
+                                    +bwidth+" height="+bheight);
+                            }
                             else
                             {
                                 b.save(rejectedRegions,wr,loc);
@@ -185,7 +235,8 @@ public class RemoveNoise
                 }
             }
         }
+        //writeDarkRegions();
         calcWhiteArea( wr );
-        clearPixels( wr );
+        clearPixels( wr );        
     }
 }

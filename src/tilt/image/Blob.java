@@ -169,13 +169,13 @@ public class Blob
         int edge = Math.round(iWidth/100.0f);
         if ( nearEdge(edge,width,height) )
             return true;
-        else if ( ratio > opts.minBlackPC )
+        else if ( ratio > opts.getFloat(Options.Keys.minBlackPC) )
         {
             float hprop = width/(float)iWidth;
             float vprop = height/(float)iHeight;
-            if ( hprop >= opts.minHProportion )
+            if ( hprop >= opts.getFloat(Options.Keys.minHProportion) )
                 return true;
-            else if ( vprop >=opts.minVProportion )
+            else if ( vprop >=opts.getFloat(Options.Keys.minVProportion) )
                 return true;
 //            if ( htWtRatio>= 2.0 )
 //                System.out.println("vprop="+vprop);
@@ -195,9 +195,11 @@ public class Blob
         float wtHtRatio = (float)width/(float)height;
         float hprop = width/(float)iWidth;
         float vprop = height/(float)iHeight;
-        if ( (hprop >= opts.minHProportion) && (wtHtRatio > opts.oddShape) )
+        if ( (hprop >= opts.getFloat(Options.Keys.minHProportion))
+            && (wtHtRatio > opts.getFloat(Options.Keys.oddShape)) )
             return true;
-        else if ( (vprop >=opts.minVProportion) && (htWtRatio > opts.oddShape) )
+        else if ( (vprop >=opts.getFloat(Options.Keys.minVProportion)) 
+            && (htWtRatio > opts.getFloat(Options.Keys.oddShape)) )
             return true;
         else
             return false;
@@ -321,7 +323,7 @@ public class Blob
      */
     int getWidth()
     {
-        return (maxX-minX)+1;
+        return (minX==Integer.MAX_VALUE)?0:(maxX-minX)+1;
     }
     /**
      * Get this blob's height
@@ -329,7 +331,7 @@ public class Blob
      */
     int getHeight()
     {
-        return (maxY-minY)+1;
+        return (minX==Integer.MAX_VALUE)?0:(maxY-minY)+1;
     }
     /**
      * Test with small image
@@ -341,8 +343,9 @@ public class Blob
         {
             Options opts = new Options(new JSONObject());
             String url = "http://ecdosis.net/test.png";
+            Double[][] cc = {{0.0,0.0},{100.0,0.0},{100.0,100.0},{0.0,100.0}};
             Picture p = new Picture( opts, url, new TextIndex("",""), 
-                InetAddress.getByName("127.0.0.1") );
+                cc, InetAddress.getByName("127.0.0.1") );
             p.convertToTwoTone();
             BufferedImage bandw = ImageIO.read(p.twotone);
             WritableRaster wr = bandw.getRaster();

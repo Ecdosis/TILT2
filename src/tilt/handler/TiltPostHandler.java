@@ -24,7 +24,7 @@ import tilt.Utils;
 import tilt.handler.post.TiltTestHandler;
 import tilt.constants.Service;
 import tilt.handler.post.TiltRecogniseHandler;
-
+import org.json.simple.JSONArray;
 /**
  * Handle a PUT request (used for update)
  * @author desmond
@@ -63,5 +63,23 @@ public class TiltPostHandler extends TiltHandler
         {
         throw new TiltException(e);
         }
+    }
+    protected Double[][] coordsToArray( JSONArray cc ) 
+        throws ArrayIndexOutOfBoundsException
+    {
+        Double[][] coords = new Double[4][2];
+        if ( cc.size()!= 4 )
+            throw new ArrayIndexOutOfBoundsException("coordinates must be 4 points");
+        for ( int i=0;i<4;i++ )
+        {
+            JSONArray vector = (JSONArray)cc.get(i);
+            if ( vector.size() != 2 )
+                throw new ArrayIndexOutOfBoundsException("Point required");
+            for ( int j=0;j<2;j++ )
+            {
+                coords[i][j] = (Double)vector.get(j);
+            }
+        }
+        return coords;
     }
 }

@@ -131,24 +131,19 @@ public class TiltTestHandler extends TiltPostHandler
             if ( obj instanceof JSONObject )
             {
                 JSONObject g = (JSONObject)obj;
-                Options opts = new Options((JSONObject)g.get("properties"));
+                JSONObject props = (JSONObject)g.get("properties");
+                String url = (String)props.get("url");
+                Options opts = new Options(props);
                 JSONObject geometry = (JSONObject)g.get("geometry");
                 if ( geometry != null && geometry.get("coordinates") 
                     instanceof JSONArray )
                 {
                     JSONArray cc = (JSONArray)geometry.get("coordinates");
-                    if ( cc.size()==1 )
-                        opts.setCoords((JSONArray)cc.get(0));
-                    else
+                    if ( cc.size()!=1 )
                         throw new Exception("Missing coordinates");
                     // create the picture and store it in the picture registry
-                    String url;
-                    if ( opts.url != null )
-                        url = opts.url;
-                    else
-                        url = Utils.getUrl(request.getServerName(),
-                            opts.docid,opts.pageid);
-                    Picture p = new Picture( opts, url, text, poster );
+                    Picture p = new Picture( opts, url, text, 
+                        coordsToArray((JSONArray)cc.get(0)), poster );
                     PictureRegistry.update( url, p );
                     // it will be identified later by its docid during GET
                 }
@@ -163,19 +158,11 @@ public class TiltTestHandler extends TiltPostHandler
                 sb.append("/tilt/");
                 sb.append(Service.IMAGE);
                 sb.append("/?");
-                if ( opts.url != null )
+                if ( url != null )
                 {
                     sb.append(Params.URL);
                     sb.append("=");
-                    sb.append(Utils.escape(opts.url));
-                }
-                else
-                {
-                    sb.append(Params.DOCID);
-                    sb.append("=");
-                    sb.append(opts.docid);
-                    sb.append("&pageid=");
-                    sb.append(opts.pageid);
+                    sb.append(Utils.escape(url));
                 }
                 sb.append("&pictype=");
                 sb.append(picType.toString());

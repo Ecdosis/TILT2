@@ -34,8 +34,7 @@ public enum ImageType
     twotone,
     /** same as twotone, which borders and large blobs removed */
     cleaned,
-    /** two-tone image with Gaussian blur for line-recognition */
-    blurred,
+    /** thin pen-strokes lost during twotone conversion restored */
     reconstructed,
     /** cleaned image with lines draw over the top */
     baselines,
@@ -76,9 +75,9 @@ public enum ImageType
             case twotone:
                 return "cleaning borders";
             case cleaned:
-                return "applying Gaussian blur";
-            case blurred:
-                return "finding baselines";
+                return "reconstructing fine lines";
+            case reconstructed:
+                return "identifying baselines";
             case baselines:
                 return "removing duplicate baselines";
             case reduced:

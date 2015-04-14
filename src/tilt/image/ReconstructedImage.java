@@ -25,7 +25,7 @@ import java.awt.image.WritableRaster;
 import java.awt.Rectangle;
 /**
  * Reconstruct an image by extending the binarised image in line with the 
- * original greysacle when overlaid.
+ * original greyscale when overlaid.
  * @author desmond
  */
 public class ReconstructedImage 

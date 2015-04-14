@@ -135,14 +135,10 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     picType = ImageType.cleaned;
                     break;
                 case cleaned:
-                    p.convertToBlurred();
-                    picType = ImageType.blurred;
-                    break;
-                case reconstructed:
                     p.convertToReconstructed();
                     picType = ImageType.baselines;
                     break;
-                case blurred:
+                case reconstructed:
                     p.convertToBaselines();
                     picType = ImageType.baselines;
                     break;
@@ -197,8 +193,7 @@ public class TiltRecogniseHandler extends TiltPostHandler
                         {
                             InetAddress poster = getIPAddress(request);
                             JSONArray cc = (JSONArray)geometry.get("coordinates");
-                            opts.setCoords(cc);
-                            p = new Picture( opts, url, text, poster);
+                            p = new Picture( opts, url, text, coordsToArray(cc), poster);
                             doRecogniseProgress( p, response,
                                 ImageType.load,ImageType.original );
                             PictureRegistry.update( url, p );

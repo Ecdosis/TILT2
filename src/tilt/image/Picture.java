@@ -20,7 +20,6 @@ package tilt.image;
 import java.net.URL;
 import java.net.InetAddress;
 import tilt.exception.ImageException;
-import org.json.simple.*;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -75,11 +74,12 @@ public class Picture {
      * @param options options from the geoJSON file
      * @param url the url of the image
      * @param text the text to align with
+     * @param coords the coordinates of the image in percentages
      * @param poster the ipaddress of the poster of the image (DDoS prevention)
      * @throws TiltException 
      */
     public Picture( Options options, String url, TextIndex text, 
-        InetAddress poster ) throws TiltException
+        Double[][] coords, InetAddress poster ) throws TiltException
     {
         try
         {
@@ -90,15 +90,7 @@ public class Picture {
             // try to register the picture
             PictureRegistry.register( this, url );
             this.options = options;
-            this.coords = new Double[4][2];
-            for ( int i=0;i<4;i++ )
-            {
-                JSONArray vector = (JSONArray)options.coords.get(i);
-                for ( int j=0;j<2;j++ )
-                {
-                    this.coords[i][j] = (Double)vector.get(j);
-                }
-            }
+            this.coords = coords;
         }
         catch ( Exception e )
         {
@@ -518,28 +510,6 @@ public class Picture {
         }
     }
     /**
-     * Convert to cleaned from twotone
-     * @throws Exception 
-     */
-    public void convertToBlurred() throws ImageException 
-    {
-        try
-        {
-            if ( cleaned == null )
-                convertToCleaned();
-            BufferedImage tt = ImageIO.read(cleaned);
-            BlurImage bi = new BlurImage( tt, options.blur );
-            BufferedImage out = bi.blur();
-            blurred = File.createTempFile(PictureRegistry.PREFIX,
-                PictureRegistry.SUFFIX);
-            ImageIO.write( out, "png", blurred );
-        }
-        catch ( Exception e )
-        {
-            throw new ImageException(e);
-        }
-    }
-    /**
      * Convert to show lines from blurred
      * @throws ImageException 
      */
@@ -665,12 +635,6 @@ public class Picture {
     public byte[] getOrigData() throws ImageException
     {
         return getPicData( orig );
-    }
-    public byte[] getBlurredData() throws ImageException
-    {
-        if ( blurred == null )
-            convertToBlurred();
-        return getPicData( blurred );
     }
     public byte[] getReconstructedData() throws ImageException
     {

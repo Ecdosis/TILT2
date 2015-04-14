@@ -19,7 +19,6 @@
 package tilt.image.matchup;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Comparator;
 import java.util.Arrays;
 import tilt.exception.MatrixException;
 import java.util.Iterator;
@@ -98,7 +97,8 @@ public class Matrix
      */
     private boolean diffOK( QueueItem qi )
     {
-        return qi.diff < Math.round(averageLineDepth*options.lineDepthFactor);
+        return qi.diff < Math.round(averageLineDepth
+            *options.getFloat(Options.Keys.lineDepthFactor));
     }
     /**
      * Insert into a integer list keeping it sorted

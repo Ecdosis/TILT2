@@ -50,8 +50,6 @@ public class ReduceLines
         this.page = page;
         this.src = src;
         WritableRaster wr = src.getRaster();
-        if ( options.blur > 0 )
-            blackify(src);
         ArrayList<Line>lines = page.getLines();
         sortLines(lines);
         dirty = src.copyData(null);
