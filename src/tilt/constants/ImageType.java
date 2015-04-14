@@ -26,6 +26,8 @@ public enum ImageType
 {
     /** before a picture can be viewed, it must be loaded */
     load,
+    /** apply initial transforms */
+    preflight,
     /** original image unchanged by tilt */
     original,
     /** original image reduced to 256 shades of grey */

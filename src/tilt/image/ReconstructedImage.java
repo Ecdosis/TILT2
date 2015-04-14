@@ -61,7 +61,7 @@ public class ReconstructedImage
     }
     private void subtractMask()
     {
-        int blurRadius = mask.getHeight()/200;
+        int blurRadius = mask.getHeight()/150;
         if ( blurRadius == 0 )
             blurRadius = 5;
         BlurImage bli = new BlurImage( mask, blurRadius );

@@ -56,6 +56,7 @@ public class Picture {
     float ppAverage;
     Page page;
     File orig;
+    File preflighted;
     File greyscale;
     File twotone;
     File cleaned;
@@ -269,6 +270,29 @@ public class Picture {
         return (int)Math.round(prop.doubleValue()*value/100.0);
     }
     /**
+     * Apply initial transformations
+     * @throws Exception 
+     */
+    public void convertToPreflight() throws ImageException 
+    {
+        try
+        {
+            if ( orig == null )
+                load();
+            BufferedImage src = ImageIO.read(orig);
+            
+            Preflight pf = new Preflight( src, options );
+            BufferedImage bi = pf.reduce();
+            preflighted = File.createTempFile(PictureRegistry.PREFIX,
+                PictureRegistry.SUFFIX);
+            ImageIO.write( bi, "png", preflighted );
+        }
+        catch ( Exception e )
+        {
+            throw new ImageException(e);
+        }
+    }
+    /**
      * Convert from the original png file to greyscale png. Save original.
      * @throws ImageException 
      */
@@ -276,7 +300,9 @@ public class Picture {
     {
         try
         {
-            BufferedImage png = ImageIO.read(orig);
+            if ( preflighted == null )
+                convertToPreflight();
+            BufferedImage png = ImageIO.read(preflighted);
             BufferedImage grey = new BufferedImage(png.getWidth(), 
                 png.getHeight(), BufferedImage.TYPE_BYTE_GRAY); 
             Graphics g = grey.getGraphics();  

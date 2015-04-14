@@ -207,32 +207,30 @@ public class RemoveNoise
                         }
                     }
                 }
-                else    // despeckle rest of image
-                {
-                    wr.getPixel(x,y,iArray);
-                    if ( iArray[0] == 0 )
-                    {
-                        if ( !isDirty(loc) && !isRejected(loc) )
-                        {
-                            Blob b = new Blob(scratch,options,null);
-                            b.expandArea( wr, loc );
-                            int bheight =  b.getHeight();
-                            int bwidth = b.getWidth();
-                            if ( bheight !=0 && bheight <= speckleSize 
-                                && bwidth != 0 && bwidth<= speckleSize )
-                            {
-                                b.save(darkRegions,wr,loc);
-                                System.out.println("Found speckle width="
-                                    +bwidth+" height="+bheight);
-                            }
-                            else
-                            {
-                                b.save(rejectedRegions,wr,loc);
-                                rejects.add( b );
-                            }
-                        }
-                    }
-                }
+//                else    // despeckle rest of image
+//                {
+//                    wr.getPixel(x,y,iArray);
+//                    if ( iArray[0] == 0 )
+//                    {
+//                        if ( !isDirty(loc) && !isRejected(loc) )
+//                        {
+//                            Blob b = new Blob(scratch,options,null);
+//                            b.expandArea( wr, loc );
+//                            int bheight =  b.getHeight();
+//                            int bwidth = b.getWidth();
+//                            if ( bheight !=0 && bheight <= speckleSize 
+//                                && bwidth != 0 && bwidth<= speckleSize )
+//                            {
+//                                b.save(darkRegions,wr,loc);
+//                            }
+//                            else
+//                            {
+//                                b.save(rejectedRegions,wr,loc);
+//                                rejects.add( b );
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
         //writeDarkRegions();

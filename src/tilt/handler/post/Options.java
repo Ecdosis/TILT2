@@ -34,10 +34,13 @@ public class Options extends HashMap<Options.Keys,Object>
         /** minimum proportion of width or height taken up by blob */
         this.put(Keys.minHProportion,0.05);
         this.put(Keys.minVProportion,0.05);
-        this.put(Keys.speckleSize, 0.002);  // 2 pixels on a 100 pixel image
+        // speckle size in margins only
+        this.put(Keys.speckleSize, 0.005); 
         this.put(Keys.oddShape,4.0);
         /** maximum amount times line depth to accept new lines */
         this.put(Keys.lineDepthFactor,1.0);
+        this.put(Keys.blueFactor,0.3);
+        this.put(Keys.maximumWidth,1200);
     }
     /**
      * Initialise an options object from a possibly empty set of properties
@@ -68,13 +71,23 @@ public class Options extends HashMap<Options.Keys,Object>
         minVProportion,
         oddShape,
         lineDepthFactor,
-        speckleSize;
+        speckleSize,
+        blueFactor,
+        maximumWidth;
     }
-    public float getFloat( Keys key )
+    public float getFloat( Keys key ) throws NumberFormatException
     {
         Object obj = this.get(key);
         if ( obj instanceof Number )
             return ((Number)obj).floatValue();
+        else
+            throw new NumberFormatException("Invalid option key "+key);
+    }
+    public int getInt( Keys key ) throws NumberFormatException
+    {
+        Object obj = this.get(key);
+        if ( obj instanceof Number )
+            return ((Number)obj).intValue();
         else
             throw new NumberFormatException("Invalid option key "+key);
     }

@@ -42,8 +42,8 @@ public class Texts
     +"still in full bloom.</p>\n<p>Orioles arrived this morning. "
     +"I heard one at\n</p>\n",
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
-    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
-    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [6.0, 7.0], [100.0, 7.0],"
+    +" [100.0, 100.0], [6.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://biodiversitylibrary.org/pageimage/43746028\",\n\t"
     +"\"blur\":3,\"smoothN\":20}\n}\n"},
     {"HARPUR","Harpur example",
