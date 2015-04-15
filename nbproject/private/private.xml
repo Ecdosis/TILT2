@@ -7,6 +7,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/get/TiltImageHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/BlurImage.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/ReconstructedImage.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Preflight.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/RemoveNoise.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/Matrix.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>

@@ -57,6 +57,7 @@ public class ReconstructedImage
         mask = new BufferedImage(ci.getColorModel(), wr, false,null);
         findBlackBlobs( opts );
         subtractMask();
+        cleanBorders(opts);
         return this.ci;
     }
     private void subtractMask()
@@ -134,5 +135,83 @@ public class ReconstructedImage
         int[] iArray = new int[1];
         darkRegions.getPixel(x,y,iArray);
         return iArray[0]==0;
+    }
+    /**
+     * Remove any blobs introduced by the reconstruction on the borders
+     * @param opts the options
+     */
+    private void cleanBorders( Options opts )
+    {
+        WritableRaster wr = ci.getRaster();
+        WritableRaster scratch = ci.copyData(null);
+        Blob.setToWhite( scratch );
+        int[] xArray = new int[cropRect.width];
+        // top border
+        extendXPixels(wr,scratch,opts,cropRect.y);
+        // bottom
+        extendXPixels(wr,scratch,opts,cropRect.height+cropRect.y-1);
+        // left
+        extendYPixels(wr,scratch,opts,cropRect.x);
+        // right
+        extendYPixels(wr,scratch,opts,cropRect.x+cropRect.width-1);
+        int[] dArray = new int[1];
+        dArray[0] = 255;
+        int yEnd = cropRect.y+cropRect.height;
+        int xEnd = cropRect.x+cropRect.width;
+        for ( int y=cropRect.y;y<yEnd;y++ )
+        {
+            scratch.getPixels(cropRect.x, y, cropRect.width, 1, xArray);
+            for ( int i=0,x=cropRect.x;x<xEnd;x++,i++ )
+            {
+                if ( xArray[i] == 0 )
+                    wr.setPixel(x, y, dArray);
+            }
+        }
+//        int[] left = new int[cropRect.height];
+//        for ( int i=0;i<left.length;i++ )
+//            left[i] = 128;
+//        wr.setPixels(cropRect.x, cropRect.y, 1, cropRect.height, left);
+        ci.setData(wr);
+    }
+    /**
+     * Look for blobs along horizontal borders
+     * @param wr the source binarised image
+     * @param scratch the accumulated area containing only the blobs
+     * @param opts the program options
+     * @param y the y-coordinate of the edge
+     */
+    private void extendXPixels( WritableRaster wr, WritableRaster scratch, 
+        Options opts, int y )
+    {
+        int[] iArray = new int[cropRect.width];
+        int[] dArray = new int[1];
+        wr.getPixels(cropRect.x,y,cropRect.width,1,iArray);
+        for ( int i=0,j=cropRect.x;i<iArray.length;i++,j++ )
+        {
+            scratch.getPixel(j, y, dArray);
+            if ( iArray[i]==0 && dArray[0] != 0 )
+            {
+                Blob b = new Blob(scratch,opts,null);
+                b.expandArea(wr, new Point(j,y));
+            }
+        }
+    }
+    private void extendYPixels( WritableRaster wr, WritableRaster scratch, 
+        Options opts, int x )
+    {
+        int[] iArray = new int[cropRect.height-2];
+        int[] dArray = new int[1];
+        wr.getPixels(x,cropRect.y+1,1,iArray.length,iArray);
+        for ( int j=cropRect.y+1,i=0;i<iArray.length;i++,j++ )
+        {
+            scratch.getPixel(x, j, dArray);
+            if ( iArray[i]==0 && dArray[0] != 0 )
+            {
+                Blob b = new Blob(scratch,opts,null);
+                b.expandArea(wr, new Point(x,j));
+                System.out.println("Found vertical blob at x="+x+" y="+j
+                    +" width="+b.getWidth()+" height="+b.getHeight());
+            }
+        }
     }
 }

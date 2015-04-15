@@ -65,8 +65,9 @@ public class Preflight
                 for (int y=0;y<h;y++ )
                 {
                     int pixelCol = src.getRGB(x,y);
+                    int blueCol = pixelCol & 0x000000FF;
                     pixelCol &= 0xFFFFFF00;
-                    pixelCol += Math.round(blueFactor*255);
+                    pixelCol += Math.round(blueFactor*blueCol);
                     //mask out the non green,non-alpha color.
                     //A is 0xFF000000
                     //R is 0x00FF0000
