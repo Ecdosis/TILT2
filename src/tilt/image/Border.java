@@ -47,52 +47,51 @@ public class Border
      * @param wr the raster of the image
      * @param average the average black pixel density per pixel
      */
-    public Border( WritableRaster wr, float average )
+    public Border( WritableRaster wr, float average, Rectangle cropRect )
     {
         this.wr = wr;
-        hUnit = Math.round(wr.getWidth()*RATIO);
-        vUnit = Math.round(wr.getHeight()*RATIO);
-        int height = wr.getHeight()/vUnit;
-        int width = wr.getWidth()/hUnit;
+        hUnit = Math.round(cropRect.width*RATIO);
+        vUnit = Math.round(cropRect.height*RATIO);
+        int height = cropRect.height/vUnit;
+        int width = cropRect.width/hUnit;
         this.whiteLevel = Math.round(average*hUnit*vUnit)/3;
         if ( this.whiteLevel==0 )
             this.whiteLevel = 1;
         this.average = Math.round(average*hUnit*vUnit);
-        this.border = Math.round(wr.getWidth()*BRD);          
-        Rectangle r = new Rectangle( wr.getWidth(), wr.getHeight());
-        area = new Area( r );
+        this.border = Math.round(cropRect.width*BRD);          
+        area = new Area( cropRect );
         // hollow it out
-        Rectangle q = new Rectangle(r.x+hUnit, r.y+vUnit, r.width-(hUnit*2), 
-            r.height-(vUnit*2));
+        Rectangle q = new Rectangle(cropRect.x+hUnit, cropRect.y+vUnit, 
+            cropRect.width-(hUnit*2), cropRect.height-(vUnit*2));
         area.subtract( new Area(q) );
         // now add in discovered blocks
         // lhs
         for ( int i=1;i<height-1;i++ )
         {
-            int v = i*vUnit;
+            int v = cropRect.y+i*vUnit;
             Unit u = new Unit(hUnit,v,Direction.right);
             u.move();
         }
         // rhs
         for ( int i=1;i<height-1;i++ )
         {
-            int h = wr.getWidth()-hUnit*2;
-            int v = i*vUnit;
+            int h = cropRect.x+cropRect.width-hUnit*2;
+            int v = cropRect.y+i*vUnit;
             Unit u = new Unit(h,v,Direction.left);
             u.move();
         }
         // top
         for ( int i=1;i<width-1;i++ )
         {
-            int h = i*hUnit;
+            int h = cropRect.x+i*hUnit;
             Unit u = new Unit(h,vUnit,Direction.down);
             u.move();
         }
         // bottom
         for ( int i=1;i<width-1;i++ )
         {
-            int h = i*hUnit;
-            Unit u = new Unit(h,wr.getHeight()-vUnit*2,Direction.up);
+            int h = cropRect.x+i*hUnit;
+            Unit u = new Unit(h,cropRect.height-vUnit*2,Direction.up);
             u.move();
         }
     }

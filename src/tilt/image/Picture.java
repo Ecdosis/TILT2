@@ -499,7 +499,7 @@ public class Picture {
             if ( twotone == null )
                 convertToTwoTone();
             BufferedImage tt = ImageIO.read(twotone);
-            RemoveNoise rn = new RemoveNoise( tt, options );
+            RemoveNoise rn = new RemoveNoise( tt, options, getCropRect() );
             rn.clean();
             cleaned = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);

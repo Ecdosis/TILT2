@@ -143,68 +143,6 @@ public class Blob
         wr.setPixel(loc.x,loc.y,iArray);
     }
     /**
-     * Is this blob entirely with the narrow edge around the margin?
-     * @param edge width of the edge
-     * @param width width of the blob
-     * @param height height of the blob
-     * @return true if it is
-     */
-    private boolean nearEdge( int edge, float width, float height )
-    {
-        return ( ((width/height)>2.0f && (minY<=edge||maxY>=parent.getHeight()-edge))
-            || ((height/width)>2.0f && (minX<=edge||maxX>=parent.getWidth()-edge)) );
-    }
-    /**
-     * Does this blob constitute a big enough area?
-     * @param iWidth the overall image width
-     * @param iHeight the overall image height
-     * @return true if this blob is big enough to remove
-     */
-    public boolean isValid( int iWidth, int iHeight )
-    {
-        int totalPixels = numWhitePixels+numBlackPixels;
-        float ratio= (float)numBlackPixels/(float)totalPixels;
-        float width = (float)(maxX+1-minX);
-        float height = (float)(maxY+1-minY);
-        int edge = Math.round(iWidth/100.0f);
-        if ( nearEdge(edge,width,height) )
-            return true;
-        else if ( ratio > opts.getFloat(Options.Keys.minBlackPC) )
-        {
-            float hprop = width/(float)iWidth;
-            float vprop = height/(float)iHeight;
-            if ( hprop >= opts.getFloat(Options.Keys.minHProportion) )
-                return true;
-            else if ( vprop >=opts.getFloat(Options.Keys.minVProportion) )
-                return true;
-//            if ( htWtRatio>= 2.0 )
-//                System.out.println("vprop="+vprop);
-//            if ( wtHtRatio>= 2.0 )
-//                System.out.println("hprop="+hprop);
-        }
-        //else
-        //    System.out.println("rejecting blob at "+minX+","+minY+" width="
-        //    +width+" height="+height+" edge="+edge);
-        return false;
-    }
-    public boolean isOddShaped( int iWidth, int iHeight )
-    {
-        float width = (float)(maxX+1-minX);
-        float height = (float)(maxY+1-minY);
-        float htWtRatio= (float)height/(float)width;
-        float wtHtRatio = (float)width/(float)height;
-        float hprop = width/(float)iWidth;
-        float vprop = height/(float)iHeight;
-        if ( (hprop >= opts.getFloat(Options.Keys.minHProportion))
-            && (wtHtRatio > opts.getFloat(Options.Keys.oddShape)) )
-            return true;
-        else if ( (vprop >=opts.getFloat(Options.Keys.minVProportion)) 
-            && (htWtRatio > opts.getFloat(Options.Keys.oddShape)) )
-            return true;
-        else
-            return false;
-    }
-    /**
      * Set a black pixel in the dirt array, keep track of minima etc
      * @param x the x-coordinate of the black pixel
      * @param y the y-coordinate of the black pixel
@@ -247,6 +185,14 @@ public class Blob
             blackLevelImage.getPixel(p.x, p.y, iArray);
             return iArray[0];
         }
+    }
+    int getTotalPixels()
+    {
+        return numWhitePixels+numBlackPixels;
+    }
+    int getBlackPixels()
+    {
+        return numBlackPixels;
     }
     /**
      * Check if there is one dirty dot not already seen.
@@ -332,6 +278,75 @@ public class Blob
     int getHeight()
     {
         return (minX==Integer.MAX_VALUE)?0:(maxY-minY)+1;
+    }
+    /**
+     * Is a point inside a circle?
+     * @param centre the centre of the circle
+     * @param loc the point to test
+     * @param radius the radius of the circle
+     * @return true if inside on or the circle
+     */
+    boolean inCircle( Point centre, Point loc, int radius )
+    {
+        int xDelta = loc.x-centre.x;
+        int yDelta = loc.y-centre.y;
+        return xDelta*xDelta + yDelta*yDelta < radius*radius;
+    }
+    /**
+     * Is this blob surrounded by a wide band of white?
+     * @param wr the raster to search in
+     * @return true if it is
+     */
+    boolean hasWhiteStandoff( WritableRaster wr )
+    {
+        // 1. get centre
+        Point centre = new Point(0,0);
+        int totalX = 0;
+        int totalY = 0;
+        if ( hull != null )
+        {
+            for ( int i=0;i<hull.size();i++ )
+            {
+                Point h = hull.get(i);
+                totalX += h.x;
+                totalY = h.y;
+            }
+            centre.x = totalX/hull.size();
+            centre.y = totalY/hull.size();
+        }
+        // 2. draw a circle around it with the option's standoff
+        int standoff = Math.round(opts.getFloat(Options.Keys.whiteStandoff)
+            *parent.getWidth());
+        int radius = standoff + Math.max(getWidth(),getHeight());
+        // 3. test for black pixels in that area
+        int minX = centre.x-radius;
+        if ( minX < 0 )
+            minX = 0;
+        int minY = centre.y-radius;
+        if ( minY < 0 )
+            minY = 0;
+        int maxX = centre.x + radius;
+        if ( maxX > parent.getWidth()-1 )
+            maxX = parent.getWidth()-1;
+        int maxY = centre.y + radius;
+        if ( maxY > parent.getHeight()-1 )
+            maxY = parent.getHeight()-1;
+        int[] iArray = new int[1];
+        Rectangle br = new Rectangle(topLeft().x,topLeft().y,getWidth(),getHeight());
+        for ( int y=minY;y<=maxY;y++ )
+        {
+            for ( int x=minX;x<=maxX;x++ )
+            {
+                Point loc = new Point(x,y);
+                if ( !br.contains(loc) && inCircle(centre,loc,radius) )
+                {
+                    wr.getPixel(x,y,iArray);
+                    if ( iArray[0] == 0 )
+                        return false;
+                }
+            }
+        }
+        return true;
     }
     /**
      * Test with small image

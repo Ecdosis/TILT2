@@ -19,6 +19,7 @@
 package tilt.image;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.awt.geom.Area;
@@ -47,19 +48,21 @@ public class RemoveNoise
     ArrayList<Blob> rejects;
     Options options;
     int speckleSize;
+    Rectangle cropRect;
     /**
      * Create a new RemoveNoise object 
      * @param src the source B&W image
      */
-    public RemoveNoise( BufferedImage src, Options options )
+    public RemoveNoise( BufferedImage src, Options options, Rectangle cropRect )
     {
         this.src = src;
         this.options = options;
+        this.cropRect = cropRect;
         darkRegions = src.copyData(null);
         scratch = src.copyData(null);
         float average = Blob.setToWhite( darkRegions );
         Blob.setToWhite( scratch );
-        border = new Border( getBlurred(), average );
+        border = new Border( getBlurred(), average, cropRect );
         rejectedRegions = Utils.copyRaster( darkRegions, 0, 0 );
         this.rejects = new ArrayList<Blob>();
         speckleSize = Math.round(options.getFloat(Options.Keys.speckleSize)
@@ -73,7 +76,8 @@ public class RemoveNoise
         try
         {
             dst.createNewFile();
-            BufferedImage bi = new BufferedImage(src.getColorModel(), darkRegions, false,null);
+            BufferedImage bi = new BufferedImage(src.getColorModel(), 
+                darkRegions, false,null);
             ImageIO.write( bi, "png", dst );
         }
         catch ( Exception e )
@@ -81,7 +85,7 @@ public class RemoveNoise
             
         }
     }
-    WritableRaster getBlurred()
+    final WritableRaster getBlurred()
     {
         int blurRadius = src.getHeight()/300;
         if ( blurRadius == 0 )
@@ -168,6 +172,89 @@ public class RemoveNoise
         }
     }
     /**
+     * Is this blob near the cropRect's margins?
+     * @param b the blob to test
+     * @return true if it is
+     */
+    private boolean nearEdge( Blob b )
+    {
+        int edge = Math.round(cropRect.width/100.0f);
+        int maxY = cropRect.y+cropRect.height;
+        int minY = cropRect.y;
+        int minX = cropRect.x;
+        int maxX = cropRect.x+cropRect.width;
+        return ( b.topLeft().y<=minY+edge
+            || b.botRight().y>=maxY-edge
+            || b.topLeft().x<=minX+edge
+            || b.botRight().x>=maxX-edge );
+    }
+    /**
+     * Is the blob dense or diffuse?
+     * @param b the blob to test
+     * @return true if it is compact within its limits
+     */
+    boolean isDense( Blob b )
+    {
+        return (float)b.getBlackPixels()/(float)b.getTotalPixels() 
+            > options.getFloat(Options.Keys.minBlackPC);
+    }
+    /**
+     * Is this a small dot in the border region?
+     * @param b the blob to test
+     * @return true if it meets the criteria for speckles
+     */
+    boolean isSpeckle( Blob b, WritableRaster wr )
+    {
+        return b.getHeight() !=0 && b.getHeight() <= speckleSize 
+            && b.getWidth() != 0 && b.getWidth()<= speckleSize
+            && b.hasWhiteStandoff(wr);
+    }
+    /**
+     * A less stringent speckle test for borders
+     * @param b the blob to test
+     * @return true if it meets the criteria for speckles
+     */
+    boolean isSpeckle( Blob b )
+    {
+        return b.getHeight() !=0 && b.getHeight() <= speckleSize 
+            && b.getWidth() != 0 && b.getWidth()<= speckleSize;
+    }
+    /**
+     * Is the blob very long or wide?
+     * @param b the blob to test
+     * @return true if it is odd-shaped
+     */
+    public boolean isOddShaped( Blob b )
+    {
+        float width = (float)b.getWidth();
+        float height = (float)b.getHeight();
+        float htWtRatio= (float)height/(float)width;
+        float wtHtRatio = (float)width/(float)height;
+        if ( wtHtRatio > options.getFloat(Options.Keys.oddShape) )
+            return true;
+        else if ( htWtRatio > options.getFloat(Options.Keys.oddShape) )
+            return true;
+        else
+            return false;
+    }
+    /**
+     * Is a blob a valid black spot to be removed?
+     * @param b the blob to test
+     * @param wr the raster to test it in
+     * @return true if this blob is suitable for removal
+     */
+    public boolean isValid( Blob b, WritableRaster wr )
+    {
+        if ( nearEdge(b) )
+            return true;
+        else if ( isDense(b) && isOddShaped(b) )
+            return true;
+        else if ( isSpeckle(b) )
+            return true;
+        else
+            return false;
+    }
+    /**
      * Identify large areas of adjacent black pixels and remove them.
      */
     public void clean()
@@ -175,10 +262,12 @@ public class RemoveNoise
         WritableRaster wr = src.getRaster();
         Point loc= new Point(0,0);
         int[] iArray = new int[1];
-        for ( int y=0;y<wr.getHeight();y++ )
+        int yEnd = cropRect.height+cropRect.y;
+        int xEnd = cropRect.width+cropRect.x;
+        for ( int y=cropRect.y;y<yEnd;y++ )
         {
             loc.y = y;
-            for ( int x=0;x<wr.getWidth();x++ )
+            for ( int x=cropRect.x;x<xEnd;x++ )
             {
                 loc.x = x;
                 if ( border.area.contains(loc) )
@@ -190,12 +279,7 @@ public class RemoveNoise
                         {
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
-                            int bheight =  b.getHeight();
-                            int bwidth = b.getWidth();
-                            if ( b.isValid(wr.getWidth(),wr.getHeight())
-                                || b.isOddShaped(wr.getWidth(),wr.getHeight())
-                                || ( bheight !=0 && bheight <= speckleSize 
-                                && bwidth != 0 && bwidth<= speckleSize) )
+                            if ( isValid(b,wr) )
                             {
                                 b.save(darkRegions,wr,loc);
                             }
@@ -207,30 +291,20 @@ public class RemoveNoise
                         }
                     }
                 }
-//                else    // despeckle rest of image
-//                {
-//                    wr.getPixel(x,y,iArray);
-//                    if ( iArray[0] == 0 )
-//                    {
-//                        if ( !isDirty(loc) && !isRejected(loc) )
-//                        {
-//                            Blob b = new Blob(scratch,options,null);
-//                            b.expandArea( wr, loc );
-//                            int bheight =  b.getHeight();
-//                            int bwidth = b.getWidth();
-//                            if ( bheight !=0 && bheight <= speckleSize 
-//                                && bwidth != 0 && bwidth<= speckleSize )
-//                            {
-//                                b.save(darkRegions,wr,loc);
-//                            }
-//                            else
-//                            {
-//                                b.save(rejectedRegions,wr,loc);
-//                                rejects.add( b );
-//                            }
-//                        }
-//                    }
-//                }
+                else
+                {
+                    wr.getPixel(x,y,iArray);
+                    if ( iArray[0] == 0 )
+                    {
+                        if ( !isDirty(loc) )
+                        {
+                            Blob b = new Blob(scratch,options,null);
+                            b.expandArea( wr, loc );
+                            if ( isSpeckle(b,wr) )
+                                b.save(darkRegions,wr,loc);
+                        }
+                    }
+                }
             }
         }
         //writeDarkRegions();

@@ -31,9 +31,8 @@ public class Options extends HashMap<Options.Keys,Object>
     private void setDefaults()
     {
         this.put(Keys.minBlackPC,0.5);
-        /** minimum proportion of width or height taken up by blob */
-        this.put(Keys.minHProportion,0.05);
-        this.put(Keys.minVProportion,0.05);
+        // standoff around speckles
+        this.put(Keys.whiteStandoff,0.02);
         // speckle size in margins only
         this.put(Keys.speckleSize, 0.005); 
         this.put(Keys.oddShape,4.0);
@@ -67,8 +66,7 @@ public class Options extends HashMap<Options.Keys,Object>
     public enum Keys
     {
         minBlackPC,
-        minHProportion,
-        minVProportion,
+        whiteStandoff,
         oddShape,
         lineDepthFactor,
         speckleSize,
