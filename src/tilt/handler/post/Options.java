@@ -32,9 +32,10 @@ public class Options extends HashMap<Options.Keys,Object>
     {
         this.put(Keys.minBlackPC,0.5);
         // standoff around speckles
-        this.put(Keys.whiteStandoff,0.02);
-        // speckle size in margins only
-        this.put(Keys.speckleSize, 0.005); 
+        this.put(Keys.whiteStandoff,0.01);
+        this.put(Keys.maxFeatureSize, 0.1);
+        // speckle size 
+        this.put(Keys.speckleSize, 0.008); 
         this.put(Keys.oddShape,4.0);
         /** maximum amount times line depth to accept new lines */
         this.put(Keys.lineDepthFactor,1.0);
@@ -71,7 +72,8 @@ public class Options extends HashMap<Options.Keys,Object>
         lineDepthFactor,
         speckleSize,
         blueFactor,
-        maximumWidth;
+        maximumWidth,
+        maxFeatureSize;
     }
     public float getFloat( Keys key ) throws NumberFormatException
     {

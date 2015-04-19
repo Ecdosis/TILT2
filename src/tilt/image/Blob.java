@@ -299,46 +299,39 @@ public class Blob
      */
     boolean hasWhiteStandoff( WritableRaster wr )
     {
-        // 1. get centre
-        Point centre = new Point(0,0);
-        int totalX = 0;
-        int totalY = 0;
-        if ( hull != null )
-        {
-            for ( int i=0;i<hull.size();i++ )
-            {
-                Point h = hull.get(i);
-                totalX += h.x;
-                totalY = h.y;
-            }
-            centre.x = totalX/hull.size();
-            centre.y = totalY/hull.size();
-        }
-        // 2. draw a circle around it with the option's standoff
+        // 1. original blob bounds
+        Rectangle inner = new Rectangle(topLeft().x,topLeft().y,
+            getWidth(),getHeight());
+        Rectangle outer = (Rectangle)inner.clone();
         int standoff = Math.round(opts.getFloat(Options.Keys.whiteStandoff)
             *parent.getWidth());
-        int radius = standoff + Math.max(getWidth(),getHeight());
+        // 2. outset rect by standoff
+        if ( outer.x >= standoff )
+            outer.x -= standoff;
+        else
+            outer.x = 0;
+        if ( outer.y-standoff > 0 )
+            outer.y -= standoff;
+        else
+            outer.y = 0;
+        if ( outer.x+outer.width+standoff*2 < wr.getWidth() )
+            outer.width += standoff*2;
+        else
+            outer.width = wr.getWidth()-outer.x;
+        if ( outer.y+outer.height+standoff*2 < wr.getHeight() )
+            outer.height += standoff*2;
+        else
+            outer.height = wr.getHeight()-outer.y;
         // 3. test for black pixels in that area
-        int minX = centre.x-radius;
-        if ( minX < 0 )
-            minX = 0;
-        int minY = centre.y-radius;
-        if ( minY < 0 )
-            minY = 0;
-        int maxX = centre.x + radius;
-        if ( maxX > parent.getWidth()-1 )
-            maxX = parent.getWidth()-1;
-        int maxY = centre.y + radius;
-        if ( maxY > parent.getHeight()-1 )
-            maxY = parent.getHeight()-1;
         int[] iArray = new int[1];
-        Rectangle br = new Rectangle(topLeft().x,topLeft().y,getWidth(),getHeight());
-        for ( int y=minY;y<=maxY;y++ )
+        int maxY = outer.y+outer.height;
+        int maxX = outer.x+outer.width;
+        for ( int y=outer.y;y<maxY;y++ )
         {
-            for ( int x=minX;x<=maxX;x++ )
+            for ( int x=outer.x;x<maxX;x++ )
             {
                 Point loc = new Point(x,y);
-                if ( !br.contains(loc) && inCircle(centre,loc,radius) )
+                if ( !inner.contains(loc) )
                 {
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )

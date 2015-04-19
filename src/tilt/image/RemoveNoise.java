@@ -193,28 +193,28 @@ public class RemoveNoise
      * @param b the blob to test
      * @return true if it is compact within its limits
      */
-    boolean isDense( Blob b )
+    private boolean isDense( Blob b )
     {
         return (float)b.getBlackPixels()/(float)b.getTotalPixels() 
             > options.getFloat(Options.Keys.minBlackPC);
     }
     /**
-     * Is this a small dot in the border region?
+     * Is this a small dot anywhere?
      * @param b the blob to test
      * @return true if it meets the criteria for speckles
      */
-    boolean isSpeckle( Blob b, WritableRaster wr )
+    private boolean isSpeckle( Blob b, WritableRaster wr )
     {
         return b.getHeight() !=0 && b.getHeight() <= speckleSize 
             && b.getWidth() != 0 && b.getWidth()<= speckleSize
             && b.hasWhiteStandoff(wr);
     }
     /**
-     * A less stringent speckle test for borders
+     * Is this a small dot in the borders?
      * @param b the blob to test
      * @return true if it meets the criteria for speckles
      */
-    boolean isSpeckle( Blob b )
+    private boolean isSpeckle( Blob b )
     {
         return b.getHeight() !=0 && b.getHeight() <= speckleSize 
             && b.getWidth() != 0 && b.getWidth()<= speckleSize;
@@ -224,7 +224,7 @@ public class RemoveNoise
      * @param b the blob to test
      * @return true if it is odd-shaped
      */
-    public boolean isOddShaped( Blob b )
+    private boolean isOddShaped( Blob b )
     {
         float width = (float)b.getWidth();
         float height = (float)b.getHeight();
@@ -238,18 +238,35 @@ public class RemoveNoise
             return false;
     }
     /**
-     * Is a blob a valid black spot to be removed?
+     * Is this blob just too damn big? If so. it can't be text.
+     * @param b the blob in question
+     * @return true if its a monster
+     */
+    private boolean isTooBig( Blob b )
+    {
+        int maxWidth = Math.round(src.getWidth()
+            *options.getFloat(Options.Keys.maxFeatureSize));
+        int maxHeight = Math.round(src.getHeight()
+            *options.getFloat(Options.Keys.maxFeatureSize));
+        return b.getHeight() > maxHeight || b.getWidth()>maxWidth;
+    }
+    /**
+     * Is a blob a black spot to be removed in the margin?
      * @param b the blob to test
      * @param wr the raster to test it in
      * @return true if this blob is suitable for removal
      */
-    public boolean isValid( Blob b, WritableRaster wr )
+    public boolean isInvalidInMargin( Blob b, WritableRaster wr )
     {
         if ( nearEdge(b) )
             return true;
         else if ( isDense(b) && isOddShaped(b) )
             return true;
         else if ( isSpeckle(b) )
+            return true;
+        else if ( isTooBig(b) )
+            return true;
+        else if ( b.hasWhiteStandoff(wr) )
             return true;
         else
             return false;
@@ -279,7 +296,8 @@ public class RemoveNoise
                         {
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
-                            if ( isValid(b,wr) )
+                            //System.out.println("blob in margin: b.width="+b.getWidth()+" x="+x+" y="+y);
+                            if ( isInvalidInMargin(b,wr) )
                             {
                                 b.save(darkRegions,wr,loc);
                             }
@@ -291,7 +309,7 @@ public class RemoveNoise
                         }
                     }
                 }
-                else
+                else    // body of image
                 {
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
@@ -300,7 +318,8 @@ public class RemoveNoise
                         {
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
-                            if ( isSpeckle(b,wr) )
+                            if ( isSpeckle(b,wr) 
+                                || (isTooBig(b)&&b.hasWhiteStandoff(wr)) )
                                 b.save(darkRegions,wr,loc);
                         }
                     }
