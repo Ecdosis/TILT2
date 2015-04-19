@@ -571,7 +571,7 @@ public class Picture {
         {
             if ( baselines == null )
                 convertToBaselines();
-            BufferedImage reducedLines = ImageIO.read(cleaned);
+            BufferedImage reducedLines = ImageIO.read(reconstructed);
             ReduceLines rl = new ReduceLines( reducedLines, page, options );
             reduced = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);

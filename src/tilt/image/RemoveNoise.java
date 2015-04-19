@@ -250,7 +250,8 @@ public class RemoveNoise
             *options.getFloat(Options.Keys.maxFeatureSize));
         int maxHeight = Math.round(src.getHeight()
             *options.getFloat(Options.Keys.maxFeatureSize));
-        return b.getHeight() > maxHeight || b.getWidth()>maxWidth;
+        boolean res = b.getHeight() > maxHeight || b.getWidth()>maxWidth;
+        return res;
     }
     /**
      * Is a blob a black spot to be removed in the margin?
@@ -326,7 +327,7 @@ public class RemoveNoise
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
                             if ( (despeckleBody && isSpeckle(b,wr))
-                                || (isTooBig(b)&&b.hasWhiteStandoff(wr,false)) )
+                                || (isTooBig(b)&&b.hasWhiteStandoff(wr,true)) )
                                 b.save(darkRegions,wr,loc);
                         }
                     }

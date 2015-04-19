@@ -336,14 +336,17 @@ public class Blob
                 if ( !inner.contains(loc) )
                 {
                     wr.getPixel(x,y,iArray);
-                    if ( iArray[0] == 0 && nBlacks == maxRogues )
+                    if ( iArray[0] == 0 )
                     {
-                        if ( report )
-                            System.out.println("black pixel at x="+x+" y="+y);
-                        return false;
+                        if ( nBlacks == maxRogues )
+                        {
+                            if ( report )
+                                System.out.println("black pixel at x="+x+" y="+y);
+                            return false;
+                        }
+                        else
+                            nBlacks++;
                     }
-                    else
-                        nBlacks++;
                 }
             }
         }
