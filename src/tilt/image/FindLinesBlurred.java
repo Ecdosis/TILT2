@@ -20,6 +20,7 @@ package tilt.image;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import tilt.image.page.Page;
 import tilt.handler.post.Options;
@@ -28,13 +29,10 @@ import tilt.handler.post.Options;
  * Find the lines based on a Gaussian-blurred image
  * @author desmond
  */
-public class FindLinesBlurred {
-    /** width of vertical strips */
-    static float H_SCALE_RATIO = 0.04f;
-    /** the shade to reduce the blackness to */
-    static int LIGHT_SHADE = 128;
-    /** range of moving average smoothing +- N*/
-    static int SMOOTH_N = 9;
+public class FindLinesBlurred 
+{
+    int LIGHT_SHADE = 128;
+    int smoothN;
     BufferedImage src;
     /** average image pixel density*/
     float average;
@@ -46,30 +44,41 @@ public class FindLinesBlurred {
     Page page;
     /** number of horizontal pixels to combine */
     int hScale;
+    Options opts;
     /**
      * Detect lines n the basis of an already blurred image
      * @param src the source blurred image
      * @param numWords the number of words on the page (needed by page object)
      * @throws Exception 
      */
-    public FindLinesBlurred( BufferedImage src, int numWords, Options options ) 
-        throws Exception
+    public FindLinesBlurred( BufferedImage src, Rectangle cropRect, 
+        int numWords, Options options ) throws Exception
     {
-        this.src = src;
-        WritableRaster wr = src.getRaster();
-        hScale = Math.round(wr.getWidth()*H_SCALE_RATIO);
+        this.opts = options;
+        // first blur the image appropriately
+        int blur = Math.round(options.getFloat(Options.Keys.blurForLines)
+            *cropRect.height);
+        BlurImage bi = new BlurImage(src,blur);
+        BufferedImage blurred = bi.blur();
+        WritableRaster wr = blurred.getRaster();
+        //WritableRaster wr = src.getRaster();
+        hScale = Math.round(wr.getWidth()
+            *options.getFloat(Options.Keys.verticalSliceSize));
         width = (wr.getWidth()+hScale-1)/hScale;
+        smoothN = Math.round(opts.getFloat(Options.Keys.smoothN)*cropRect.height);
         peaks = new ArrayList[width];
         average = computeAverage( wr );
         for ( int i=0;i<width;i++)
             peaks[i] = findPeaks(wr,i);
-        lightenImage( wr );
+        if ( options.getBoolean(Options.Keys.test) )
+            lightenImage( wr );
         // now draw the lines
         page = new Page( peaks, hScale, 1, numWords, options );
         page.refineRight( wr, hScale, 1, LIGHT_SHADE );
         page.refineLeft( wr, hScale, 1, LIGHT_SHADE );
         page.finalise( wr );
-        page.draw( src.getGraphics() );
+        if ( options.getBoolean(Options.Keys.test) )
+            page.draw( src.getGraphics() );
     }
     /**
      * Lighten an image in preparation for drawing on top of it
@@ -92,21 +101,21 @@ public class FindLinesBlurred {
         }
     }
     /**
-     * Compute the average pixel intensity across the whole image (expensive)
+     * Compute the average pixel intensity across the whole image
      * @return the averages a float
      */
     private float computeAverage( WritableRaster wr )
     {
         float total = 0.0f;
-        int[] iArray = new int[1];
         int w = wr.getWidth();
         int h = wr.getHeight();
-        for ( int x=0;x<w;x++ )
+        int[] iArray = new int[w];
+        for ( int y=0;y<h;y++ )
         {
-            for ( int y=0;y<h;y++ )
+            wr.getPixels(0,y,w,1,iArray);
+            for ( int x=0;x<w;x++ )
             {
-                wr.getPixel(x,y,iArray);
-                total += iArray[0];
+                total += iArray[x];
             }
         }
         return (float)total/(float)(h*w);
@@ -117,27 +126,27 @@ public class FindLinesBlurred {
      * @param peak the approximate peak position
      * @return the precise peak
      */
-    private int refinePeak( float[] totals, int peak )
-    {
-        int best = peak;
-        int left = peak-1;
-        while ( left >=0 && totals[left] < totals[peak] )
-            left--;
-        int right = peak+1;
-        while ( right < totals.length && totals[right] < totals[peak] )
-            right++;
-        if ( left >= 0 )
-        {
-            if ( totals[left] < totals[peak] )
-                best = left;
-        }
-        if ( right < totals.length )
-        {
-            if ( totals[right] < totals[best] )
-                best = right;
-        }
-        return best;
-    }
+//    private int refinePeak( float[] totals, int peak )
+//    {
+//        int best = peak;
+//        int left = peak-1;
+//        while ( left >=0 && totals[left] < totals[peak] )
+//            left--;
+//        int right = peak+1;
+//        while ( right < totals.length && totals[right] < totals[peak] )
+//            right++;
+//        if ( left >= 0 )
+//        {
+//            if ( totals[left] < totals[peak] )
+//                best = left;
+//        }
+//        if ( right < totals.length )
+//        {
+//            if ( totals[right] < totals[best] )
+//                best = right;
+//        }
+//        return best;
+//    }
     /**
      * Collapse the pixels in a vertical strip horizontally, look for peaks
      * @param wr the entire raster
@@ -149,31 +158,31 @@ public class FindLinesBlurred {
         int stripWidth = ((strip+1)*hScale<wr.getWidth())?hScale:wr.getWidth()
             -(strip*hScale);
         int xStart = strip*hScale;
-        int xEnd = xStart+stripWidth;
         float[] totals = new float[wr.getHeight()];
-        int[] iArray = new int[1];
+        int[] iArray = new int[stripWidth];
         for ( int y=0;y<wr.getHeight();y++ )
         {
-            for ( int x=xStart;x<xEnd;x++ )
+            wr.getPixels(xStart,y,stripWidth,1,iArray);
+            for ( int x=0;x<stripWidth;x++ )
             {
-                wr.getPixel(x,y,iArray);
-                totals[y]+=iArray[0];
+                totals[y] += iArray[x];
             }
             totals[y] /= stripWidth;
         }
         float old_slope;
         float slope = 0.0f;
         ArrayList<Integer> list= new ArrayList<>();
-        totals = smooth( totals );
-        for ( int y=SMOOTH_N;y<wr.getHeight();y++ )
+        //totals = smooth( totals );
+        for ( int y=smoothN;y<wr.getHeight();y++ )
         {
-            float dy = (totals[y]-totals[y-SMOOTH_N]);
-            float dx = (float)SMOOTH_N;
+            float dy = (totals[y]-totals[y-smoothN]);
+            float dx = (float)smoothN;
             old_slope = slope;
             slope = dy/dx;
             if ( slope >0.0f && old_slope <= 0.0f )
             {
-                int peak = refinePeak(totals,y-(SMOOTH_N/2));
+                int peak = y-(smoothN)/2;
+                //int peak = refinePeak(totals,y-(smoothN/2));
                 if ( totals[peak] < average )
                     list.add(new Integer(peak));
             }
@@ -186,24 +195,24 @@ public class FindLinesBlurred {
      * @param data the array to smooth, unchanged
      * @return the smoothed version of the original data
      */
-    private float[] smooth( float[] data )
-    {
-        int limit = data.length-SMOOTH_N;
-        float[] copy = new float[data.length];
-        // just copy the ends over without smoothing
-        for ( int i=0;i<SMOOTH_N;i++ )
-            copy[i]= data[i];
-        for ( int i=data.length-1;i>data.length-SMOOTH_N;i-- )
-            copy[i] = data[i];
-        for ( int i=SMOOTH_N;i<limit;i++ )
-        {
-            int sum = 0;
-            for ( int j=i-SMOOTH_N;j<=i+SMOOTH_N;j++ )
-                sum += data[j];
-            copy[i] = sum/(2*SMOOTH_N+1);
-        }
-        return copy;
-    }
+//    private float[] smooth( float[] data )
+//    {
+//        int limit = data.length-smoothN;
+//        float[] copy = new float[data.length];
+//        // just copy the ends over without smoothing
+//        for ( int i=0;i<smoothN;i++ )
+//            copy[i]= data[i];
+//        for ( int i=data.length-1;i>data.length-smoothN;i-- )
+//            copy[i] = data[i];
+//        for ( int i=smoothN;i<limit;i++ )
+//        {
+//            int sum = 0;
+//            for ( int j=i-smoothN;j<=i+smoothN;j++ )
+//                sum += data[j];
+//            copy[i] = sum/(2*smoothN+1);
+//        }
+//        return copy;
+//    }
     /**
      * Get the completed page object
      * @return a {@link Page} object

@@ -31,8 +31,10 @@ public class Options extends HashMap<Options.Keys,Object>
     private void setDefaults()
     {
         this.put(Keys.minBlackPC,0.5);
-        // standoff around speckles
+        /** size of white standoff around speckles */
         this.put(Keys.whiteStandoff,0.01);
+        /** maximum number of black pixels in white standoff */
+        this.put(Keys.maxRoguePixels,2);
         this.put(Keys.maxFeatureSize, 0.1);
         // speckle size 
         this.put(Keys.speckleSize, 0.008); 
@@ -41,6 +43,15 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.lineDepthFactor,1.0);
         this.put(Keys.blueFactor,0.3);
         this.put(Keys.maximumWidth,1200);
+        this.put(Keys.despeckleBody,true);
+        /** width of vertical strips */
+        this.put(Keys.verticalSliceSize,0.05);
+        /** range of moving average smoothing +- N*/
+        this.put(Keys.smoothN,0.01);
+        /** true if we are testing */
+        this.put(Keys.test,false);
+        /** fraction of height for line-blur radius */
+        this.put(Keys.blurForLines,0.008);
     }
     /**
      * Initialise an options object from a possibly empty set of properties
@@ -57,7 +68,8 @@ public class Options extends HashMap<Options.Keys,Object>
             try
             {
                 Options.Keys key = Options.Keys.valueOf(iter.next());
-                this.put(key, map.get(key));
+                Object value = map.get(key.toString());
+                this.put(key, value);
             }
             catch( Exception e )
             {
@@ -73,7 +85,13 @@ public class Options extends HashMap<Options.Keys,Object>
         speckleSize,
         blueFactor,
         maximumWidth,
-        maxFeatureSize;
+        maxFeatureSize,
+        maxRoguePixels,
+        verticalSliceSize,
+        smoothN,
+        despeckleBody,
+        blurForLines,
+        test;
     }
     public float getFloat( Keys key ) throws NumberFormatException
     {
@@ -90,6 +108,18 @@ public class Options extends HashMap<Options.Keys,Object>
             return ((Number)obj).intValue();
         else
             throw new NumberFormatException("Invalid option key "+key);
+    }
+    public boolean getBoolean( Keys key ) throws NumberFormatException
+    {
+        Object obj = this.get(key);
+        if ( obj instanceof Boolean )
+            return ((Boolean)obj).booleanValue();
+        else
+            throw new NumberFormatException("Invalid option key "+key);
+    }
+    public void setBoolean( Keys key, boolean value )
+    {
+        put(key,value);
     }
     // add methods to cover other data types
 }

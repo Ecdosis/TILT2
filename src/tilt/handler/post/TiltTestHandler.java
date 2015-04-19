@@ -134,6 +134,7 @@ public class TiltTestHandler extends TiltPostHandler
                 JSONObject props = (JSONObject)g.get("properties");
                 String url = (String)props.get("url");
                 Options opts = new Options(props);
+                opts.setBoolean(Options.Keys.test,true);
                 JSONObject geometry = (JSONObject)g.get("geometry");
                 if ( geometry != null && geometry.get("coordinates") 
                     instanceof JSONArray )

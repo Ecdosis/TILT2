@@ -47,6 +47,7 @@ public class RemoveNoise
     /** blobs that were too small but were in the outermost border */
     ArrayList<Blob> rejects;
     Options options;
+    boolean despeckleBody;
     int speckleSize;
     Rectangle cropRect;
     /**
@@ -58,6 +59,7 @@ public class RemoveNoise
         this.src = src;
         this.options = options;
         this.cropRect = cropRect;
+        this.despeckleBody = options.getBoolean(Options.Keys.despeckleBody);
         darkRegions = src.copyData(null);
         scratch = src.copyData(null);
         float average = Blob.setToWhite( darkRegions );
@@ -314,7 +316,7 @@ public class RemoveNoise
                         }
                     }
                 }
-                else    // body of image
+                else 
                 {
                     wr.getPixel(x,y,iArray);
                     if ( iArray[0] == 0 )
@@ -323,7 +325,7 @@ public class RemoveNoise
                         {
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
-                            if ( isSpeckle(b,wr) 
+                            if ( (despeckleBody && isSpeckle(b,wr))
                                 || (isTooBig(b)&&b.hasWhiteStandoff(wr,false)) )
                                 b.save(darkRegions,wr,loc);
                         }

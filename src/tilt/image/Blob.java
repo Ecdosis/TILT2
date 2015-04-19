@@ -327,6 +327,7 @@ public class Blob
         int maxY = outer.y+outer.height;
         int maxX = outer.x+outer.width;
         int nBlacks = 0;
+        int maxRogues = opts.getInt(Options.Keys.maxRoguePixels);
         for ( int y=outer.y;y<maxY;y++ )
         {
             for ( int x=outer.x;x<maxX;x++ )
@@ -335,7 +336,7 @@ public class Blob
                 if ( !inner.contains(loc) )
                 {
                     wr.getPixel(x,y,iArray);
-                    if ( iArray[0] == 0 && nBlacks == 1 )
+                    if ( iArray[0] == 0 && nBlacks == maxRogues )
                     {
                         if ( report )
                             System.out.println("black pixel at x="+x+" y="+y);

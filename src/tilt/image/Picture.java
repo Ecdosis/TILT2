@@ -70,6 +70,7 @@ public class Picture {
     TextIndex text;
     boolean linked;
     Options options;
+    Rectangle cropRect;
     /**
      * Create a picture. Pictures stores links to the various image files.
      * @param options options from the geoJSON file
@@ -499,7 +500,8 @@ public class Picture {
             if ( twotone == null )
                 convertToTwoTone();
             BufferedImage tt = ImageIO.read(twotone);
-            RemoveNoise rn = new RemoveNoise( tt, options, getCropRect() );
+            cropRect = getCropRect();
+            RemoveNoise rn = new RemoveNoise( tt, options, cropRect );
             rn.clean();
             cleaned = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -524,7 +526,7 @@ public class Picture {
             BufferedImage tt = ImageIO.read(twotone);
             BufferedImage gi = ImageIO.read(greyscale);
             ReconstructedImage ri = new ReconstructedImage( ci, tt, gi, 
-                getCropRect() );
+                cropRect );
             BufferedImage out = ri.reconstruct(this.options);
             reconstructed = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -547,7 +549,7 @@ public class Picture {
                 convertToReconstructed();
             BufferedImage withLines = ImageIO.read(reconstructed);
             FindLinesBlurred fl = new FindLinesBlurred( withLines, 
-                text.numWords(), options );
+                cropRect, text.numWords(), options );
             page = fl.getPage();
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,

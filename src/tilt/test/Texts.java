@@ -42,10 +42,10 @@ public class Texts
     +"still in full bloom.</p>\n<p>Orioles arrived this morning. "
     +"I heard one at\n</p>\n",
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
-    +"ygon\",\n\t\"coordinates\": [\n\t[ [6.0, 7.0], [100.0, 7.0],"
-    +" [100.0, 100.0], [6.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://biodiversitylibrary.org/pageimage/43746028\",\n\t"
-    +"\"blur\":3,\"smoothN\":20}\n}\n"},
+    +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
+    +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
+    +"\t\"url\": \"http://biodiversitylibrary.org/pageimage/437460"
+    +"28\",\"despeckleBody\": false}\n}\n"},
     {"HARPUR","Harpur example",
     "<table><tr><td>No 17 p.253</td></tr>\n<tr><td></td><td>The 'N"
     +"evers' of Poetry<br>\n(With the very extensive original note"
@@ -78,8 +78,7 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [15.0, 25.0], [97.0, 25.0],"
     +" [97.0, 87.0], [15.0, 87.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://localhost/images/00000005.jpg\",\n\t"
-    +"\"blur\":3,\"smoothN\":20}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/00000005.jpg\"}\n}\n"},
     {"CAPUANA","Capuana example",
     "<h3>Al lettore.</h3>\n<p>Quando l’autore e l’editore di quest"
     +"i due frammenti mi\npregarono di scrivere due parole di pref"
@@ -105,8 +104,7 @@ public class Texts
     +"ygon\",\n\t\"coordinates\": [\n\t[ [10.0, 10.0], [80.0, 10.0],"
     +" [80.0, 95.0], [10.0, 95.0] ]\n\t]\n},\n\"properties\": {\n"
     //"\t\"url\": \"http://ecdosis.net/images/frontispiece3.jpg\"\n"
-    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\",\n\t\"blur\":10\n"
-    +"\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/frontispiece3.jpg\"}\n}\n"},
     {"DEROBERTO_V2","De Roberto V2",
     "<p align=\"center\">51</p>\n<p>re, e a don Blasco il quale gl"
     +"i diceva: «Che diavolo hai fatto?» \nrispondeva, balbettando"
@@ -211,8 +209,7 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [20.0, 30.0], [90.0, 30.0"
     +"], [90.0, 73.5], [20.0, 73.5] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://localhost/images/londonlives.jpg\",\n\t"
-    +"\"blur\":10\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/londonlives.jpg\"}\n}\n"},
     {"Grenada", "Oyer p.8",
     "<p>Ferrier, Charles Buret, Louis Hypolite Ventour, Elienne Ve"
     +"ntour, Charles Roy, Joinon Roy, Antoine Roy, Michel Roy, Ben"
@@ -252,9 +249,7 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [8.0, 9.0], [90.0, 9.0],"
     +" [90.0, 78.0], [8.0, 78.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://localhost/images/oyer08.png\",\n\t"
-    +"\"blur\":10,\"smoothN\":20\n\t"
-    +"}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/oyer08.png\"}\n}\n"},
     {"SONNETS", "Harpur Sonnets",
     "<h3 align=\"center\">VII"
     +"I.</h3>\n<h3 align=\"center\">ANDREW MARVEL.</h3>\n<p>Spirit"
@@ -315,8 +310,7 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://localhost/images/43746022.jpg\",\n"
-    +"\"blur\":10,\n\"smoothN\":20,\n\"hScaleRatio\":0.08\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/43746022.jpg\"}\n}\n"},
     {"Zen","Tibetan Zen",
      "<p>༄། །མཁན་པོ་མ་ཧ་ཡན་གྀ་བསམ་གཏན་ཅིག་ཅར་འཇུག་པའྀ་སྒོ། འཇྀག་རྟེན་སྐྱེ་ཤི་འཁོར་བའྀ་རྩ་བ་ནི། །རྣམ་པར་<br>"
     +"རྟོག་པའྀ་སེམས་ཡྀན་ནོ། །ཅྀ་ལྟར་ཡིན་ཞེ་ན། ཐོག་མ་མྱེད་པའྀ་བག་ཆགས་ཀྱྀ་རྒྱུ་ལས་། རྣམ་པར་རྟོག་པའྀ་སེམས་<br>"
@@ -326,8 +320,7 @@ public class Texts
     "{\n\"type\": \"Feature\",\n\"geometry\": {\n\t\"type\": \"Pol"
     +"ygon\",\n\t\"coordinates\": [\n\t[ [5.0, 8.0], [95.0, 8.0],"
     +" [50.0, 45.0], [5.0, 45.0] ]\n\t]\n},\n\"properties\": {\n"
-    +"\t\"url\": \"http://localhost/images/tibetan-zen.jpg\"\n,"
-    +"\"hyphenated\":false,\n\t\"smoothN\":20,\n\t\"blur\":10\n\t}\n}\n"}};
+    +"\t\"url\": \"http://localhost/images/tibetan-zen.jpg\"\n\t}\n}\n"}};
 }
 /*,
     {"Biodiversity1","First Biodiversity example",
