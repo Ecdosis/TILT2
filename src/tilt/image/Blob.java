@@ -297,7 +297,7 @@ public class Blob
      * @param wr the raster to search in
      * @return true if it is
      */
-    boolean hasWhiteStandoff( WritableRaster wr )
+    boolean hasWhiteStandoff( WritableRaster wr,boolean report )
     {
         // 1. original blob bounds
         Rectangle inner = new Rectangle(topLeft().x,topLeft().y,
@@ -326,6 +326,7 @@ public class Blob
         int[] iArray = new int[1];
         int maxY = outer.y+outer.height;
         int maxX = outer.x+outer.width;
+        int nBlacks = 0;
         for ( int y=outer.y;y<maxY;y++ )
         {
             for ( int x=outer.x;x<maxX;x++ )
@@ -334,8 +335,14 @@ public class Blob
                 if ( !inner.contains(loc) )
                 {
                     wr.getPixel(x,y,iArray);
-                    if ( iArray[0] == 0 )
+                    if ( iArray[0] == 0 && nBlacks == 1 )
+                    {
+                        if ( report )
+                            System.out.println("black pixel at x="+x+" y="+y);
                         return false;
+                    }
+                    else
+                        nBlacks++;
                 }
             }
         }

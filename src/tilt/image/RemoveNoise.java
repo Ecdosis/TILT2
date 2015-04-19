@@ -207,7 +207,7 @@ public class RemoveNoise
     {
         return b.getHeight() !=0 && b.getHeight() <= speckleSize 
             && b.getWidth() != 0 && b.getWidth()<= speckleSize
-            && b.hasWhiteStandoff(wr);
+            && b.hasWhiteStandoff(wr,false);
     }
     /**
      * Is this a small dot in the borders?
@@ -266,10 +266,15 @@ public class RemoveNoise
             return true;
         else if ( isTooBig(b) )
             return true;
-        else if ( b.hasWhiteStandoff(wr) )
-            return true;
-        else
-            return false;
+        else 
+        {
+            //System.out.println("w="+b.getWidth()+" h="+b.getHeight()
+            //+" x="+b.topLeft().x+" y="+b.topLeft().y);
+            if ( b.hasWhiteStandoff(wr,true) )
+                return true;
+            else
+                return false;
+        }
     }
     /**
      * Identify large areas of adjacent black pixels and remove them.
@@ -319,7 +324,7 @@ public class RemoveNoise
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
                             if ( isSpeckle(b,wr) 
-                                || (isTooBig(b)&&b.hasWhiteStandoff(wr)) )
+                                || (isTooBig(b)&&b.hasWhiteStandoff(wr,false)) )
                                 b.save(darkRegions,wr,loc);
                         }
                     }
