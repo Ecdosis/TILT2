@@ -61,7 +61,6 @@ public class FindLinesBlurred
         BlurImage bi = new BlurImage(src,blur);
         BufferedImage blurred = bi.blur();
         WritableRaster wr = blurred.getRaster();
-        //WritableRaster wr = src.getRaster();
         hScale = Math.round(wr.getWidth()
             *options.getFloat(Options.Keys.verticalSliceSize));
         width = (wr.getWidth()+hScale-1)/hScale;
@@ -121,33 +120,6 @@ public class FindLinesBlurred
         return (float)total/(float)(h*w);
     }
     /**
-     * Ensure that the peak really is the darkest point of the peak
-     * @param totals the total pixel intensities in the strip
-     * @param peak the approximate peak position
-     * @return the precise peak
-     */
-//    private int refinePeak( float[] totals, int peak )
-//    {
-//        int best = peak;
-//        int left = peak-1;
-//        while ( left >=0 && totals[left] < totals[peak] )
-//            left--;
-//        int right = peak+1;
-//        while ( right < totals.length && totals[right] < totals[peak] )
-//            right++;
-//        if ( left >= 0 )
-//        {
-//            if ( totals[left] < totals[peak] )
-//                best = left;
-//        }
-//        if ( right < totals.length )
-//        {
-//            if ( totals[right] < totals[best] )
-//                best = right;
-//        }
-//        return best;
-//    }
-    /**
      * Collapse the pixels in a vertical strip horizontally, look for peaks
      * @param wr the entire raster
      * @param the index of the strip of at most hScale pixels
@@ -189,30 +161,6 @@ public class FindLinesBlurred
         }
         return list;
     }
-    /**
-     * Smooth the array using a moving average
-     * ys(i)=1/(2N+1)(y(i+N)+y(i+N−1)+...+y(i−N))
-     * @param data the array to smooth, unchanged
-     * @return the smoothed version of the original data
-     */
-//    private float[] smooth( float[] data )
-//    {
-//        int limit = data.length-smoothN;
-//        float[] copy = new float[data.length];
-//        // just copy the ends over without smoothing
-//        for ( int i=0;i<smoothN;i++ )
-//            copy[i]= data[i];
-//        for ( int i=data.length-1;i>data.length-smoothN;i-- )
-//            copy[i] = data[i];
-//        for ( int i=smoothN;i<limit;i++ )
-//        {
-//            int sum = 0;
-//            for ( int j=i-smoothN;j<=i+smoothN;j++ )
-//                sum += data[j];
-//            copy[i] = sum/(2*smoothN+1);
-//        }
-//        return copy;
-//    }
     /**
      * Get the completed page object
      * @return a {@link Page} object

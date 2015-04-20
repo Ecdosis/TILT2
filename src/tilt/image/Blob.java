@@ -295,31 +295,41 @@ public class Blob
     /**
      * Is this blob surrounded by a wide band of white?
      * @param wr the raster to search in
+     * @param standoff the amount of vertical or horizontal white standoff
      * @return true if it is
      */
-    boolean hasWhiteStandoff( WritableRaster wr,boolean report )
+    boolean hasWhiteStandoff( WritableRaster wr, int standoff )
+    {
+        return hasWhiteStandoff(wr,standoff,standoff);
+    }
+    /**
+     * Is this blob surrounded by a wide band of white?
+     * @param wr the raster to search in
+     * @param hStandoff the amount of white horizontal standoff
+     * @param vStandoff the amount of vertical white standoff
+     * @return true if it is
+     */
+    boolean hasWhiteStandoff( WritableRaster wr, int hStandoff, int vStandoff )
     {
         // 1. original blob bounds
         Rectangle inner = new Rectangle(topLeft().x,topLeft().y,
             getWidth(),getHeight());
         Rectangle outer = (Rectangle)inner.clone();
-        int standoff = Math.round(opts.getFloat(Options.Keys.whiteStandoff)
-            *parent.getWidth());
         // 2. outset rect by standoff
-        if ( outer.x >= standoff )
-            outer.x -= standoff;
+        if ( outer.x >= hStandoff )
+            outer.x -= hStandoff;
         else
             outer.x = 0;
-        if ( outer.y-standoff > 0 )
-            outer.y -= standoff;
+        if ( outer.y-vStandoff > 0 )
+            outer.y -= vStandoff;
         else
             outer.y = 0;
-        if ( outer.x+outer.width+standoff*2 < wr.getWidth() )
-            outer.width += standoff*2;
+        if ( outer.x+outer.width+hStandoff*2 < wr.getWidth() )
+            outer.width += hStandoff*2;
         else
             outer.width = wr.getWidth()-outer.x;
-        if ( outer.y+outer.height+standoff*2 < wr.getHeight() )
-            outer.height += standoff*2;
+        if ( outer.y+outer.height+vStandoff*2 < wr.getHeight() )
+            outer.height += vStandoff*2;
         else
             outer.height = wr.getHeight()-outer.y;
         // 3. test for black pixels in that area
@@ -340,8 +350,6 @@ public class Blob
                     {
                         if ( nBlacks == maxRogues )
                         {
-                            if ( report )
-                                System.out.println("black pixel at x="+x+" y="+y);
                             return false;
                         }
                         else

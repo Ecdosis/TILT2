@@ -15,12 +15,15 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/JettyServer.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/Params.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/Texts.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Blob.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/post/Options.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/constants/ImageType.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/Post.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindLinesBlurred.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Border.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Picture.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Line.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/post/TiltRecogniseHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/ReduceLines.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltPostHandler.java</file>

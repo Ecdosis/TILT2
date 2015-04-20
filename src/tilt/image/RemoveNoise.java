@@ -49,6 +49,7 @@ public class RemoveNoise
     Options options;
     boolean despeckleBody;
     int speckleSize;
+    int speckleStandoff;
     Rectangle cropRect;
     /**
      * Create a new RemoveNoise object 
@@ -59,6 +60,8 @@ public class RemoveNoise
         this.src = src;
         this.options = options;
         this.cropRect = cropRect;
+        this.speckleStandoff = Math.round(options.getFloat(
+            Options.Keys.whiteStandoff)*src.getWidth());
         this.despeckleBody = options.getBoolean(Options.Keys.despeckleBody);
         darkRegions = src.copyData(null);
         scratch = src.copyData(null);
@@ -209,7 +212,7 @@ public class RemoveNoise
     {
         return b.getHeight() !=0 && b.getHeight() <= speckleSize 
             && b.getWidth() != 0 && b.getWidth()<= speckleSize
-            && b.hasWhiteStandoff(wr,false);
+            && b.hasWhiteStandoff(wr,speckleStandoff);
     }
     /**
      * Is this a small dot in the borders?
@@ -273,7 +276,7 @@ public class RemoveNoise
         {
             //System.out.println("w="+b.getWidth()+" h="+b.getHeight()
             //+" x="+b.topLeft().x+" y="+b.topLeft().y);
-            if ( b.hasWhiteStandoff(wr,true) )
+            if ( b.hasWhiteStandoff(wr,speckleStandoff) )
                 return true;
             else
                 return false;
@@ -327,7 +330,8 @@ public class RemoveNoise
                             Blob b = new Blob(scratch,options,null);
                             b.expandArea( wr, loc );
                             if ( (despeckleBody && isSpeckle(b,wr))
-                                || (isTooBig(b)&&b.hasWhiteStandoff(wr,true)) )
+                                || (isTooBig(b)&&b.hasWhiteStandoff(wr,
+                                    speckleStandoff)) )
                                 b.save(darkRegions,wr,loc);
                         }
                     }

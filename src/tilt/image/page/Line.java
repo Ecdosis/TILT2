@@ -180,7 +180,7 @@ public class Line implements Comparable<Line>
                 for ( int y=top;y<bottom;y++ )
                 {
                     wr.getPixel( x,y, iArray );
-                    if ( iArray[0] == black )
+                    if ( iArray[0] <= black )
                     {
                         nPixels++;
                         if ( nPixels == 2 )
@@ -213,13 +213,13 @@ public class Line implements Comparable<Line>
             int right = rightMost.x;
             int left = (rightMost.x-hScale>0)?rightMost.x-hScale:0;
             int nPixels = 0;
-            for ( int x=right;x<=left;x-- )
+            for ( int x=right;x>=left;x-- )
             {
                 int y;
                 for ( y=top;y<bottom;y++ )
                 {
                     wr.getPixel( x,y, iArray );
-                    if ( iArray[0] == black )
+                    if ( iArray[0] <= black )
                     {
                         nPixels++;
                         if ( nPixels == 2 )

@@ -43,6 +43,7 @@ import tilt.image.page.Page;
 import tilt.handler.post.TextIndex;
 import tilt.align.Matchup;
 import tilt.image.page.Word;
+import tilt.image.page.Line;
 import tilt.handler.post.Options;
 
 /**
@@ -551,6 +552,13 @@ public class Picture {
             FindLinesBlurred fl = new FindLinesBlurred( withLines, 
                 cropRect, text.numWords(), options );
             page = fl.getPage();
+            int lsize = page.getLines().size();
+            for ( int i=0;i<lsize;i++ )
+            {
+                Line l = page.getLines().get(i);
+                if ( l.countPoints()==1 )
+                    System.out.println("before line length is 1");
+            }
             ppAverage = fl.getPPAverage();
             baselines = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
@@ -575,6 +583,11 @@ public class Picture {
             ReduceLines rl = new ReduceLines( reducedLines, page, options );
             reduced = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
+            int lsize = page.getLines().size();
+            for ( int i=0;i<lsize;i++ )
+            {
+                Line l = page.getLines().get(i);
+            }
             ImageIO.write( reducedLines, "png", reduced );
         }
         catch ( Exception e )

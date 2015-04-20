@@ -33,6 +33,8 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.minBlackPC,0.5);
         /** size of white standoff around speckles */
         this.put(Keys.whiteStandoff,0.01);
+        /** standoff around outlier blobs at line-ends */
+        this.put(Keys.outlierStandoff,0.05);
         /** maximum number of black pixels in white standoff */
         this.put(Keys.maxRoguePixels,2);
         this.put(Keys.maxFeatureSize, 0.1);
@@ -80,6 +82,7 @@ public class Options extends HashMap<Options.Keys,Object>
     {
         minBlackPC,
         whiteStandoff,
+        outlierStandoff,
         oddShape,
         lineDepthFactor,
         speckleSize,

@@ -36,6 +36,9 @@ public class ReduceLines
     WritableRaster wr;
     WritableRaster dirty;
     Options options;
+    /** standoff for outlying blobs on lines */
+    int hStandoff;
+    int vStandoff;
     /**
      * 1. Sort lines by decreasing length.
      * 2. Identify blobs attached to each line
@@ -46,16 +49,23 @@ public class ReduceLines
      */
     public ReduceLines( BufferedImage src, Page page, Options options )
     {
-        Point pt =new Point();
         this.page = page;
         this.src = src;
+        this.options = options;
+        this.hStandoff = Math.round(
+            options.getFloat(Options.Keys.outlierStandoff)
+            *src.getWidth());
+        this.vStandoff = Math.round(
+            options.getFloat(Options.Keys.whiteStandoff)
+            *src.getWidth());
         WritableRaster wr = src.getRaster();
         ArrayList<Line>lines = page.getLines();
-        sortLines(lines);
+        // sortLines(lines);
         dirty = src.copyData(null);
         Blob.setToWhite(dirty);
         ArrayList<Line> removals = new ArrayList<>();
         int[] iArray = new int[1];
+        int[] dArray = new int[1];
         for ( int i=0;i<lines.size();i++ )
         {
             Line l = lines.get(i);
@@ -75,11 +85,17 @@ public class ReduceLines
                         dirty.getPixel(x,y,iArray);
                         if ( iArray[0] != 0 )
                         {
-                            Blob b = new Blob( wr, options, null );
-                            b.save( dirty, wr, new Point(x,y) );
-                            dirty.getPixel(x,y,iArray);
-                            if ( iArray[0]== 0 )
+                            wr.getPixel(x,y,dArray);
+                            if ( dArray[0] == 0 )
+                            {
+                                Blob b = new Blob( wr, options, null );
+                                b.save( dirty, wr, new Point(x,y) );
                                 hasNewBlobs = true;
+                            }
+                        }
+                        else
+                        {
+                            hasNewBlobs = true;
                         }
                     }
                     if ( !hasNewBlobs )
@@ -88,52 +104,27 @@ public class ReduceLines
                         if ( j==points.length-1 )
                         {
                             delPoints.add( curr );
-                            pt.x = curr.x;
-                            pt.y = curr.y;
                         }
                     }
                 }
                 if ( delPoints.size()==points.length )
                     removals.add( l );
-                else if ( removals.size()>0 )
+                else if ( delPoints.size()>0 )
                 {
                     l.removePoints(delPoints);
-                    System.out.println("removed "+removals.size()+" points");
                 }
             }
             else
                 removals.add(l);
         }
         for ( int i=0;i<removals.size();i++ )
+        {
             lines.remove(removals.get(i));
-        System.out.println("removed "+removals.size()+" lines");
+        }
+        trimOutliers( lines );
         page.sortLines();
         page.joinLines();
         page.draw( src.getGraphics() ); 
-    }
-    /**
-     * I see a grey pixel and I want it painted black ... black.
-     * No colours any more I want them to turn black...
-     * @param img a blurred image with grey pixels
-     */
-    private void blackify( BufferedImage img )
-    {
-        WritableRaster wr= img.getRaster();
-        int wd = img.getWidth();
-        int ht = img.getHeight();
-        int[] iArray= new int[1];
-        for ( int y=0;y<ht;y++ )
-        {
-            for ( int x=0;x<wd;x++ )
-            {
-                wr.getPixel(x,y,iArray);
-                if ( iArray[0] < 255 && iArray[0] != 0 )
-                {
-                    iArray[0] = 0;
-                    wr.setPixel(x,y,iArray );
-                }
-            }
-        }
     }
     /**
      * Sort all lines based on their decreasing size 
@@ -158,6 +149,97 @@ public class ReduceLines
                 }
                 lines.set(j,v);
             }
+        }
+    }
+    /**
+     * Look for a blob isolated at the end and near the cropRet margin
+     * @param l the line to trim
+     */
+    private void trimRightEnd( Line l )
+    {
+        int np = l.countPoints();
+        ArrayList<Point> delPoints = new ArrayList<>();
+        Point[] points = l.getPoints();
+        int[] iArray = new int[1];
+        int[] dArray = new int[1];
+        WritableRaster wr = src.getRaster();
+        for ( int i=np-1;i>np-3&&i>0;i-- )
+        {
+            Point last = points[i];
+            Point curr = points[i-1];
+            float dy_dx = (float)(last.y-curr.y)/(float)(last.x-curr.x);
+            for ( int x=last.x;x>curr.x;x-- )
+            {
+                int y = last.y + Math.round((x-last.x)*dy_dx);
+                wr.getPixel(x,y,iArray);
+                if ( iArray[0] == 0 )
+                {
+                    dirty.getPixel(x,y,dArray);
+                    if ( dArray[0] != 0 )
+                    {
+                        Blob b = new Blob( wr, options, null );
+                        b.save( dirty, wr, new Point(x,y) );
+                        // is b isolated by lots of white space?
+                        if ( b.hasWhiteStandoff(wr, hStandoff,vStandoff) )
+                            delPoints.add(curr);
+                    }
+                }
+            }       
+        }
+        if ( delPoints.size()>0 )
+            l.removePoints(delPoints);
+    }
+    /**
+     * Trim outlying blobs from left of line
+     * @param l the line to trim
+     */
+    private void trimLeftEnd( Line l )
+    {  
+        int np = l.countPoints();
+        ArrayList<Point> delPoints = new ArrayList<>();
+        Point[] points = l.getPoints();
+        int[] iArray = new int[1];
+        int[] dArray = new int[1];
+        WritableRaster wr = src.getRaster();
+        for ( int i=0;i<3&&i<np-1;i++ )
+        {
+            Point last = points[i];
+            Point curr = points[i+1];
+            float dy_dx = (float)(curr.y-last.y)/(float)(curr.x-last.x);
+            for ( int x=last.x;x<curr.x;x++ )
+            {
+                int y = last.y + Math.round((x-last.x)*dy_dx);
+                wr.getPixel(x,y,iArray);
+                if ( iArray[0] == 0 )
+                {
+                    dirty.getPixel(x,y,dArray);
+                    if ( dArray[0] != 0 )
+                    {
+                        Blob b = new Blob( wr, options, null );
+                        b.save( dirty, wr, new Point(x,y) );
+                        // is b isolated by lots of white space?
+                        if ( b.hasWhiteStandoff(wr, hStandoff,vStandoff) )
+                            delPoints.add(curr);
+                    }
+                }
+            }       
+        }
+        if ( delPoints.size()>0 )
+            l.removePoints(delPoints);
+    }
+    /**
+     * Trim components on the extreme ends near the border
+     * @param lines the array of lines to check for outliers
+     */
+    private void trimOutliers( ArrayList<Line> lines )
+    {
+        dirty = src.copyData(null);
+        Blob.setToWhite(dirty);
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            trimRightEnd(l);
+            trimLeftEnd(l);
         }
     }
 }
