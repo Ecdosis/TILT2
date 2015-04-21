@@ -30,6 +30,9 @@ public class Options extends HashMap<Options.Keys,Object>
 {
     private void setDefaults()
     {
+        // preflight
+        /** turn this on to remove blue-lines from exercise books */
+        this.put(Keys.blueGreenFilter,false);
         /** proportion of black vs white pixels that defines a blob as "dense" */
         this.put(Keys.minBlackPC,0.5);
         /** size of white standoff around speckles */
@@ -46,20 +49,18 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.oddShape,4.0);
         /** maximum amount times line depth to accept new lines */
         this.put(Keys.lineDepthFactor,1.0);
-        /** turn this on to remove blue-lines from exercise books */
-        this.put(Keys.blueGreenFilter,false);
         /** image will be scaled if wider than this */
         this.put(Keys.maximumWidth,1200);
         /** whether to remove speckles in the body of the page */
         this.put(Keys.despeckleBody,true);
-        /** width of vertical strips */
-        this.put(Keys.verticalSliceSize,0.05);
         /** range of moving average smoothing +- N*/
         this.put(Keys.smoothN,0.01);
         /** true if we are testing */
         this.put(Keys.test,false);
         /** fraction of height for line-blur radius */
-        this.put(Keys.blurForLines,0.008);
+        this.put(Keys.blurForLines,0.006/*8*/);
+        /** width of vertical strips */
+        this.put(Keys.verticalSliceSize,0.05);
         /** blur radius for blur radius to construct mask for reconstructing image */
         this.put(Keys.reconstructBlurRadius, 0.0067);
     }

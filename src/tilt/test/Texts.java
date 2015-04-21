@@ -45,7 +45,8 @@ public class Texts
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     +"\t\"url\": \"http://biodiversitylibrary.org/pageimage/437460"
-    +"28\",\"despeckleBody\": false, \"blueGreenFilter\": true}\n}\n"},
+    +"28\",\"despeckleBody\": false, \"blueGreenFilter\": true, \""
+    +"reconstructBlurRadius\": 0.01}\n}\n"},
     {"HARPUR","Harpur example",
     "<table><tr><td>No 17 p.253</td></tr>\n<tr><td></td><td>The 'N"
     +"evers' of Poetry<br>\n(With the very extensive original note"
