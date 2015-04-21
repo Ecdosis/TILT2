@@ -46,6 +46,7 @@ public class Border
      * Create a border object
      * @param wr the raster of the image
      * @param average the average black pixel density per pixel
+     * @param cropRect the cropping rectangle within the image
      */
     public Border( WritableRaster wr, float average, Rectangle cropRect )
     {
@@ -153,7 +154,11 @@ public class Border
             // make sure this is zero!
             this.count = 0;
             int hLimit = x+hUnit;
+            if ( hLimit >= wr.getWidth() )
+                hLimit = wr.getWidth();
             int vLimit = y+vUnit;
+            if ( vLimit > wr.getHeight() )
+                vLimit = wr.getHeight();
             int[] iArray = new int[1];
             for ( int v=y;v<vLimit;v++ )
             {

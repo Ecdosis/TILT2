@@ -116,8 +116,12 @@ public class Picture {
                 twotone.delete();
             if ( baselines != null )
                 baselines.delete();
+            if ( reconstructed != null )
+                reconstructed.delete();
             if ( words != null )
                 words.delete();
+            if ( preflighted != null )
+                preflighted.delete();
             // dispose of other temporary files here
         }
         catch ( Exception e )
@@ -185,7 +189,7 @@ public class Picture {
     Rectangle getCropRect() throws IOException
     {
         int x,y,width,height;
-        BufferedImage bi = ImageIO.read(orig);
+        BufferedImage bi = ImageIO.read(preflighted);
         if ( !isWholePicture() )
         {
             x = (int)Math.round(bi.getWidth()*coords[0][0].doubleValue()/100.0);
@@ -263,7 +267,6 @@ public class Picture {
             if ( orig == null )
                 load();
             BufferedImage src = ImageIO.read(orig);
-            
             Preflight pf = new Preflight( src, options );
             BufferedImage bi = pf.reduce();
             preflighted = File.createTempFile(PictureRegistry.PREFIX,
@@ -588,7 +591,7 @@ public class Picture {
             if ( baselines == null )
                 convertToBaselines();
             BufferedImage bandw = ImageIO.read(cleaned);
-            BufferedImage originalImage =  ImageIO.read(orig);
+            BufferedImage originalImage =  ImageIO.read(preflighted);
             FindWords fw = new FindWords( bandw, page, options );
             page.print( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,

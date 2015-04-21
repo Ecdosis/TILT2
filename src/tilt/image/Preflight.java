@@ -47,18 +47,18 @@ public class Preflight
         BufferedImage after = src;
         boolean blueGreenFilter = opts.getBoolean(Options.Keys.blueGreenFilter);
         int maxWidth = opts.getInt(Options.Keys.maximumWidth);
-//        if ( src.getWidth() > maxWidth )
-//        {
-//            int w = src.getWidth();
-//            int h = src.getHeight();
-//            after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-//            AffineTransform at = new AffineTransform();
-//            double scale = (double)maxWidth/(double)w;
-//            at.scale(scale, scale);
-//            AffineTransformOp scaleOp = 
-//               new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-//            after = scaleOp.filter(src, after);
-//        }
+        if ( src.getWidth() > maxWidth )
+        {
+            float scale = (float)maxWidth/(float)src.getWidth();
+            int w = Math.round(src.getWidth()*scale);
+            int h = Math.round(src.getHeight()*scale);
+            after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            AffineTransform at = new AffineTransform();
+            at.scale(scale, scale);
+            AffineTransformOp scaleOp = 
+               new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+            after = scaleOp.filter(src, after);
+        }
         if ( blueGreenFilter )
         {
             int w = after.getWidth();

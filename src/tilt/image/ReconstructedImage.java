@@ -56,15 +56,14 @@ public class ReconstructedImage
         WritableRaster wr = ci.copyData(null);
         mask = new BufferedImage(ci.getColorModel(), wr, false,null);
         findBlackBlobs( opts );
-        subtractMask();
+        subtractMask(opts);
         cleanBorders(opts);
         return this.ci;
     }
-    private void subtractMask()
+    private void subtractMask( Options opts )
     {
-        int blurRadius = mask.getHeight()/150;
-        if ( blurRadius == 0 )
-            blurRadius = 5;
+        int blurRadius = Math.round(mask.getHeight()
+            *opts.getFloat(Options.Keys.reconstructBlurRadius));
         BlurImage bli = new BlurImage( mask, blurRadius );
         BufferedImage blurred = bli.blur();
         WritableRaster wr = ci.getRaster();

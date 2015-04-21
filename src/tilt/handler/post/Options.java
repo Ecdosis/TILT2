@@ -30,21 +30,27 @@ public class Options extends HashMap<Options.Keys,Object>
 {
     private void setDefaults()
     {
+        /** proportion of black vs white pixels that defines a blob as "dense" */
         this.put(Keys.minBlackPC,0.5);
         /** size of white standoff around speckles */
         this.put(Keys.whiteStandoff,0.01);
-        /** standoff around outlier blobs at line-ends */
+        /** horizontal standoff around outlier blobs at line-ends */
         this.put(Keys.outlierStandoff,0.05);
-        /** maximum number of black pixels in white standoff */
+        /** maximum number of black pixels tolerated in white standoff */
         this.put(Keys.maxRoguePixels,2);
+        /** individual blobs bigger than this will be removed */
         this.put(Keys.maxFeatureSize, 0.1);
-        // speckle size 
+        /** size of a "speckle" */
         this.put(Keys.speckleSize, 0.008); 
+        /** definition of odd shaped blobs to be removed */
         this.put(Keys.oddShape,4.0);
         /** maximum amount times line depth to accept new lines */
         this.put(Keys.lineDepthFactor,1.0);
+        /** turn this on to remove blue-lines from exercise books */
         this.put(Keys.blueGreenFilter,false);
+        /** image will be scaled if wider than this */
         this.put(Keys.maximumWidth,1200);
+        /** whether to remove speckles in the body of the page */
         this.put(Keys.despeckleBody,true);
         /** width of vertical strips */
         this.put(Keys.verticalSliceSize,0.05);
@@ -54,6 +60,8 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.test,false);
         /** fraction of height for line-blur radius */
         this.put(Keys.blurForLines,0.008);
+        /** blur radius for blur radius to construct mask for reconstructing image */
+        this.put(Keys.reconstructBlurRadius, 0.0067);
     }
     /**
      * Initialise an options object from a possibly empty set of properties
@@ -95,6 +103,7 @@ public class Options extends HashMap<Options.Keys,Object>
         smoothN,
         despeckleBody,
         blurForLines,
+        reconstructBlurRadius,
         test;
     }
     public float getFloat( Keys key ) 
