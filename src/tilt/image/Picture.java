@@ -205,25 +205,6 @@ public class Picture {
         return new Rectangle( x, y, width, height );
     }
     /**
-     * Get the original Picture data
-     * @return the raw picture byte array
-     */
-    byte[] getOrig() throws ImageException
-    {
-        try
-        {
-            FileInputStream fis = new FileInputStream( orig );
-            byte[] data = new byte[(int)orig.length()];
-            fis.read( data );
-            fis.close();
-            return data;
-        }
-        catch ( IOException ioe )
-        {
-            throw new ImageException(ioe);
-        }
-    }
-    /**
      * Get the format of the picture
      * @return a mime type
      * @throws ImageException 
@@ -675,7 +656,9 @@ public class Picture {
      */
     public byte[] getOrigData() throws ImageException
     {
-        return getPicData( orig );
+        if ( preflighted == null )
+            convertToPreflight();
+        return getPicData( preflighted );
     }
     public byte[] getReconstructedData() throws ImageException
     {

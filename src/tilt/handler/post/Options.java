@@ -43,7 +43,7 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.oddShape,4.0);
         /** maximum amount times line depth to accept new lines */
         this.put(Keys.lineDepthFactor,1.0);
-        this.put(Keys.blueFactor,0.3);
+        this.put(Keys.blueGreenFilter,false);
         this.put(Keys.maximumWidth,1200);
         this.put(Keys.despeckleBody,true);
         /** width of vertical strips */
@@ -75,6 +75,7 @@ public class Options extends HashMap<Options.Keys,Object>
             }
             catch( Exception e )
             {
+                // ignore it
             }
         }
     }
@@ -86,7 +87,7 @@ public class Options extends HashMap<Options.Keys,Object>
         oddShape,
         lineDepthFactor,
         speckleSize,
-        blueFactor,
+        blueGreenFilter,
         maximumWidth,
         maxFeatureSize,
         maxRoguePixels,
@@ -96,29 +97,29 @@ public class Options extends HashMap<Options.Keys,Object>
         blurForLines,
         test;
     }
-    public float getFloat( Keys key ) throws NumberFormatException
+    public float getFloat( Keys key ) 
     {
         Object obj = this.get(key);
-        if ( obj instanceof Number )
+        if ( obj != null && obj instanceof Number )
             return ((Number)obj).floatValue();
         else
-            throw new NumberFormatException("Invalid option key "+key);
+            return 0.0f;
     }
-    public int getInt( Keys key ) throws NumberFormatException
+    public int getInt( Keys key ) 
     {
         Object obj = this.get(key);
-        if ( obj instanceof Number )
+        if ( obj != null && obj instanceof Number )
             return ((Number)obj).intValue();
         else
-            throw new NumberFormatException("Invalid option key "+key);
+            return 0;
     }
-    public boolean getBoolean( Keys key ) throws NumberFormatException
+    public boolean getBoolean( Keys key )
     {
         Object obj = this.get(key);
-        if ( obj instanceof Boolean )
-            return ((Boolean)obj).booleanValue();
+        if ( obj != null && obj instanceof Boolean )
+            return (Boolean)obj;
         else
-            throw new NumberFormatException("Invalid option key "+key);
+            return false;
     }
     public void setBoolean( Keys key, boolean value )
     {

@@ -30,10 +30,13 @@ public class Preflight
 {
     Options opts;
     BufferedImage src;
+    Background background;
+    int backgroundAverage;
     public Preflight( BufferedImage ci, Options opts )
     {
         this.opts = opts;
         this.src = ci;
+        this.background = new Background();
     }
     /**
      * Apply the optional reductions
@@ -42,21 +45,21 @@ public class Preflight
     public BufferedImage reduce()
     {
         BufferedImage after = src;
-        float blueFactor = opts.getFloat(Options.Keys.blueFactor);
+        boolean blueGreenFilter = opts.getBoolean(Options.Keys.blueGreenFilter);
         int maxWidth = opts.getInt(Options.Keys.maximumWidth);
-        if ( src.getWidth() > maxWidth )
-        {
-            int w = src.getWidth();
-            int h = src.getHeight();
-            after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            AffineTransform at = new AffineTransform();
-            double scale = (double)maxWidth/(double)w;
-            at.scale(scale, scale);
-            AffineTransformOp scaleOp = 
-               new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-            after = scaleOp.filter(src, after);
-        }
-        if ( blueFactor < 1.0f )
+//        if ( src.getWidth() > maxWidth )
+//        {
+//            int w = src.getWidth();
+//            int h = src.getHeight();
+//            after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+//            AffineTransform at = new AffineTransform();
+//            double scale = (double)maxWidth/(double)w;
+//            at.scale(scale, scale);
+//            AffineTransformOp scaleOp = 
+//               new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+//            after = scaleOp.filter(src, after);
+//        }
+        if ( blueGreenFilter )
         {
             int w = after.getWidth();
             int h = after.getHeight();
@@ -64,16 +67,21 @@ public class Preflight
             {
                 for (int y=0;y<h;y++ )
                 {
-                    int pixelCol = src.getRGB(x,y);
-                    int blueCol = pixelCol & 0x000000FF;
-                    pixelCol &= 0xFFFFFF00;
-                    pixelCol += Math.round(blueFactor*blueCol);
-                    //mask out the non green,non-alpha color.
-                    //A is 0xFF000000
-                    //R is 0x00FF0000
-                    //G is 0x0000FF00
-                    //B is 0x000000FF        
-                    after.setRGB(x, y, pixelCol);
+                    int current = after.getRGB(x,y);
+                    int blueCol = current & 0x000000FF;
+                    int redCol = current & 0x00FF0000;
+                    redCol >>= 16;
+                    int greenCol = current & 0x0000FF00;
+                    greenCol >>= 8;
+                    if ( greenCol > redCol || blueCol > redCol )
+                    {
+                        // we have "blue"
+                        current &= 0xFF000000;
+                        current |= backgroundAverage;
+                    }
+                    else if ( background.isBright(current) )
+                        backgroundAverage = background.update(current);
+                    after.setRGB(x, y, current);
                 }
             }
         }
