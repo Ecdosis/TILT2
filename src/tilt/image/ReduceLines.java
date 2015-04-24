@@ -22,7 +22,7 @@ import java.awt.image.WritableRaster;
 import tilt.image.page.Page;
 import java.util.ArrayList;
 import tilt.image.page.Line;
-import java.awt.Point;
+import tilt.image.geometry.Point;
 import tilt.handler.post.Options;
 
 /**

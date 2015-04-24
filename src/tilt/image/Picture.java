@@ -593,6 +593,7 @@ public class Picture {
             BufferedImage bandw = ImageIO.read(reconstructed);
             BufferedImage originalImage = ImageIO.read(preflighted);
             FindWords fw = new FindWords( bandw, page, options );
+            fw.find();
             page.print( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);

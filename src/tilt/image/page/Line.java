@@ -17,8 +17,9 @@
  */
 
 package tilt.image.page;
+import tilt.image.geometry.Polygon;
+import tilt.image.geometry.Point;
 import java.util.ArrayList;
-import java.awt.Point;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
@@ -255,64 +256,6 @@ public class Line implements Comparable<Line>
         if ( i==shapes.size() )
             shapes.add( s );
         total++;
-    }
-    /**
-     * Recall which lines shared shapes with us (for later merging)
-     * @param other the other line
-     * @param s the shape we share
-     */
-    public void addShared( Line other, Shape s )
-    {
-        ArrayList list = shared.get( other );
-        if ( list != null )
-        {
-            list.add( s );
-        }
-        else
-        {
-            list = new ArrayList<>();
-            list.add( s );
-            shared.put( other, list );
-        }
-        total++;
-    }
-    /**
-     * Get the centroids for the line
-     * @return an array of centroids for all the polygons on the line
-     */
-    Point[] getCentroids()
-    {
-        Point[] centroids = new Point[shapes.size()];
-        for ( int i=0;i<centroids.length;i++ )
-            centroids[i] = shapes.get(i).getCentroid();
-        return centroids;
-    }
-    /**
-     * Merge this line with its most similar colleague
-     * @param map update this shape to line map for moved shapes
-     */
-    void merge( HashMap<Polygon,Line> map )
-    {
-        float proportion = Math.round(SHARED_RATIO*total);
-        Set<Line> keys = shared.keySet();
-        Iterator<Line> iter = keys.iterator();
-        while ( iter.hasNext() )
-        {
-            Line l = iter.next();
-            ArrayList<Polygon> list = shared.get( l );
-            if ( list.size() >= proportion )
-            {
-                // move all OUR shapes over to the dominant line
-                for ( int j=0;j<shapes.size();j++ )
-                {
-                    Polygon pg = shapes.get(j);
-                    map.put( pg, l );
-                    l.add( pg );
-                }
-                shapes.clear();
-                break;
-            }
-        }
     }
     /**
      * Print the shapes onto the original image
@@ -681,7 +624,7 @@ public class Line implements Comparable<Line>
      * Remove a shape from the line
      * @param pg the shape to remove
      */
-    void removeShape( Polygon pg )
+    public void removeShape( Polygon pg )
     {
         int index = shapes.indexOf(pg);
         if ( index != -1 )

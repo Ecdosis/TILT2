@@ -32,9 +32,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import javax.servlet.http.HttpServletRequest;
 import tilt.image.convexhull.*;
-import tilt.image.page.Polygon;
+import tilt.image.geometry.Polygon;
 
 /**
  * Some routines that need sharing by all

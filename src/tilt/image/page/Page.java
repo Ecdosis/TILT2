@@ -18,6 +18,7 @@
 
 
 package tilt.image.page;
+import tilt.image.geometry.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Arrays;
-import java.awt.Point;
+import tilt.image.geometry.Point;
 import tilt.image.matchup.Matrix;
 import tilt.image.matchup.Move;
 import tilt.exception.*;
@@ -236,183 +237,21 @@ public class Page
     /**
      * Add a shape to the registry
      * @param pg the shape to remember
-     * @param line the line it is associated with
      */
-    public void addShape( Polygon pg, Line line )
+    public void addShape( Polygon pg )
     {
         if ( map.containsKey(pg) )
         {
             ArrayList<Line> list = map.get(pg);
+            Line line = pg.getLine();
             if ( !list.contains(line) )
                 list.add( line );
         }
         else
         {
             ArrayList<Line> list = new ArrayList<Line>();
-            list.add( line );
+            list.add( pg.getLine() );
             map.put( pg, list );
-        }
-    }
-    /**
-     * Remove any lines that no longer contain polygons
-     * @param list the list of lines m
-     * @return the pruned list
-     */
-    private ArrayList pruneLineList( ArrayList list )
-    {
-        boolean[] remove = new boolean[list.size()];
-        for ( int i=0;i<list.size();i++ )
-        {
-            Line l = (Line)list.get(i);
-            if ( l.shapes.size() == 0 )
-                remove[i] = true;
-        }
-        for ( int j=remove.length-1;j>=0;j-- )
-            if ( remove[j] )
-                list.remove(j);
-        return list;
-    }
-    /**
-     * Ensure each shape is only on the line that best suits it
-     */
-    public void mergeLines()
-    {
-        Set<Polygon> keys = map.keySet();
-        Iterator<Polygon> iter = keys.iterator();
-        while ( iter.hasNext() )
-        {
-            Polygon key = iter.next();
-            // list contains lines to which the polygon belongs
-            ArrayList<Line> list = map.get( key );
-            list = pruneLineList(list);
-            if ( list.size() > 1  )
-            {
-                Point centre = key.getCentroid();
-                int[][] deviations = new int[list.size()][];
-                for ( int i=0;i<list.size();i++ )
-                {
-                    Point[] centroids = list.get(i).getCentroids();
-                    deviations[i] = new int[centroids.length];
-                    // NB there may be NO centroids left on the line
-                    // since we may have already removed the last polygon
-                    // compute the distances from the line to the polygon centre
-                    for ( int j=0;j<centroids.length;j++ )
-                        deviations[i][j] = Math.abs(centre.y-centroids[j].y);
-                    Arrays.sort( deviations[i] );
-                }
-                // now score the lists
-                int[] scores = new int[list.size()];
-                int[] indices = new int[list.size()];
-                while ( true )
-                {
-                    int min = Integer.MAX_VALUE;
-                    int minIndex=0;
-                    // get minimum top value
-                    for ( int i=0;i<scores.length;i++ )
-                    {
-                        if ( deviations[i][indices[i]] < min )
-                        {
-                            min = deviations[i][indices[i]];
-                            minIndex = i;
-                        }
-                    }
-                    scores[minIndex]++;
-                    indices[minIndex]++;
-                    // do we end the loop?
-                    int k;
-                    for ( k=0;k<indices.length;k++ )
-                    {
-                        if ( indices[k] == deviations[k].length )
-                            break;
-                    }
-                    if ( k != indices.length )
-                        break;
-                }
-                int maxScore = 0;
-                int maxIndex = 0;
-                for ( int i=0;i<scores.length;i++ )
-                {
-                    if ( scores[i] > maxScore && indices[i] > 1 )
-                    {
-                        maxScore = scores[i];
-                        maxIndex = i;
-                    }
-                }
-                // now eliminate the shape from the losing lines
-                for ( int i=0;i<list.size();i++ )
-                {
-                    if ( i != maxIndex )
-                    {
-                        Line l = list.get(i);
-                        l.removeShape(key);
-                        int nShapes = l.countShapes();
-                        if ( nShapes==0 )
-                            lines.remove( l );
-                        else if ( l.countShapes()==1 )
-                        {
-                            // maybe losing line is now of length 1
-                            Polygon s = l.getShape(0);
-                            ArrayList<Line> ln = map.get(s);
-                            if ( ln != null )
-                            {
-                                for ( int k=0;k<ln.size();k++ )
-                                {
-                                    Line m = ln.get(k);
-                                    if ( m != l && lines.contains(m) )
-                                    {
-                                        if ( !m.shapes.contains(s) )
-                                            m.add( s );
-                                        lines.remove( l );
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        else if ( nShapes < 5 )
-                        {
-                            HashMap<Line,Integer> lineMap = new HashMap<>();
-                            // do remaining shapes belong to one other line?
-                            for ( int k=0;k<nShapes;k++ )
-                            {
-                                Polygon p = l.getShape(k);
-                                ArrayList<Line> ln = map.get(p);
-                                for ( int n=0;n<ln.size();n++ )
-                                {
-                                    Line lv = ln.get(n);
-                                    if ( lv != l )
-                                    {
-                                        if ( lineMap.containsKey(lv) )
-                                        {
-                                            Integer value = new Integer(
-                                                lineMap.get(lv).intValue()+1);
-                                            lineMap.put(lv,value);
-                                        }
-                                        else
-                                            lineMap.put( lv, new Integer(1) );
-                                    }
-                                }
-                            }
-                            // now examine what we found
-                            Set<Line> keys2 = lineMap.keySet();
-                            Iterator<Line> iter2 = keys2.iterator();
-                            while ( iter2.hasNext() )
-                            {
-                                Line dest = iter2.next();
-                                int count = lineMap.get(dest).intValue();
-                                if ( count == nShapes && lines.contains(dest) )
-                                {
-                                    for ( int k=0;k<nShapes;k++ )
-                                    {
-                                        Polygon p = l.getShape(k);
-                                        dest.add( p );
-                                    }
-                                    lines.remove( l );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
     /**
@@ -850,6 +689,11 @@ public class Page
     {
         for ( int i=0;i<lines.size();i++ )
             lines.get(i).resetShapes();
+    }
+    public Polygon shapeForPoint( Point p )
+    {
+        // look up in quadtree
+        return null;
     }
     public void joinLines()
     {

@@ -29,7 +29,7 @@ import tilt.Utils;
 import tilt.handler.post.TextIndex;
 import tilt.image.convexhull.*;
 import org.json.simple.*;
-import tilt.image.page.Polygon;
+import tilt.image.geometry.Polygon;
 import tilt.handler.post.Options;
 
 
