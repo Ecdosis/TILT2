@@ -72,7 +72,7 @@ public class FindLinesBlurred
         if ( options.getBoolean(Options.Keys.test) )
             lightenImage( wr );
         // now draw the lines
-        page = new Page( peaks, hScale, 1, numWords, options );
+        page = new Page( peaks, hScale, 1, numWords, options, cropRect );
         page.refineRight( wr, hScale, 1, LIGHT_SHADE );
         page.refineLeft( wr, hScale, 1, LIGHT_SHADE );
         page.finalise( wr );

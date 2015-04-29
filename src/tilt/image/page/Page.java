@@ -21,11 +21,11 @@ package tilt.image.page;
 import tilt.image.geometry.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Iterator;
 import java.util.Arrays;
 import tilt.image.geometry.Point;
 import tilt.image.matchup.Matrix;
@@ -43,7 +43,7 @@ import tilt.handler.post.Options;
 public class Page 
 {
     ArrayList<Line> lines;
-    HashMap<Polygon,ArrayList<Line>> map;
+    QuadTree qt;
     int medianLineDepth;
     int minWordGap;
     int numWords;
@@ -57,11 +57,12 @@ public class Page
      * @throws Exception
      */
     public Page( ArrayList[] cols, int hScale, int vScale, int numWords,
-        Options options ) throws Exception
+        Options options, Rectangle cropRect ) throws Exception
     {
         this.numWords = numWords;
         this.options = options;
-        map = new HashMap<>();
+        this.qt = new QuadTree( cropRect.x, cropRect.y, cropRect.width,
+            cropRect.height);
         lines = new ArrayList<>();
         for ( int i=0;i<cols.length-1;i++ )
         {
@@ -235,24 +236,14 @@ public class Page
         return lines;
     }
     /**
-     * Add a shape to the registry
+     * Add a shape to the 
      * @param pg the shape to remember
      */
     public void addShape( Polygon pg )
     {
-        if ( map.containsKey(pg) )
-        {
-            ArrayList<Line> list = map.get(pg);
-            Line line = pg.getLine();
-            if ( !list.contains(line) )
-                list.add( line );
-        }
-        else
-        {
-            ArrayList<Line> list = new ArrayList<Line>();
-            list.add( pg.getLine() );
-            map.put( pg, list );
-        }
+        if ( pg.getLine() != null )
+            pg.getLine().add(pg);
+        this.qt.addPolygon(pg);
     }
     /**
      * Print the word shapes over the top of the original image
@@ -703,12 +694,12 @@ public class Page
             Line l = lines.get(i);
             Line p = lines.get(i-1);
             // is l to the left of p?
-            int end = l.points.get(l.points.size()-1).x;
-            int start = p.points.get(0).x;
+            float end = l.points.get(l.points.size()-1).x;
+            float start = p.points.get(0).x;
             if ( end <= start )
             {
-                int lY = l.points.get(l.points.size()-1).y;
-                int pY = p.points.get(0).y;
+                float lY = l.points.get(l.points.size()-1).y;
+                float pY = p.points.get(0).y;
                 if ( Math.abs(lY-pY) <= medianLineDepth/2 )
                     merges.add(l);
             }
@@ -717,8 +708,8 @@ public class Page
             start = l.points.get(0).x;
             if ( end <= start )
             {
-                int pY = p.points.get(p.points.size()-1).y;
-                int lY = l.points.get(0).y;
+                float pY = p.points.get(p.points.size()-1).y;
+                float lY = l.points.get(0).y;
                 if ( Math.abs(lY-pY) <= medianLineDepth/2 )
                     merges.add(l);
             }

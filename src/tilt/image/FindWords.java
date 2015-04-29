@@ -109,9 +109,10 @@ public class FindWords
         for ( int y=r.y;y<endY;y++ )
         {
             wr.getPixels( r.x, y, r.width, 1, iArray );
-            for ( int x=0;x<r.width;x++ )
+            for ( int i=0;i<r.width;i++ )
             {
-                if ( iArray[x] == 0 )
+                int x = i+r.x;
+                if ( iArray[i] == 0 )
                 {
                     if ( !lastPixelWasBlack )
                     {
@@ -123,7 +124,7 @@ public class FindWords
                             if ( shape == null )
                             {
                                 Blob b = new Blob(wr,opts,null);
-                                b.save(dirty, wr, q);
+                                b.save(dirty, wr, q.toAwt());
                                 shape = b.toPolygon();
                                 // if shape exceeds the current line region:
                                 if ( !lr.getPoly().contains(shape) )
@@ -132,7 +133,7 @@ public class FindWords
                                         && nextLR.getPoly().intersects(shape) )
                                         shape = shape.getIntersection(lr.getPoly());
                                     else    // let it all hang out...
-                                        lr.getPoly().getUnion(shape);
+                                        lr.setPoly(lr.getPoly().getUnion(shape));
                                     // the previous line is already dealt with
                                 }
                                 shape.setLine(curr);

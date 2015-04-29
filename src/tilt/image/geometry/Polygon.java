@@ -19,7 +19,9 @@
 package tilt.image.geometry;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
+import java.util.HashSet;
 import tilt.image.page.Line;
+import java.util.Iterator;
 
 /**
  * Override the awt Polygon class so we can store them as keys in a HashMap
@@ -30,7 +32,6 @@ public class Polygon extends java.awt.Polygon
 {
     static int MOD_ADLER = 65521;
     static float SMALL_NUM = 0.0000000001f;
-    Point centroid;
     public Point[] points;
     /** line we are attached to */
     Line line;
@@ -79,10 +80,10 @@ public class Polygon extends java.awt.Polygon
      */
     void computeBounds()
     {
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
+        float minX = Integer.MAX_VALUE;
+        float minY = Integer.MAX_VALUE;
+        float maxX = Integer.MIN_VALUE;
+        float maxY = Integer.MIN_VALUE;
         for ( int i=0;i<this.points.length;i++ )
         {
             Point pt = this.points[i];
@@ -95,7 +96,9 @@ public class Polygon extends java.awt.Polygon
             if ( pt.y > maxY )
                 maxY = pt.y;
         }
-        this.bounds = new Rect( minX, minY, maxX-minX, maxY-minY );
+        this.bounds = new Rect( Math.round(minX), 
+            Math.round(minY), Math.round(maxX-minX), 
+            Math.round(maxY-minY) );
     }
     /**
      * Convert our list of points to a string
@@ -157,26 +160,22 @@ public class Polygon extends java.awt.Polygon
     }
     /**
      * Compute the centroid of this polygon
+     * @param pts the points to get the centroid of
      * @return the centre point
      */
-    public Point getCentroid()
+    public Point getCentroid( Point[] pts )
     {
-        if ( centroid == null )
+        float totalX = 0;
+        float totalY = 0;
+        for ( int i=0;i<pts.length;i++ )
         {
-            int xSum = 0;
-            int ySum = 0;
-            for ( int i=0;i<points.length;i++ )
-            {
-                Point p = points[i];
-                xSum += p.x;
-                ySum = p.x;
-            }
-            centroid = new Point(xSum/points.length,ySum/points.length);
+            totalX += pts[i].x;
+            totalY += pts[i].y;
         }
-        return centroid;
+        return new Point( totalX/pts.length, totalY/pts.length );
     }
     /**
-     * Does a line intersect with this polygon and if so where
+     * Does a line intersect with this <em>convex</em> polygon and if so where
      * @param S the segment intersecting with the Polygon
      * @param IS VAR param: set this to intersecting points
      * @return true if segment S intersects with us
@@ -235,7 +234,7 @@ public class Polygon extends java.awt.Polygon
         }
     }
     /**
-     * Is the given point inside this polygon?
+     * Is the given point inside this possibly non-convex polygon?
      * http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
      * @param pt the point to test for
      * @return true if it was else false 
@@ -306,37 +305,70 @@ public class Polygon extends java.awt.Polygon
         }
         return pgInside;
     }
+    /**
+     * Add the points of intersection between a Segment and a polygon
+     * @param last the last point
+     * @param p the current point
+     * @param set the set to add the intersection points to
+     */
     private void addIntersectingPoints( Point last, Point p, 
-        ArrayList<Point> list )
+        HashSet<Point> set )
     {
         Segment S = new Segment( last, p );
-        Segment IS = new Segment( last, p );
-        if ( this.intersectsLine(S,IS) )
+        ArrayList<Point> pts = this.toPoints();
+        for ( int i=1;i<pts.size();i++ )
         {
-            if ( !IS.p0.equals(last) )
+            Point prev = pts.get(i-1);
+            Point q = pts.get(i);
+            Segment seg = new Segment(prev,q);
+            if ( S.intersects(seg) )
             {
-                IS.p0.x = -IS.p0.x;
-                IS.p0.y = -IS.p0.y;
-                list.add( IS.p0 );
-            }
-            if ( !IS.p1.equals(p) )
-            {
-                IS.p1.x = -IS.p1.x;
-                IS.p1.y = -IS.p1.y;
-                list.add( IS.p1 );
+                Segment intersection = S.getIntersection(seg);
+                set.add( intersection.p0 );
+                if ( !intersection.p0.equals(intersection.p1) )
+                    set.add( intersection.p1 );
             }
         }
     }
     /**
-     * Make a counter-clockwise list for a polygon's points
+     * Ensure the points are ordered counter-clockwise
+     * @param array an array of all the points of a polygon
+     * @param centroid of the polygon whose points are to be sorted
+     */
+    void sortCC( Point[] array, Point centroid )
+    {
+        // shell sort points counter-clockwise about centroid
+        int h = array.length / 2;
+	while (h > 0) 
+        {
+            for (int i = h; i < array.length; i++) 
+            {
+                int j = i;
+                Point temp = array[i];
+                while (j >= h && array[j-h].compareWith(temp,centroid) > 0 ) 
+                {
+                    array[j] = array[j-h];
+                    j = j - h;
+                }
+                array[j] = temp;
+            }
+            if (h == 2) 
+                h = 1;
+            else
+                h *= (5.0 / 11);
+	}
+    }
+    /**
+     * Make a list of a polygon's points, including joins with another polygon
      * @param pg1 the other polygon
      * @param pg2 this polygon
      * @param outside if true gather outer points, else inner
-     * @return the points of pg2 outside of pg1 plus negated join points
+     * @param set the set of points to add it to
+     * @return the points of pg2 outside of pg1 plus join points
      */
-    ArrayList<Point> makeCCList( Polygon pg1, Polygon pg2, boolean outer )
+    private void findPoints( Polygon pg1, Polygon pg2, boolean outer, 
+        HashSet<Point> set )
     {
-        ArrayList<Point> list = new ArrayList<Point>();
         ArrayList<Point> pgList = pg2.toPoints();
         Point last;
         Point p = null;
@@ -350,163 +382,113 @@ public class Polygon extends java.awt.Polygon
             pIsInside = pg1.contains(p);
             if ( !pIsInside && lastIsInside )
             {
-                pg1.addIntersectingPoints( last, p, list );
+                // coming out
+                pg1.addIntersectingPoints( last, p, set );
                 if ( outer )
-                    list.add(p);
+                    set.add(p);
             }
             else if ( pIsInside && !lastIsInside )
             {
-                if (  last != null )
-                    pg1.addIntersectingPoints( last, p, list );
+                // going in
+                if ( last != null )
+                    pg1.addIntersectingPoints( last, p, set );
                 if ( !outer )
-                    list.add(p);
+                    set.add(p);
             }
             else if ( !pIsInside )
             {
                 if ( last != null )
-                    pg1.addIntersectingPoints( last, p, list );
+                    pg1.addIntersectingPoints( last, p, set );
                 if ( outer )
-                    list.add(p);
+                    set.add(p);
             }
-            else if ( pIsInside && !outer )
+            else if ( !outer )
             {
-                list.add(p);
+                set.add(p);
             }
         }
-        return list;
     }
     /**
      * Get the last point of a polygon
-     * @param poly the polygon
      * @return the current last point
      */
-    Point lastPoint( Polygon poly )
+    Point lastPoint()
     {
-        if ( poly.npoints > 0 )
+        if ( this.npoints > 0 )
         {
-            int x = poly.xpoints[poly.npoints-1];
-            int y = poly.ypoints[poly.npoints-1];
+            int x = this.xpoints[this.npoints-1];
+            int y = this.ypoints[this.npoints-1];
             return new Point(x,y);
         }
         else
             return null;
     }
     /**
-     * Find a connection point in a CC list of points
-     * @param list the list of points to search
-     * @param p the point to look for
-     * @return its index in list or -1 if not found
+     * Get the last point of a polygon
+     * @return the current last point
      */
-    int findInCCList(ArrayList<Point> list, Point p )
+    Point firstPoint()
     {
-        for ( int i=0;i<list.size();i++ )
+        if ( this.npoints > 0 )
         {
-            Point q = list.get(i);
-            if ( q.x == p.x && q.y == p.y )
-                return i;
+            int x = this.xpoints[0];
+            int y = this.ypoints[0];
+            return new Point(x,y);
         }
-        return -1;
+        else
+            return null;
     }
     /**
-     * Get the next position in the list treating it as a circular buffer
-     * @param pos the current position, maybe at list end
-     * @param list the list
-     * @return the next circular position
+     * Make sure that the first and last points of this polygon are the same
+     * @param pg the polygon to check
      */
-    private int nextPos( int pos, ArrayList list )
+    private void fixPolygon( Polygon pg )
     {
-        return (pos+1)%list.size();
-    }
-    private boolean isCC( ArrayList<Point> list, int pos, int next )
-    {
-        return next !=0 || !(list.get(pos).x<0 & list.get(next).x<0);
-    }
-    /**
-     * Read a list and switch to another list when you hit a negative point
-     * @param list1 the list to start from
-     * @param pos the next read position in list1
-     * @param read1 the number of points in list1 read so far
-     * @param list2 the list to switch to
-     * @param read2 the number of points in list2 read so far
-     * @param poly the polygon to add points to
-     */
-    void readCCList( ArrayList<Point> list1, int pos, int read1, 
-        ArrayList<Point> list2, int read2, Polygon poly )
-    {
-        while ( read1 < list1.size() )
-        {
-            Point p = list1.get(pos);
-            read1++;
-            if ( p.x >= 0 )
-            {
-                if ( !p.equals(lastPoint(poly)) )
-                    poly.addPoint(p.x,p.y);
-                pos = nextPos(pos,list1);
-            }
-            else
-            {
-                poly.addPoint( -p.x, -p.y );
-                if ( pos != 0 )
-                {
-                    int loc = findInCCList(list2,p);
-                    if ( loc >= 0 )
-                    {
-                        int next = nextPos(loc,list2);
-                        if ( isCC(list2,loc,next) )
-                        {
-                            readCCList( list2, next, read2+1, list1, read1, poly );
-                            break;
-                        }
-                        else
-                            pos = nextPos(pos,list1);
-                    }
-                    else
-                        break;
-                }
-                else
-                    pos = nextPos(pos,list1);
-            }
-        }
-    }
-    /**
-     * Debug: print CC list
-     * @param list the counter-clockwise list of selected points
-     */
-    private void printList( ArrayList<Point> list )
-    {
-        for ( int i=0;i<list.size();i++ )
-            System.out.print("["+list.get(i).x+","+list.get(i).y+"]");
-        System.out.println("");
-    }
-    /**
-     * Get the union of two polygons
-     * @param pg the second polygon
-     * @return the union of them and us
-     */
-    public Polygon getUnion( Polygon pg )
-    {
-        ArrayList<Point> list1 = makeCCList( this, pg, true );
-        printList( list1 );
-        ArrayList<Point> list2 = makeCCList( pg, this, true );
-        printList(list2);
-        Polygon union = new Polygon();
-        readCCList( list1, 0, 0, list2, 0, union );
-        return union;
+        Point q = pg.lastPoint();
+        Point p = pg.firstPoint();
+        if ( !q.equals(p) )
+            pg.addPoint(Math.round(p.x),Math.round(p.y));
     }
     /**
      * Get a new polygon that is the intersection with this one
-     * @param pg the polygon that intersects with this
-     * @return the new polygon being the intersection (empty == no intersection)
+     * @param pg the polygon that should be intersected with this
+     * @return the new polygon 
      */
     public Polygon getIntersection( Polygon pg )
     {
-        ArrayList<Point> list1 = makeCCList( this, pg, false );
-        printList(list1);
-        ArrayList<Point> list2 = makeCCList( pg, this, false );
-        printList(list2);
-        Polygon intersection = new Polygon();
-        readCCList( list1, 0, 0, list2, 0, intersection );
-        return intersection;
+        return getIntersectionOrUnion( pg, false );
+    }
+    /**
+     * Get a new polygon that is the union with this one
+     * @param pg the polygon that should be unioned with this
+     * @return the new polygon 
+     */
+    public Polygon getUnion( Polygon pg )
+    {
+        return getIntersectionOrUnion( pg, true );
+    }
+    /**
+     * Get a new polygon that is the intersection or union with this one
+     * @param pg the polygon that intersects with this
+     * @param union true if a union is wanted else intersection
+     * @return the new polygon being the intersection (empty == no intersection)
+     */
+    private Polygon getIntersectionOrUnion( Polygon pg, boolean union )
+    {
+        HashSet<Point> pts = new HashSet<>();
+        findPoints( this, pg, union, pts );
+        findPoints( pg, this, union, pts );
+        Polygon combined = new Polygon();
+        Point[] array = new Point[pts.size()];
+        pts.toArray( array );
+        Point centroid = getCentroid( array );
+        sortCC( array, centroid );
+        for ( Point pt : array )
+        {
+            combined.addPoint(Math.round(pt.x),Math.round(pt.y));
+        }
+        fixPolygon(combined);
+        return combined;
     }
     /**
      * Does one polygon intersects with another?
@@ -562,52 +544,8 @@ public class Polygon extends java.awt.Polygon
         // else: most cases will fall through to here
         return false;
     }
-    static void printPolygonPoints( Polygon poly )
-    {
-        ArrayList<Point> list = poly.toPoints();
-        for ( int i=0;i<list.size();i++ )
-            System.out.print("["+list.get(i).x+","+list.get(i).y+"]");
-        System.out.println("");
-    }
     public static void main(String[] args)
     {
-        Polygon pg1 = new Polygon();
-        // points have to be counter-clockwise
-        pg1.addPoint(70,40);
-        pg1.addPoint(50,70);
-        pg1.addPoint(10,50);
-        pg1.addPoint(40,10);
-        pg1.addPoint(70,40);
-        pg1.toPoints();
-        Polygon pg2 = new Polygon();
-        pg2.addPoint(40,30);
-        pg2.addPoint(30,40);
-        pg2.addPoint(10,30);
-        pg2.addPoint(10,10);
-        pg2.addPoint(30,10);
-        pg2.addPoint(40,30);
-        pg2.toPoints();
-        Polygon union = pg1.getUnion(pg2);
-        printPolygonPoints(union);
-        Polygon intersection = pg1.getIntersection(pg2);
-        printPolygonPoints(intersection);
-        Polygon pg3 = new Polygon();
-        pg3.addPoint(10,20);
-        pg3.addPoint(70,20);
-        pg3.addPoint(70,60);
-        pg3.addPoint(10,60);
-        pg3.addPoint(10,20);
-        pg3.toPoints();
-        Polygon pg4 = new Polygon();
-        pg4.addPoint(30,70);
-        pg4.addPoint(30,10);
-        pg4.addPoint(50,10);
-        pg4.addPoint(50,70);
-        pg4.addPoint(30,70);
-        pg4.toPoints();
-        Polygon union2 = pg3.getUnion(pg4);
-        printPolygonPoints(union2);
-        Polygon intersection2 = pg3.getIntersection(pg4);
-        printPolygonPoints(intersection2);
+        Test.runTests();
     }
 }

@@ -20,13 +20,14 @@ package tilt.image.geometry;
 /**
  * A simple point class
  */
-public class Point extends java.awt.Point
+public class Point extends java.awt.geom.Point2D.Float
 {
+    static int MOD_ADLER = 65521;
     /**
      * @param x the-coordinate
      * @param y the y-coordinate
      */
-    public Point( int x, int y )
+    public Point( float x, float y )
     {
         this.x = x;
         this.y = y;
@@ -37,11 +38,27 @@ public class Point extends java.awt.Point
     }
     public String toString() 
     {
-        return "x="+this.x+",y="+this.y;
+        return "["+this.x+","+this.y+"]";
     }
-    public boolean equals( Point pt ) 
+    public java.awt.Point toAwt()
     {
-        return pt!= null &&this.x==pt.x&&this.y==pt.y;
+        return new java.awt.Point(Math.round(this.x),Math.round(this.y));
+    }
+    /**
+     * Is this polygon equal to another (used to assess membership of hashmap)
+     * @param obj the other Polygon to compare to
+     * @return true if this is equal to obj
+     */
+    @Override
+    public boolean equals( Object obj ) 
+    {
+        if ( obj instanceof Point )
+        {
+            Point pt = (Point)obj;
+            return pt!= null &&this.x==pt.x&&this.y==pt.y;
+        }
+        else
+            return false;
     }
     public Point minus( Point other )
     {
@@ -51,20 +68,19 @@ public class Point extends java.awt.Point
     {
         return new Point(this.x+other.x,this.y+other.y);
     }
-    public int perp( Point v )
+    public float perp( Point v )
     {
         return this.x*v.y-this.y*v.x;
     }
-    public int dot( Point v ) 
+    public float dot( Point v ) 
     {
        return this.x*v.x+this.y*v.y;
     }
     public Point times( float factor ) 
     {
-        return new Point(Math.round(this.x*factor),
-            Math.round(this.y*factor) );
+        return new Point(this.x*factor,this.y*factor );
     }
-    public int crossProduct( Point b )
+    public float crossProduct( Point b )
     {
         return this.x*b.y-b.x*this.y;
     }
@@ -73,13 +89,46 @@ public class Point extends java.awt.Point
         return this.x >= r.x && this.x <=r.x+r.width 
          && this.y >= r.y && this.y <= r.y+r.height;
     }
-    public int distance( Point pt2 ) 
+    public float distance( Point pt2 ) 
     {
-        int xDiff = Math.abs(this.x-pt2.x);
-        int yDiff= Math.abs(this.y-pt2.y);
-        int ysq = yDiff*yDiff;
-        int xsq = xDiff*xDiff;
+        float xDiff = Math.abs(this.x-pt2.x);
+        float yDiff= Math.abs(this.y-pt2.y);
+        float ysq = yDiff*yDiff;
+        float xsq = xDiff*xDiff;
         // good old pythagoras
         return (int)Math.round(Math.sqrt(ysq+xsq));
-    };
+    }
+    /**
+     * Compare one point with another based on its polar coordinates
+     * @param other the other point
+     * @param centroid the origin of the set of points we all belong to
+     * @return 1 if we are greater than other, else -1 if less else 0
+     */
+    public int compareWith( Point other, Point centroid )
+    {
+        // use the anti-tan of the angle with centroid as discrimiator
+        double angle1 = Math.atan2(this.y-centroid.y, this.x-centroid.x);
+        double angle2 = Math.atan2(other.y-centroid.y, other.x-centroid.x);
+        return (angle1-angle2)>0?1:(angle1==angle2)?0:-1;
+    }
+    /**
+     * Return a (nearly) unique hash for this object
+     * @return an int
+     */
+    @Override
+    public int hashCode()
+    {
+        String s = this.toString();
+        byte[] data = s.getBytes();
+        int a = 1, b = 0;
+        int index;
+
+        /* Process each byte of the data in order */
+        for (index = 0; index < data.length; ++index)
+        {
+            a = (a + data[index]) % MOD_ADLER;
+            b = (b + a) % MOD_ADLER;
+        }
+        return (b << 16) | a;
+    }
 }

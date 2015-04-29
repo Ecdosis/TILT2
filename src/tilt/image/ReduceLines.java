@@ -79,9 +79,9 @@ public class ReduceLines
                     Point curr = points[j];
                     float dy_dx = (float)(curr.y-last.y)/(float)(curr.x-last.x);
                     boolean hasNewBlobs = false;
-                    for ( int x=last.x;x<curr.x;x++ )
+                    for ( int x=Math.round(last.x);x<curr.x;x++ )
                     {
-                        int y = last.y + Math.round((x-last.x)*dy_dx);
+                        int y = Math.round(last.y) + Math.round((x-last.x)*dy_dx);
                         dirty.getPixel(x,y,iArray);
                         if ( iArray[0] != 0 )
                         {
@@ -89,7 +89,7 @@ public class ReduceLines
                             if ( dArray[0] == 0 )
                             {
                                 Blob b = new Blob( wr, options, null );
-                                b.save( dirty, wr, new Point(x,y) );
+                                b.save( dirty, wr, new java.awt.Point(x,y) );
                                 hasNewBlobs = true;
                             }
                         }
@@ -168,9 +168,9 @@ public class ReduceLines
             Point last = points[i];
             Point curr = points[i-1];
             float dy_dx = (float)(last.y-curr.y)/(float)(last.x-curr.x);
-            for ( int x=last.x;x>curr.x;x-- )
+            for ( int x=Math.round(last.x);x>curr.x;x-- )
             {
-                int y = last.y + Math.round((x-last.x)*dy_dx);
+                int y = Math.round(last.y) + Math.round((x-last.x)*dy_dx);
                 wr.getPixel(x,y,iArray);
                 if ( iArray[0] == 0 )
                 {
@@ -178,7 +178,7 @@ public class ReduceLines
                     if ( dArray[0] != 0 )
                     {
                         Blob b = new Blob( wr, options, null );
-                        b.save( dirty, wr, new Point(x,y) );
+                        b.save( dirty, wr, new java.awt.Point(x,y) );
                         // is b isolated by lots of white space?
                         if ( b.hasWhiteStandoff(wr, hStandoff,vStandoff) )
                             delPoints.add(curr);
@@ -206,9 +206,9 @@ public class ReduceLines
             Point last = points[i];
             Point curr = points[i+1];
             float dy_dx = (float)(curr.y-last.y)/(float)(curr.x-last.x);
-            for ( int x=last.x;x<curr.x;x++ )
+            for ( int x=Math.round(last.x);x<curr.x;x++ )
             {
-                int y = last.y + Math.round((x-last.x)*dy_dx);
+                int y = Math.round(last.y) + Math.round((x-last.x)*dy_dx);
                 wr.getPixel(x,y,iArray);
                 if ( iArray[0] == 0 )
                 {
@@ -216,7 +216,7 @@ public class ReduceLines
                     if ( dArray[0] != 0 )
                     {
                         Blob b = new Blob( wr, options, null );
-                        b.save( dirty, wr, new Point(x,y) );
+                        b.save( dirty, wr, new java.awt.Point(x,y) );
                         // is b isolated by lots of white space?
                         if ( b.hasWhiteStandoff(wr, hStandoff,vStandoff) )
                             delPoints.add(curr);

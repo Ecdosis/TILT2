@@ -52,7 +52,7 @@ public class LineRegion
     }
     /**
      * Compute the region of the line within which all word-shapes must lie.
-     * @return a polygon
+     * @return a non-convex polygon
      */
     private void calculate()
     {
@@ -65,9 +65,9 @@ public class LineRegion
                 // first line
                 for ( int i=pts.length-1;i>=0;i-- )
                 {
-                    int tentativeY = pts[i].y-lineHeight/2;
-                    int y = (tentativeY<0)?0:tentativeY;
-                    poly.addPoint( pts[i].x, y );
+                    float tentativeY = pts[i].y-lineHeight/2;
+                    int y = (tentativeY<0)?0:Math.round(tentativeY);
+                    poly.addPoint( Math.round(pts[i].x), y );
                 }
             }
             else
@@ -76,14 +76,14 @@ public class LineRegion
                 Point[] topPts = prev.getPoints();
                 int i = pts.length-1;
                 int j = topPts.length-1;
-                int dist = Integer.MAX_VALUE;
+                float dist = Integer.MAX_VALUE;
                 int best = 0;
                 // NB check first and last points for perpendicularity
                 while ( i >= 0 )
                 {
                     Point p = pts[i];
                     Point q = topPts[j];
-                    int newDist = p.distance(q);
+                    float newDist = p.distance(q);
                     if ( newDist < dist )
                     {
                         best = j;
@@ -93,11 +93,12 @@ public class LineRegion
                     }
                     else
                     {
-                        int x = (topPts[best].x+pts[i].x)/2;
+                        float x = (topPts[best].x+pts[i].x)/2;
                         // straight sides for polygon at ends
                         if (i==0 || i==pts.length-1)
                             x = pts[i].x;
-                        poly.addPoint(x,(topPts[best].y+pts[i].y)/2);
+                        poly.addPoint(Math.round(x),
+                            Math.round(topPts[best].y+pts[i].y)/2);
                         i--;
                         j = best;
                     }
@@ -109,9 +110,9 @@ public class LineRegion
                 int maxY = src.getHeight()-1;
                 for ( int i=0;i<pts.length;i++ )
                 {
-                    int tentativeY = pts[i].y+lineHeight/2;
-                    int y = (tentativeY>maxY)?maxY:tentativeY;
-                    poly.addPoint( pts[i].x, y );
+                    float tentativeY = pts[i].y+lineHeight/2;
+                    float y = (tentativeY>maxY)?maxY:tentativeY;
+                    poly.addPoint( Math.round(pts[i].x), Math.round(y) );
                 }
             }
             else
@@ -120,14 +121,14 @@ public class LineRegion
                 Point[] botPts = next.getPoints();
                 int i = 0;
                 int j = 0;
-                int dist = Integer.MAX_VALUE;
+                float dist = Integer.MAX_VALUE;
                 int best = 0;
                 // NB check first and last points for perpendicularity
                 while ( i < pts.length )
                 {
                     Point p = pts[i];
                     Point q = botPts[j];
-                    int newDist = p.distance(q);
+                    float newDist = p.distance(q);
                     if ( newDist < dist )
                     {
                         best = j;
@@ -137,11 +138,12 @@ public class LineRegion
                     }
                     else
                     {
-                        int x = (botPts[best].x+pts[i].x)/2;
+                        float x = (botPts[best].x+pts[i].x)/2;
                         // straight sides for polygon at ends
                         if ( i==0||i==pts.length-1 )
                             x = pts[i].x;
-                        poly.addPoint(x,(botPts[best].y+pts[i].y)/2);
+                        poly.addPoint(Math.round(x),
+                            Math.round((botPts[best].y+pts[i].y)/2));
                         i++;
                         j = best;
                     }
@@ -161,27 +163,32 @@ public class LineRegion
      */
     int getYIntercept( Point p0, boolean above )
     {
-        Point bot = new Point(p0.x,500/*src.getHeight()-1*/);
+        Point bot = new Point(p0.x,src.getHeight()-1);
         Point top = new Point(p0.x,0);
-        Segment S = new Segment(bot,top);
-        Segment IS = new Segment(bot,top);
+        Segment S = new Segment(top,bot);
+        Segment IS = new Segment(top,bot);
+        if ( poly == null )
+            this.getPoly();
+        //Polygon.printPolygonPoints( poly );
+        System.out.println("line:["+S.p0.x+','+S.p0.y+"]["+S.p1.x+","+S.p1.y+"]");
         if ( this.poly.intersectsLine( S, IS ) )
         {
+            System.out.println("intersects: ["+IS.p0.x+','+IS.p0.y+"]["+IS.p1.x+","+IS.p1.y+"]");
             if ( above )
             {
                 Point p = (IS.p0.y>IS.p1.y)?IS.p1:IS.p0;
-                int y = p.y+(p0.y-p.y)/2;
-                return y;
+                float y = p.y+(p0.y-p.y)/2;
+                return Math.round(y);
             }
             else
             {
                 Point p = (IS.p0.y>IS.p1.y)?IS.p0:IS.p1;
-                int y = p0.y+(p.y-p0.y)/2;
-                return y;
+                float y = p0.y+(p.y-p0.y)/2;
+                return Math.round(y);
             }
         }
         else
-            return p0.y;
+            return Math.round(p0.y);
     }
     /**
      * Get the sub-region of the LineRegion closest to the line
@@ -194,15 +201,15 @@ public class LineRegion
         // clockwise
         Polygon pg = new Polygon();
         int y = getYIntercept( p0, true );
-        pg.addPoint( p0.x,y );
+        pg.addPoint( Math.round(p0.x),y );
         Point start = new Point( p0.x, y );
         y = getYIntercept( p1, true );
-        pg.addPoint( p1.x,y );
+        pg.addPoint( Math.round(p1.x),y );
         y = getYIntercept( p1, false );
-        pg.addPoint( p1.x, y );
+        pg.addPoint( Math.round(p1.x), y );
         y = getYIntercept( p0, false );
-        pg.addPoint( p0.x, y );
-        pg.addPoint( start.x, start.y );
+        pg.addPoint( Math.round(p0.x), y );
+        pg.addPoint( Math.round(start.x), Math.round(start.y) );
         return pg;
     }
     /**
@@ -213,7 +220,17 @@ public class LineRegion
     {
         if ( this.poly == null )
             calculate();
+        if ( this.poly.points == null )
+            this.poly.toPoints();
         return this.poly;
+    }
+    /**
+     * Update the line's polygon
+     * @param poly the new polygon
+    */
+    public void setPoly( Polygon poly )
+    {
+        this.poly = poly;
     }
     public static void main( String[] args )
     {

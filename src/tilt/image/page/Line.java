@@ -142,7 +142,8 @@ public class Line implements Comparable<Line>
             p1 = p2;
             p2 = points.get(i);
             if ( p1 != null )
-                g.drawLine(p1.x,p1.y,p2.x,p2.y);
+                g.drawLine(Math.round(p1.x),Math.round(p1.y),
+                    Math.round(p2.x),Math.round(p2.y));
         }
     }
     /**
@@ -170,8 +171,8 @@ public class Line implements Comparable<Line>
         if ( points.size()>0 )
         {
             int[] iArray = new int[1];
-            Point leftMost= points.get(0);
-            int top = leftMost.y;
+            java.awt.Point leftMost = points.get(0).toAwt();
+            int top = Math.round(leftMost.y);
             int bottom = top+vScale;
             int right = leftMost.x+hScale;
             int left = (leftMost.x-hScale > 0)?leftMost.x-hScale:0;
@@ -184,16 +185,18 @@ public class Line implements Comparable<Line>
                     if ( iArray[0] <= black )
                     {
                         nPixels++;
-                        if ( nPixels == 2 )
+                        if ( nPixels >= 2 )
                         {
                             leftMost.x = x;
                             break;
                         }
                     }
                 }
-                if ( nPixels == 2 )
+                if ( nPixels >= 2 )
                     break;
             }
+            points.get(0).x = leftMost.x;
+            points.get(0).y = leftMost.y;
         }
     }
     /**
@@ -208,7 +211,7 @@ public class Line implements Comparable<Line>
         if ( points.size()>0 )
         {
             int[] iArray = new int[1];
-            Point rightMost= points.get(points.size()-1);
+            java.awt.Point rightMost= points.get(points.size()-1).toAwt();
             int top = rightMost.y-(vScale/2);
             int bottom = top+(vScale/2);
             int right = rightMost.x;
@@ -223,16 +226,19 @@ public class Line implements Comparable<Line>
                     if ( iArray[0] <= black )
                     {
                         nPixels++;
-                        if ( nPixels == 2 )
+                        if ( nPixels >= 2 )
                         {
                             rightMost.x = x;
                             break;
                         }
                     }
                 }
-                if ( nPixels == 2 )
+                if ( nPixels >= 2 )
                     break;
             }
+            Point endP = points.get(points.size()-1);
+            endP.x = rightMost.x;
+            endP.y = rightMost.y;
         }
     }
     /**
@@ -304,7 +310,7 @@ public class Line implements Comparable<Line>
             ArrayList<Integer> yValues = new ArrayList<>();
             for ( int i=0;i<points.size();i++ )
             {
-                yValues.add( new Integer(points.get(i).y) );
+                yValues.add( new Integer(Math.round(points.get(i).y)) );
             }
             if ( yValues.size() > 0 )
             {
@@ -380,10 +386,10 @@ public class Line implements Comparable<Line>
             return 0.0f;
         else
         {
-            int left1 = this.points.get(0).x;
-            int left2= other.points.get(0).x;
-            int right1 = this.points.get(points.size()-1).x;
-            int right2 = other.points.get(other.points.size()-1).x;
+            int left1 = this.points.get(0).toAwt().x;
+            int left2= other.points.get(0).toAwt().x;
+            int right1 = this.points.get(points.size()-1).toAwt().x;
+            int right2 = other.points.get(other.points.size()-1).toAwt().x;
             if ( right1 < left2 || right2 < left1 )
                 return 0.0f;
             // we completely enclose other
@@ -435,7 +441,7 @@ public class Line implements Comparable<Line>
         }
         else
         {
-            return this.points.get(0).x-other.points.get(0).x;
+            return Math.round(this.points.get(0).x-other.points.get(0).x);
         }
     }
     /**

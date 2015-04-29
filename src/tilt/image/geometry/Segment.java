@@ -31,8 +31,8 @@ public class Segment
     public Segment( Point p0, Point p1 )
     {
         this.gap = 5;
-        this.p0 = p0;
-        this.p1 = p1;
+        this.p0 = new Point(p0.x,p0.y);
+        this.p1 = new Point(p1.x,p1.y);
     }
     /**
      * Do two line segments intersect?
@@ -46,18 +46,18 @@ public class Segment
         return box1.intersects(box2)
                 && this.crosses(b)
                 && b.crosses(this);
-    };
+    }
     /**
      * Get the bounding box of this segment
      * @return a Rect
      */
     public Rect getBoundingBox() 
     {
-        return new Rect(Math.min(this.p0.x,this.p1.x),
-            Math.min(this.p0.y,this.p1.y),
-            Math.abs(this.p0.x-this.p1.x),
-            Math.abs(this.p0.y-this.p1.y) );
-    };
+        return new Rect(Math.round(Math.min(p0.x,p1.x)),
+            Math.round(Math.min(p0.y,p1.y)),
+            Math.round(Math.abs(p0.x-p1.x)),
+            Math.round(Math.abs(p0.y-p1.y)) );
+    }
     /**
      * XOR two values (not in Javascript)
      * @param a the first boolean
@@ -109,7 +109,7 @@ public class Segment
         Segment aTmp = new Segment(new Point(0, 0), new Point(
             this.p1.x - this.p0.x, this.p1.y - this.p0.y));
         Point pTmp = new Point(p.x - this.p0.x, p.y - this.p0.y);
-        int r = aTmp.p1.crossProduct(pTmp);
+        float r = aTmp.p1.crossProduct(pTmp);
         return Math.abs(r) < this.EPSILON;
     };
     /**
@@ -132,8 +132,8 @@ public class Segment
      */
     public int hypoteneuse() 
     {
-        int dy = this.p1.y-this.p0.y;
-        int dx = this.p1.x-this.p0.x;
+        float dy = this.p1.y-this.p0.y;
+        float dx = this.p1.x-this.p0.x;
         return (int)Math.round(Math.abs(Math.sqrt(dy*dy+dx*dx)));
     }
     /**
@@ -176,5 +176,164 @@ public class Segment
             }
         }
         return (int)Math.round(distanceSegment);
-    };
+    }
+    private void swapEnds()
+    {
+        Point tmp = this.p0;
+        this.p0 = this.p1;
+        this.p1 = tmp;
+    }
+    private void swapPoints( Segment b )
+    {
+        Point tmp0 = this.p0;
+        Point tmp1 = this.p1;
+        this.p0 = b.p0;
+        this.p1 = b.p1;
+        b.p0 = tmp0;
+        b.p1 = tmp1;
+    }
+    /**
+     * Get the actual intersection point of ourself and another segment
+     * Adapted from :
+     * http://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
+     * @param seg the other segment
+     * @return the Point in p0 or intersecting line segment
+     */
+    Segment getIntersection( Segment seg ) 
+    {
+        Segment a = (Segment)this.clone();
+        Segment b = (Segment)seg.clone();
+        /* the intersection [(x1,y1), (x2, y2)]
+           it might be a line or a single point. If it is a line,
+           then x1 = x2 and y1 = y2.  */
+        float x1, y1, x2, y2;
+
+        if (this.p0.x == this.p1.x) 
+        {
+            // Case (A)
+            // As a is a perfect vertical line, it cannot be represented
+            // nicely in a mathematical way. But we directly know that
+            //
+            x1 = a.p0.x;
+            x2 = x1;
+            if (b.p0.x == b.p1.x) 
+            {
+                // Case (AA): all x are the same!
+                // Normalize
+                if (a.p0.y > a.p1.y) 
+                    a.swapEnds();
+                if (b.p0.y > b.p1.y) 
+                    b.swapEnds();
+                if (a.p0.y > b.p0.y) 
+                    a.swapPoints(b);
+                // Now we know that the y-value of this.p0 is the 
+                // lowest of all 4 y values
+                // this means, we are either in case (AAA):
+                //   a: x--------------x
+                //   b:    x---------------x
+                // or in case (AAB)
+                //   a: x--------------x
+                //   b:    x-------x
+                // in both cases:
+                // get the relavant y interval
+                y1 = b.p0.y;
+                y2 = Math.min(a.p1.y, b.p1.y);
+            } 
+            else 
+            {
+                // Case (AB)
+                // we can mathematically represent line b as
+                //     y = m*x + t <=> t = y - m*x
+                // m = (y1-y2)/(x1-x2)
+                float m, t;
+                m = (b.p0.y - b.p1.y)/
+                    (b.p0.x - b.p1.x);
+                t = b.p0.y - m*b.p0.x;
+                y1 = m*x1 + t;
+                y2 = y1;
+            }
+        } 
+        else if (b.p0.x == b.p1.x) 
+        {
+            // Case (B)
+            // essentially the same as Case (AB), but with
+            // a and b switched
+            x1 = b.p0.x;
+            x2 = x1;
+            a.swapPoints(b);
+            float m, t;
+            m = (b.p0.y - b.p1.y)/
+                (b.p0.x - b.p1.x);
+            t = b.p0.y - m*b.p0.x;
+            y1 = m*x1 + t;
+            y2 = y1;
+        } 
+        else 
+        {
+            // Case (C)
+            // Both lines can be represented mathematically
+            float ma, mb, ta, tb;
+            ma = (a.p0.y - a.p1.y)/
+                 (a.p0.x - a.p1.x);
+            mb = (b.p0.y - b.p1.y)/
+                 (b.p0.x - b.p1.x);
+            ta = a.p0.y - ma*a.p0.x;
+            tb = b.p0.y - mb*b.p0.x;
+            if (ma == mb) 
+            {
+                // Case (CA)
+                // both lines are in parallel. As we know that they 
+                // intersect, the intersection could be a line
+                // when we rotated this, it would be the same situation 
+                // as in case (AA)
+
+                // Normalize
+                if (a.p0.x > a.p1.x) 
+                    a.swapEnds();
+                if (b.p0.x > b.p1.x) 
+                    b.swapEnds();
+                if (this.p0.x > b.p0.x)
+                    a.swapPoints(b);
+
+                // get the relavant x interval
+                x1 = b.p0.x;
+                x2 = Math.min(a.p1.x, b.p1.x);
+                y1 = ma*x1+ta;
+                y2 = ma*x2+ta;
+            } 
+            else 
+            {
+                // Case (CB): only a point as intersection:
+                // y = ma*x+ta
+                // y = mb*x+tb
+                // ma*x + ta = mb*x + tb
+                // (ma-mb)*x = tb - ta
+                // x = (tb - ta)/(ma-mb)
+                x1 = (tb-ta)/(ma-mb);
+                y1 = ma*x1+ta;
+                x2 = x1;
+                y2 = y1;
+            }
+        }
+        return new Segment(new Point(x1,y1), new Point(x2,y2));
+    }
+    @Override
+    protected Object clone()
+    {
+        Segment copy = new Segment((Point)this.p0.clone(),(Point)this.p1.clone());
+        copy.gap = this.gap;
+        return copy;
+    }
+    public static void main( String[] args )
+    {
+        Segment a = new Segment( new Point(1,2), new Point(5,6) );
+        Segment b = new Segment( new Point(2,5), new Point(7,3) );
+        if ( a.intersects(b) )
+        {
+            Segment intersection = a.getIntersection(b);        
+            System.out.println(intersection.p0.toString()+intersection.p1.toString());
+        }
+        else
+            System.out.println("lines do not intersect");
+    }
 }
