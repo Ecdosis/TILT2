@@ -82,11 +82,10 @@ public class FindWords
                 findPartWords( curr, lr, nextLR, points[j], points[j+1] );
             }
         }
-//        // page.mergeLines();
 //        page.pruneShortLines();
 //        // now merge the word-shapes into real words
-//        page.getWordGap(); 
-//        page.joinWords();
+        page.getWordGap(); 
+        page.joinWords();
     }
     /**
      * Find part of a word. All blobs near the line will be added.
@@ -107,9 +106,11 @@ public class FindWords
         int[] iArray = new int[r.width];
         // if the last pixel was black it must be part of the same blob/polygon
         boolean lastPixelWasBlack = false;
+        // per pixel row within r
         for ( int y=r.y;y<endY;y++ )
         {
             wr.getPixels( r.x, y, r.width, 1, iArray );
+            // for each pixel in each row...
             for ( int i=0;i<r.width;i++ )
             {
                 int x = i+r.x;
@@ -119,11 +120,13 @@ public class FindWords
                     {
                         lastPixelWasBlack = true;
                         Point q = new Point(x,y);
+                        // ignore black pixels not in polgonal core
                         if ( core.contains(q) )
                         {
                             Polygon shape = page.shapeForPoint(q);
                             if ( shape == null )
                             {
+                                // shape not already defined
                                 Blob b = new Blob(wr,opts,null);
                                 b.save(dirty, wr, q.toAwt());
                                 shape = b.toPolygon();
@@ -140,7 +143,7 @@ public class FindWords
                                 shape.setLine(curr);
                                 page.addShape(shape);// registers line also
                             }
-                        } // else ignore it
+                        } 
                     }   
                 }
                 else
@@ -150,5 +153,4 @@ public class FindWords
             lastPixelWasBlack = false;
         }
     }
-    
 }

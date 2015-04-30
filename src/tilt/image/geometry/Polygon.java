@@ -484,11 +484,18 @@ public class Polygon extends java.awt.Polygon
      */
     public Polygon getIntersection( Polygon pg ) throws TiltException
     {
-        Polygon intersection = new Polygon();
-        ArrayList<Point> list1 = this.toCCList( pg );
-        ArrayList<Point> list2 = pg.toCCList( this );
-        weaveIntersection( list1, 0, list2, intersection );
-        return intersection;
+        if ( this.contains(pg) )
+            return pg;
+        else if ( pg.contains(this) )
+            return this;
+        else
+        {
+            Polygon intersection = new Polygon();
+            ArrayList<Point> list1 = this.toCCList( pg );
+            ArrayList<Point> list2 = pg.toCCList( this );
+            weaveIntersection( list1, 0, list2, intersection );
+            return intersection;
+        }
     }
     /**
      * Fins the location of a point in another list of points
@@ -545,11 +552,18 @@ public class Polygon extends java.awt.Polygon
      */
     public Polygon getUnion( Polygon pg ) throws TiltException
     {
-        Polygon union = new Polygon();
-        ArrayList<Point> list1 = this.toCCList( pg );
-        ArrayList<Point> list2 = pg.toCCList( this );
-        weaveUnion( list1, 0, list2, union );
-        return union;
+        if ( this.contains(pg) )
+            return this;
+        else if ( pg.contains(this) )
+            return pg;
+        else
+        {
+            Polygon union = new Polygon();
+            ArrayList<Point> list1 = this.toCCList( pg );
+            ArrayList<Point> list2 = pg.toCCList( this );
+            weaveUnion( list1, 0, list2, union );
+            return union;
+        }
     }
     /**
      * Does one polygon intersects with another?

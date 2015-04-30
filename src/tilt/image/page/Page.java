@@ -683,8 +683,7 @@ public class Page
     }
     public Polygon shapeForPoint( Point p )
     {
-        // look up in quadtree
-        return null;
+        return this.qt.pointInPolygon( p );
     }
     public void joinLines()
     {
