@@ -26,6 +26,7 @@ import tilt.image.geometry.Point;
 import tilt.image.geometry.Polygon;
 import java.awt.Rectangle;
 import tilt.handler.post.Options;
+import tilt.exception.TiltException;
 /**
  * Using the lines lists search for words
  * @author desmond
@@ -55,7 +56,7 @@ public class FindWords
     /**
      * Actually find the word-shapes
      */
-    public void find()
+    public void find() throws TiltException
     {
         Line prev;
         Line next;
@@ -96,7 +97,7 @@ public class FindWords
      * @param p1 the end of this baseline segment
      */
     private void findPartWords( Line curr, LineRegion lr, LineRegion nextLR,
-        Point p0, Point p1 )
+        Point p0, Point p1 ) throws TiltException
     {
         // compute polygon in which to look for blobs
         Polygon core = lr.getLineBase( p0, p1 );

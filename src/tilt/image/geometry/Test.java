@@ -34,9 +34,9 @@ public class Test {
         {30,40,60,10,80,40,60,70,30,40}
     };
     private static int[][] results = {
-        {10,30,10,10,30,10,34,18,40,10,70,40,50,70,10,50,21,35,10,30},
-        {34,18,40,30,30,40,21,35,34,18},
-        {10,20,30,20,30,10,50,10,50,20,70,20,70,60,50,60,50,70,30,70,30,60,10,60,10,20},
+        {50,70,10,50,21,35,10,30,10,10,30,10,34,18,40,10,70,40,50,70},
+        {21,35,34,18,40,30,30,40,21,35},
+        {30,20,30,10,50,10,50,20,70,20,70,60,50,60,50,70,30,70,30,60,10,60,10,20,30,20},
         {30,20,50,20,50,60,30,60,30,20},
         {30,10,42,28,60,10,80,40,60,70,42,52,30,70,10,40,30,10},
         {42,28,50,40,42,52,30,40,42,28}
@@ -72,20 +72,27 @@ public class Test {
     }
     public static void runTests()
     {
-        failed = 0;
-        for ( int i=0;i<polys.length;i++ )
+        try
         {
-            Polygon poly;
-            if ( i % 2 == 0 )
-                poly = polys[i].getUnion(polys[i+1]);
-            else
-                poly = polys[i-1].getIntersection(polys[i]);
-            printPolygonPoints(poly);
-            if ( !checkPoly(poly,results[i]) )
-                failed++;
+            failed = 0;
+            for ( int i=0;i<polys.length;i++ )
+            {
+                Polygon poly;
+                if ( i % 2 == 0 )
+                    poly = polys[i].getUnion(polys[i+1]);
+                else
+                    poly = polys[i-1].getIntersection(polys[i]);
+                printPolygonPoints(poly);
+                if ( !checkPoly(poly,results[i]) )
+                    failed++;
+            }
+            System.out.println("Failed "+failed+" tests. Passed "
+                +(results.length-failed)+" tests.");
         }
-        System.out.println("Failed "+failed+" tests. Passed "
-            +(results.length-failed)+" tests.");
+        catch ( Exception e )
+        {
+            e.printStackTrace(System.out);
+        }
     }
     private static void printPolygonPoints( Polygon poly )
     {

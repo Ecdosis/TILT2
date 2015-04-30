@@ -19,9 +19,8 @@
 package tilt.image.geometry;
 import java.awt.geom.PathIterator;
 import java.util.ArrayList;
-import java.util.HashSet;
+import tilt.exception.TiltException;
 import tilt.image.page.Line;
-import java.util.Iterator;
 
 /**
  * Override the awt Polygon class so we can store them as keys in a HashMap
@@ -311,11 +310,11 @@ public class Polygon extends java.awt.Polygon
      * @param p the current point
      * @param set the set to add the intersection points to
      */
-    private void addIntersectingPoints( Point last, Point p, 
-        HashSet<Point> set )
+    private ArrayList<Point> getIntersectingPoints( Point last, Point p )
     {
         Segment S = new Segment( last, p );
         ArrayList<Point> pts = this.toPoints();
+        ArrayList<Point> res = new ArrayList<>();
         for ( int i=1;i<pts.size();i++ )
         {
             Point prev = pts.get(i-1);
@@ -324,11 +323,16 @@ public class Polygon extends java.awt.Polygon
             if ( S.intersects(seg) )
             {
                 Segment intersection = S.getIntersection(seg);
-                set.add( intersection.p0 );
+                res.add( intersection.p0 );
+                intersection.p0.setType(PointType.join);
                 if ( !intersection.p0.equals(intersection.p1) )
-                    set.add( intersection.p1 );
+                {
+                    res.add( intersection.p1 );
+                    intersection.p1.setType(PointType.join);
+                }
             }
         }
+        return res;
     }
     /**
      * Ensure the points are ordered counter-clockwise
@@ -358,55 +362,49 @@ public class Polygon extends java.awt.Polygon
                 h *= (5.0 / 11);
 	}
     }
-    /**
-     * Make a list of a polygon's points, including joins with another polygon
-     * @param pg1 the other polygon
-     * @param pg2 this polygon
-     * @param outside if true gather outer points, else inner
-     * @param set the set of points to add it to
-     * @return the points of pg2 outside of pg1 plus join points
-     */
-    private void findPoints( Polygon pg1, Polygon pg2, boolean outer, 
-        HashSet<Point> set )
+    Point nearestPoint( ArrayList<Point> pts, Point last )
     {
-        ArrayList<Point> pgList = pg2.toPoints();
-        Point last;
-        Point p = null;
-        boolean pIsInside = false;
-        boolean lastIsInside;
-        for ( int i=0;i<pgList.size();i++ )
+        float minDist = Float.MAX_VALUE;
+        int index = -1;
+        for ( int i=0;i<pts.size();i++ )
         {
-            last = p;
-            lastIsInside = pIsInside;
-            p = pgList.get(i);
-            pIsInside = pg1.contains(p);
-            if ( !pIsInside && lastIsInside )
+            Point p = pts.get(i);
+            float dist = p.distance( last );
+            if ( dist < minDist )
             {
-                // coming out
-                pg1.addIntersectingPoints( last, p, set );
-                if ( outer )
-                    set.add(p);
-            }
-            else if ( pIsInside && !lastIsInside )
-            {
-                // going in
-                if ( last != null )
-                    pg1.addIntersectingPoints( last, p, set );
-                if ( !outer )
-                    set.add(p);
-            }
-            else if ( !pIsInside )
-            {
-                if ( last != null )
-                    pg1.addIntersectingPoints( last, p, set );
-                if ( outer )
-                    set.add(p);
-            }
-            else if ( !outer )
-            {
-                set.add(p);
+                index = i;
+                minDist = dist;
             }
         }
+        return (index==-1)?null:pts.remove(index);
+    }
+    /**
+     * Make a counter-clockwise list of all a polygon's points, adding 
+     * join-points with another polygon
+     * @param other the other polygon
+     */
+    private ArrayList<Point> toCCList( Polygon other )
+    {
+        ArrayList<Point> pts = this.toPoints();
+        ArrayList<Point> list = new ArrayList<>();
+        Point last;
+        Point curr = pts.get(0);
+        curr.classify(other);
+        for ( int i=1;i<pts.size();i++ )
+        {
+            last = curr;
+            curr = pts.get(i);
+            curr.classify(other);
+            // check for crossover
+            ArrayList<Point> joins = other.getIntersectingPoints( last, curr );
+            while ( joins.size()>0 )
+            {
+                Point p = nearestPoint(joins,last);
+                list.add( p );
+            }
+            list.add(curr);
+        }
+        return list;
     }
     /**
      * Get the last point of a polygon
@@ -438,57 +436,120 @@ public class Polygon extends java.awt.Polygon
         else
             return null;
     }
-    /**
-     * Make sure that the first and last points of this polygon are the same
-     * @param pg the polygon to check
-     */
-    private void fixPolygon( Polygon pg )
+    boolean finished()
     {
-        Point q = pg.lastPoint();
-        Point p = pg.firstPoint();
-        if ( !q.equals(p) )
-            pg.addPoint(Math.round(p.x),Math.round(p.y));
+        return this.npoints>1
+            && this.firstPoint().equals(this.lastPoint());
+    }
+    /**
+     * Weave two lists of polygon-points into an intersection
+     * @param list1 the first list
+     * @param pos the next read-position in list1
+     * @param list2 the second list
+     * @param intersection the polygon to build as the intersection
+     * @throws Exception 
+     */
+    private void weaveIntersection( ArrayList<Point> list1, int pos, 
+        ArrayList<Point> list2, Polygon intersection ) throws TiltException
+    {
+        while ( !intersection.finished() )
+        {
+            Point p = list1.get(pos);
+            pos = (pos+1)%list1.size();
+            if ( p.getType()==PointType.inner )
+                intersection.addPoint( Math.round(p.x), Math.round(p.y) );
+            else if ( p.getType()==PointType.join )
+            {
+                intersection.addPoint( Math.round(p.x), Math.round(p.y) );
+                Point q = list1.get(pos);
+                if ( q.getType()==PointType.outer )
+                {
+                    int loc = findLoc(list2,p);
+                    if ( loc != -1 )
+                    {
+                        int next = (loc+1)%list2.size();
+                        weaveIntersection( list2, next, list1, intersection );
+                        break;
+                    }
+                    else
+                        throw new TiltException("point "+p+" not found");
+                }
+            }
+        }   
     }
     /**
      * Get a new polygon that is the intersection with this one
      * @param pg the polygon that should be intersected with this
      * @return the new polygon 
      */
-    public Polygon getIntersection( Polygon pg )
+    public Polygon getIntersection( Polygon pg ) throws TiltException
     {
-        return getIntersectionOrUnion( pg, false );
+        Polygon intersection = new Polygon();
+        ArrayList<Point> list1 = this.toCCList( pg );
+        ArrayList<Point> list2 = pg.toCCList( this );
+        weaveIntersection( list1, 0, list2, intersection );
+        return intersection;
+    }
+    /**
+     * Fins the location of a point in another list of points
+     * @param list the list to search
+     * @param target the target point
+     * @return its index into list or -1 if not found
+     */
+    int findLoc( ArrayList<Point> list, Point target )
+    {
+        for ( int i=0;i<list.size();i++ )
+        {
+            Point p = list.get(i);
+            if ( p.equals(target) )
+                return i;
+        }
+        return -1;
+    }
+    /**
+     * Weave the lists of points form two polygons with join-points into a union
+     * @param list1 the first list of polygon points, counter-clockwise
+     * @param pos the read position in list1
+     * @param list2 the other list
+     * @param union the polygon we are building
+     * @throws TiltException 
+     */
+    private void weaveUnion( ArrayList<Point> list1, int pos, 
+        ArrayList<Point> list2, Polygon union ) throws TiltException
+    {
+        while ( !union.finished() )
+        {
+            Point p = list1.get(pos);
+            pos = (pos+1)%list1.size();
+            if ( p.getType()==PointType.outer )
+                union.addPoint( Math.round(p.x), Math.round(p.y) );
+            else if ( p.getType()==PointType.join )
+            {
+                union.addPoint( Math.round(p.x), Math.round(p.y) );
+                int loc = findLoc(list2,p);
+                if ( loc != -1 )
+                {
+                    int next = (loc+1)%list2.size();
+                    weaveUnion( list2, next, list1, union );
+                    break;
+                }
+                else
+                    throw new TiltException("point "+p+" not found");
+            }
+        }
     }
     /**
      * Get a new polygon that is the union with this one
      * @param pg the polygon that should be unioned with this
      * @return the new polygon 
      */
-    public Polygon getUnion( Polygon pg )
+    public Polygon getUnion( Polygon pg ) throws TiltException
     {
-        return getIntersectionOrUnion( pg, true );
-    }
-    /**
-     * Get a new polygon that is the intersection or union with this one
-     * @param pg the polygon that intersects with this
-     * @param union true if a union is wanted else intersection
-     * @return the new polygon being the intersection (empty == no intersection)
-     */
-    private Polygon getIntersectionOrUnion( Polygon pg, boolean union )
-    {
-        HashSet<Point> pts = new HashSet<>();
-        findPoints( this, pg, union, pts );
-        findPoints( pg, this, union, pts );
-        Polygon combined = new Polygon();
-        Point[] array = new Point[pts.size()];
-        pts.toArray( array );
-        Point centroid = getCentroid( array );
-        sortCC( array, centroid );
-        for ( Point pt : array )
-        {
-            combined.addPoint(Math.round(pt.x),Math.round(pt.y));
-        }
-        fixPolygon(combined);
-        return combined;
+        Polygon union = new Polygon();
+        ArrayList<Point> list1 = this.toCCList( pg );
+        ArrayList<Point> list2 = pg.toCCList( this );
+        weaveUnion( list1, 0, list2, union );
+        return union;
     }
     /**
      * Does one polygon intersects with another?
@@ -497,16 +558,30 @@ public class Polygon extends java.awt.Polygon
      */
     public boolean intersects( Polygon pg )
     {
-        ArrayList<Point> pts1 = this.toPoints();
-        // two polys intersect if at least one point is
-        // "inside" the other
-        ArrayList<Point> pts2 = pg.toPoints();
-        for ( int i=0;i<pts1.size();i++ )
-            if ( pg.contains(pts1.get(i)) )
-                return true;
-        for ( int i=0;i<pts2.size();i++ )
-            if ( this.contains(pts2.get(i)) )
-                return true;
+        if ( this.bounds.intersects(pg.bounds) )
+        {
+            ArrayList<Point> pts1 = this.toPoints();
+            // two polys intersect if at least one point is
+            // "inside" the other
+            ArrayList<Point> pts2 = pg.toPoints();
+            for ( int i=0;i<pts1.size();i++ )
+                if ( pg.contains(pts1.get(i)) )
+                    return true;
+            for ( int i=0;i<pts2.size();i++ )
+                if ( this.contains(pts2.get(i)) )
+                    return true;
+            // test each edge of this to see if it crosses pg
+            for ( int i=1;i<pts1.size();i++ )
+            {
+                Segment s1 = new Segment(pts1.get(i-1),pts1.get(i));
+                for ( int j=1;j<pts2.size();j++ )
+                {
+                    Segment s2 = new Segment(pts2.get(j-1),pts2.get(j));
+                    if ( s1.intersects(s2) )
+                        return true;
+                }
+            }
+        }
         return false;
     }
     /**

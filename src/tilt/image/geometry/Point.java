@@ -23,6 +23,7 @@ package tilt.image.geometry;
 public class Point extends java.awt.geom.Point2D.Float
 {
     static int MOD_ADLER = 65521;
+    PointType type;
     /**
      * @param x the-coordinate
      * @param y the y-coordinate
@@ -35,6 +36,21 @@ public class Point extends java.awt.geom.Point2D.Float
     public void print() 
     {
         System.out.println(this.toString());
+    }
+    public void setType ( PointType type )
+    {
+        this.type = type;
+    }
+    public PointType getType()
+    {
+        return this.type;
+    }
+    public void classify( Polygon other )
+    {
+        if ( other.contains(this) )
+            this.type = PointType.inner;
+        else
+            this.type = PointType.outer;
     }
     public String toString() 
     {
