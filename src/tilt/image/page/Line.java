@@ -21,8 +21,6 @@ import tilt.image.geometry.Polygon;
 import tilt.image.geometry.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.Rectangle;
@@ -117,7 +115,7 @@ public class Line implements Comparable<Line>
             Polygon pg = shapes.get(i);
             if ( prev != null )
             {
-                double gap = Utils.distanceBetween( prev, pg );
+                double gap = prev.distanceBetween( pg );
                 Integer key = new Integer((int)Math.round(gap));
                 int current = 0;
                 if ( map.containsKey(key) )
@@ -349,7 +347,7 @@ public class Line implements Comparable<Line>
             if ( prev != null )
             {
                 // gaps will change due to merging
-                int current = (int)Math.round(Utils.distanceBetween(prev,pg) );
+                int current = (int)Math.round(prev.distanceBetween(pg) );
                 if ( current >= minWordGap  )
                     positions.add( new Integer(i) );
             }
@@ -365,7 +363,7 @@ public class Line implements Comparable<Line>
             {
                 Polygon pg = shapes.get(j);
                 if ( prev != null )
-                    prev = Utils.mergePolygons(prev,pg);
+                    prev = prev.merge(pg);
                 else
                     prev = pg;
             }
@@ -498,19 +496,18 @@ public class Line implements Comparable<Line>
         {
             JSONObject feature = new JSONObject();
             feature.put("type","Feature");
-            Point2D[] pts = Utils.polygonToPoints(shapes.get(i));
+            ArrayList<Point> pts = shapes.get(i).toPoints();
             JSONObject geometry = new JSONObject();
             JSONArray coordinates = new JSONArray();
-            for ( int j=0;j<pts.length;j++ )
+            for ( int j=0;j<pts.size();j++ )
             {
                 geometry.put("type","Polygon");
                 JSONArray point = new JSONArray();
-                point.add( pts[j].x()/(double)pageWidth );
-                point.add( pts[j].y()/(double)pageHeight );
+                Point pt = pts.get(j);
+                point.add( pt.x/(float)pageWidth );
+                point.add( pt.y/(float)pageHeight );
                 coordinates.add( point );
             }
-            if ( pts.length>0 && !pts[0].equals(pts[pts.length-1]) )
-                coordinates.add( coordinates.get(0) );
             geometry.put( "coordinates", coordinates );
             feature.put( "geometry", geometry );
             // add feature properties like text-offset here

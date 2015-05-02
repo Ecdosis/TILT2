@@ -18,6 +18,7 @@
 
 package tilt.image.page;
 import tilt.image.geometry.Polygon;
+import tilt.image.geometry.Point;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import tilt.align.Matchup;
@@ -210,7 +211,7 @@ public class Split
     public Polygon[] split( int[] splits ) throws SplitException
     {
         SplitShape[] newShapes = new SplitShape[splits.length+1];
-        Point2D[] points = Utils.polygonToPoints( shape );
+        ArrayList<Point> points = shape.toPoints();
         // create new shapes to generate split polygons
         int shapeRight = shape.getBounds().width+shape.getBounds().x;
         for ( int start=shape.getBounds().x,i=0;i<newShapes.length;i++ )
@@ -220,17 +221,17 @@ public class Split
             start = splitPt;
         }
         // distribute points among shapes
-        for ( int i=0;i<points.length;i++ )
+        for ( int i=0;i<points.size();i++ )
         {
-            Point2D p = points[i];
-            int x = (int)Math.round(p.x());
+            Point p = points.get(i);
+            int x = (int)Math.round(p.x);
             // determine which shape it falls into
             for ( int j=0;j<newShapes.length;j++ )
             {
                 // determine where p goes
                 if ( newShapes[j].wants(x) )
                 {
-                    newShapes[j].add( p );
+                    newShapes[j].add( new Point2D(p.x,p.y) );
                     break;
                 }
             }

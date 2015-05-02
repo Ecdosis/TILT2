@@ -52,9 +52,26 @@ public class Point extends java.awt.geom.Point2D.Float
         else
             this.type = PointType.outer;
     }
+    private char typeLetter()
+    {
+        if ( type==null )
+            return '0';
+        else
+            switch ( type )
+            {
+                case join:
+                    return 'J';
+                case inner:
+                    return 'I';
+                case outer:
+                    return 'O';
+                default:
+                    return '0';
+            }
+    }
     public String toString() 
     {
-        return "["+this.x+","+this.y+"]";
+        return "["+this.typeLetter()+this.x+","+this.y+"]";
     }
     public java.awt.Point toAwt()
     {

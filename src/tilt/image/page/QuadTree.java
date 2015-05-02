@@ -58,10 +58,13 @@ class QuadTree
         this.boundary = new Rect(x,y,width,height);
         this.width = width;
         this.height = height;
+        this.boundary = new Rect(x,y,width,height);
+        this.points = new ArrayList<>();
     }
     /**
      * Add a point to the quadtree
      * @param pt the point to add
+     * @return true if it was added else false
      */
     boolean addPt( Point pt )
     {

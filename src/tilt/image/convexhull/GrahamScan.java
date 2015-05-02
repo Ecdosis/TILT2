@@ -17,6 +17,9 @@
  */
 
 package tilt.image.convexhull;
+import tilt.image.geometry.Point;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Stack;
 
 /*************************************************************************
@@ -32,6 +35,7 @@ import java.util.Stack;
  *************************************************************************/
 
 import java.util.Arrays;
+import tilt.image.geometry.Polygon;
 
 public class GrahamScan {
     private Stack<Point2D> hull = new Stack<>();
@@ -80,31 +84,55 @@ public class GrahamScan {
         //assert isConvex();
     }
 
-    // return extreme points on convex hull in counterclockwise order as an Iterable
+    /**
+     * Return convex hull in counterclockwise order as an Iterable
+     * (author's original routine didn't return a CCW list - modified)
+     * @return an iterable list of CCW points
+     */
     public Iterable<Point2D> hull() {
-        Stack<Point2D> s = new Stack<>();
-        for (Point2D p : hull) s.push(p);
+        ArrayList<Point2D> s = new ArrayList<>();
+        for ( int i=hull.size()-1;i>=0;i-- )
+            s.add(hull.get(i));
         return s;
     }
-
-    // check that boundary of hull is strictly convex
-    private boolean isConvex() {
-        int N = hull.size();
-        if (N <= 2) return true;
-
-        Point2D[] points = new Point2D[N];
-        int n = 0;
-        for (Point2D p : hull()) {
-            points[n++] = p;
+    /**
+     * Convert the hull to a polygon with CCW points and closed at the end
+     * @return 
+     */
+    public Polygon toPolygon()
+    {
+        Iterable<Point2D> pts = hull();
+        Iterator<Point2D> iter = pts.iterator();
+        Polygon pg = new Polygon();
+        while ( iter.hasNext() )
+        {
+            Point2D pt = iter.next();
+            pg.addPoint( (int)Math.round(pt.x),(int)Math.round(pt.y) );
         }
-
-        for (int i = 0; i < N; i++) {
-            if (Point2D.ccw(points[i], points[(i+1) % N], points[(i+2) % N]) <= 0) {
-                return false;
-            }
-        }
-        return true;
+        Point first = pg.firstPoint();
+        Point last = pg.lastPoint();
+        if ( pg.npoints > 1 && !first.equals(last) )
+            pg.addPoint(Math.round(first.x),Math.round(first.y));
+        return pg;
     }
+    // check that boundary of hull is strictly convex
+//    private boolean isConvex() {
+//        int N = hull.size();
+//        if (N <= 2) return true;
+//
+//        Point2D[] points = new Point2D[N];
+//        int n = 0;
+//        for (Point2D p : hull()) {
+//            points[n++] = p;
+//        }
+//
+//        for (int i = 0; i < N; i++) {
+//            if (Point2D.ccw(points[i], points[(i+1) % N], points[(i+2) % N]) <= 0) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
 //    // test client
 //    public static void main(String[] args) {
@@ -119,5 +147,16 @@ public class GrahamScan {
 //        for (Point2D p : graham.hull())
 //            StdOut.println(p);
 //    }
-
+//    public static void main( String[] args )
+//    {
+//        Point2D[] pts = new Point2D[5];
+//        pts[0] = new Point2D(10.0,10.0);
+//        pts[1] = new Point2D(20.0,10.0);
+//        pts[2] = new Point2D(20.0,20.0);
+//        pts[3] = new Point2D(10.0,20.0);
+//        pts[4] = new Point2D(10.0,10.0);
+//        GrahamScan gs = new GrahamScan(pts);
+//        Polygon pg = gs.toPolygon();
+//        System.out.println(pg.toString());
+//    }
 }

@@ -21,6 +21,8 @@ import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 import tilt.exception.TiltException;
 import tilt.image.page.Line;
+import tilt.image.convexhull.GrahamScan;
+import tilt.image.convexhull.Point2D;
 
 /**
  * Override the awt Polygon class so we can store them as keys in a HashMap
@@ -32,6 +34,7 @@ public class Polygon extends java.awt.Polygon
     static int MOD_ADLER = 65521;
     static float SMALL_NUM = 0.0000000001f;
     public Point[] points;
+    int depth;
     /** line we are attached to */
     Line line;
     Rect bounds;
@@ -60,6 +63,7 @@ public class Polygon extends java.awt.Polygon
                 {
                     case PathIterator.SEG_LINETO:
                     case PathIterator.SEG_MOVETO:
+                    //case PathIterator.SEG_CLOSE: 
                         pt = new Point(Math.round(coords[0]),Math.round(coords[1]));
                         list.add(pt);
                     break;
@@ -71,6 +75,8 @@ public class Polygon extends java.awt.Polygon
             this.points = new Point[list.size()];
             list.toArray(this.points);
             computeBounds();
+            if ( list.size() != this.npoints )
+                System.out.println("Added polygon points during listification");
             return list;
         }
     }
@@ -156,22 +162,6 @@ public class Polygon extends java.awt.Polygon
         }
         else
             return false;
-    }
-    /**
-     * Compute the centroid of this polygon
-     * @param pts the points to get the centroid of
-     * @return the centre point
-     */
-    public Point getCentroid( Point[] pts )
-    {
-        float totalX = 0;
-        float totalY = 0;
-        for ( int i=0;i<pts.length;i++ )
-        {
-            totalX += pts[i].x;
-            totalY += pts[i].y;
-        }
-        return new Point( totalX/pts.length, totalY/pts.length );
     }
     /**
      * Does a line intersect with this <em>convex</em> polygon and if so where
@@ -305,12 +295,33 @@ public class Polygon extends java.awt.Polygon
         return pgInside;
     }
     /**
+     * Add a join point if it is not already in the set
+     * @param res the set of join-points
+     * @param p the point to add, maybe
+     */
+    private void addJoinPoint( ArrayList<Point> res, Point p )
+    {
+        boolean add = true;
+        for ( Point r : res )
+            if ( r.equals(p) )
+            {
+                add = false;
+                break;
+            }
+        if ( add )
+        {
+            p.setType(PointType.join);
+            res.add( p );
+        }
+    }
+    /**
      * Add the points of intersection between a Segment and a polygon
      * @param last the last point
      * @param p the current point
-     * @param set the set to add the intersection points to
+     * @param flip true if the order of crossing segments is to be flipped
      */
-    private ArrayList<Point> getIntersectingPoints( Point last, Point p )
+    private ArrayList<Point> getIntersectingPoints( Point last, Point p,
+        boolean flip )
     {
         Segment S = new Segment( last, p );
         ArrayList<Point> pts = this.toPoints();
@@ -322,45 +333,14 @@ public class Polygon extends java.awt.Polygon
             Segment seg = new Segment(prev,q);
             if ( S.intersects(seg) )
             {
-                Segment intersection = S.getIntersection(seg);
-                res.add( intersection.p0 );
-                intersection.p0.setType(PointType.join);
+                Segment intersection = (flip)?seg.getIntersection(S)
+                    :S.getIntersection(seg);
+                addJoinPoint(res, intersection.p0 );
                 if ( !intersection.p0.equals(intersection.p1) )
-                {
-                    res.add( intersection.p1 );
-                    intersection.p1.setType(PointType.join);
-                }
+                    addJoinPoint( res, intersection.p1 );
             }
         }
         return res;
-    }
-    /**
-     * Ensure the points are ordered counter-clockwise
-     * @param array an array of all the points of a polygon
-     * @param centroid of the polygon whose points are to be sorted
-     */
-    void sortCC( Point[] array, Point centroid )
-    {
-        // shell sort points counter-clockwise about centroid
-        int h = array.length / 2;
-	while (h > 0) 
-        {
-            for (int i = h; i < array.length; i++) 
-            {
-                int j = i;
-                Point temp = array[i];
-                while (j >= h && array[j-h].compareWith(temp,centroid) > 0 ) 
-                {
-                    array[j] = array[j-h];
-                    j = j - h;
-                }
-                array[j] = temp;
-            }
-            if (h == 2) 
-                h = 1;
-            else
-                h *= (5.0 / 11);
-	}
     }
     Point nearestPoint( ArrayList<Point> pts, Point last )
     {
@@ -382,8 +362,10 @@ public class Polygon extends java.awt.Polygon
      * Make a counter-clockwise list of all a polygon's points, adding 
      * join-points with another polygon
      * @param other the other polygon
+     * @param flip true if we swap around the segment order for joins
+     * @return a list of classified points, including joins
      */
-    private ArrayList<Point> toCCList( Polygon other )
+    private ArrayList<Point> toCCList( Polygon other, boolean flip )
     {
         ArrayList<Point> pts = this.toPoints();
         ArrayList<Point> list = new ArrayList<>();
@@ -396,11 +378,17 @@ public class Polygon extends java.awt.Polygon
             curr = pts.get(i);
             curr.classify(other);
             // check for crossover
-            ArrayList<Point> joins = other.getIntersectingPoints( last, curr );
+            ArrayList<Point> joins = other.getIntersectingPoints( 
+                last, curr, flip );
             while ( joins.size()>0 )
             {
                 Point p = nearestPoint(joins,last);
-                list.add( p );
+                if ( p.equals(last) )
+                    last.setType(PointType.join);
+                else if ( p.equals(curr) )
+                    curr.setType(PointType.join);
+                else
+                    list.add( p );
             }
             list.add(curr);
         }
@@ -410,7 +398,7 @@ public class Polygon extends java.awt.Polygon
      * Get the last point of a polygon
      * @return the current last point
      */
-    Point lastPoint()
+    public Point lastPoint()
     {
         if ( this.npoints > 0 )
         {
@@ -425,7 +413,7 @@ public class Polygon extends java.awt.Polygon
      * Get the last point of a polygon
      * @return the current last point
      */
-    Point firstPoint()
+    public Point firstPoint()
     {
         if ( this.npoints > 0 )
         {
@@ -472,10 +460,29 @@ public class Polygon extends java.awt.Polygon
                         break;
                     }
                     else
-                        throw new TiltException("point "+p+" not found");
+                        throw new TiltException("point "+p+" not found in list"+printList(list2));
                 }
             }
         }   
+    }
+    private String printList( ArrayList<Point> list )
+    {
+        StringBuilder sb = new StringBuilder();
+        for ( Point p : list )
+        {
+            sb.append(p.toString());
+        }
+        return sb.toString();
+    }
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<Point> pts = toPoints();
+        for ( Point p : pts )
+        {
+            sb.append( p.toString() );
+        }
+        return sb.toString();
     }
     /**
      * Get a new polygon that is the intersection with this one
@@ -491,8 +498,10 @@ public class Polygon extends java.awt.Polygon
         else
         {
             Polygon intersection = new Polygon();
-            ArrayList<Point> list1 = this.toCCList( pg );
-            ArrayList<Point> list2 = pg.toCCList( this );
+            ArrayList<Point> list1 = this.toCCList( pg, true );
+            ArrayList<Point> list2 = pg.toCCList( this, false );
+//            System.out.println(printList(list1));
+//            System.out.println(printList(list2));
             weaveIntersection( list1, 0, list2, intersection );
             return intersection;
         }
@@ -508,7 +517,7 @@ public class Polygon extends java.awt.Polygon
         for ( int i=0;i<list.size();i++ )
         {
             Point p = list.get(i);
-            if ( p.equals(target) )
+            if ( p.type==PointType.join && p.equals(target) )
                 return i;
         }
         return -1;
@@ -524,6 +533,13 @@ public class Polygon extends java.awt.Polygon
     private void weaveUnion( ArrayList<Point> list1, int pos, 
         ArrayList<Point> list2, Polygon union ) throws TiltException
     {
+        this.depth++;
+        if ( depth > 10 )
+        {
+            System.out.println("Probably out of control!");
+            System.out.println(printList(list1));
+            System.out.println(printList(list2));
+        }
         while ( !union.finished() )
         {
             Point p = list1.get(pos);
@@ -559,8 +575,9 @@ public class Polygon extends java.awt.Polygon
         else
         {
             Polygon union = new Polygon();
-            ArrayList<Point> list1 = this.toCCList( pg );
-            ArrayList<Point> list2 = pg.toCCList( this );
+            this.depth = 0;
+            ArrayList<Point> list1 = this.toCCList( pg, true );
+            ArrayList<Point> list2 = pg.toCCList( this, false );
             weaveUnion( list1, 0, list2, union );
             return union;
         }
@@ -632,6 +649,87 @@ public class Polygon extends java.awt.Polygon
         }
         // else: most cases will fall through to here
         return false;
+    }
+    /**
+     * Get the minimal separation between us and another polygon
+     * @param pg the second polygon
+     * @return the smallest distance between segments or vertices of us, Q
+     */
+    public double distanceBetween( Polygon pg )
+    {
+        double minDist = Double.MAX_VALUE;
+        ArrayList<Point> points1 = this.toPoints();
+        ArrayList<Point> points2 = pg.toPoints();
+        Point last1=null,last2=null;
+        for ( int i=0;i<points1.size();i++ )
+        {
+            Point p1 = points1.get(i);
+            for ( int j=0;j<points2.size();j++ )
+            {
+                Point p2 = points2.get(j);
+                double x = Math.abs(p1.x-p2.x);
+                double y = Math.abs(p1.y-p2.y);
+                // distance between vertices
+                float dist = Math.round(Math.hypot(x,y));
+                if ( dist < minDist )
+                    minDist = dist;
+                // distance between p1 and a segment of Q
+                if ( last2 != null )
+                {
+                    Segment seg = new Segment(last2,p2);
+                    double fDist2 = seg.distFromLine( p1 );
+                    if ( fDist2 < minDist )
+                        minDist = fDist2;
+                }
+                // distance between p2 and a segment of P
+                if ( last1 != null )
+                {
+                    Segment seg = new Segment( last1, p1 );
+                    double fDist1 = seg.distFromLine( p2 );
+                    if ( fDist1 < minDist )
+                        minDist = fDist1;
+                }
+                last2 = p2;
+            }
+            last1 = p1;
+        } 
+        return minDist;
+    }
+    /**
+     * Remove the duplicate end-points
+     * @param pts an array of polygon points with possible closure
+     */
+    private void trimPoints( ArrayList<Point> pts )
+    {
+        if ( pts.size()>1 
+            && pts.get(0).equals(pts.get(pts.size()-1)) )
+            pts.remove(pts.size()-1);
+    }
+    /**
+     * Merge two polygons into a minimal convex single polygon
+     * @param pg2 the second poly
+     * @return one Polygon being the merge of both
+     */
+    public Polygon merge( Polygon pg2 )
+    {
+        ArrayList<Point> points1 = this.toPoints();
+        ArrayList<Point> points2 = pg2.toPoints();
+        trimPoints(points1);
+        trimPoints(points2);
+        Point2D[] points3 = new Point2D[points1.size()+points2.size()];
+        int j = 0;
+        for ( int i=0;i<points1.size();i++ )
+        {
+            Point pt = points1.get(i);
+            points3[j++] = new Point2D(pt.x,pt.y);
+        }
+        for ( int i=0;i<points2.size();i++ )
+        {
+            Point pt = points2.get(i);
+            points3[j++] = new Point2D(pt.x,pt.y);
+        }
+        GrahamScan gs = new GrahamScan( points3 );
+        return gs.toPolygon();
     }
     public static void main(String[] args)
     {

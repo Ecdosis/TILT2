@@ -18,6 +18,7 @@
 
 package tilt.image.page;
 import tilt.image.geometry.Polygon;
+import tilt.image.geometry.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 import tilt.exception.SplitException;
@@ -134,15 +135,26 @@ public class SplitShape
         out.y = p0.y + tL * dS.y; 
         return true;
     }
+    private Point2D[] toPoint2D( ArrayList<Point> pts )
+    {
+        Point2D[] array = new Point2D[pts.size()];
+        int i = 0;
+        for ( Point p : pts )
+        {
+            array[i++] = new Point2D(p.x,p.y);
+        }
+        return array;
+    }
     void addLeftIntersectPoints( Polygon shape )
     {
         Rectangle sb = shape.getBounds();
-        Point2D[] pts = Utils.polygonToPoints( shape );
+        ArrayList<Point> pts = shape.toPoints();
+        Point2D[] array = toPoint2D( pts );
         Point2D p0 = new Point2D(left,sb.y);
         Point2D p1 = new Point2D(left,sb.y+sb.height);
         Point2D in = new Point2D(0,0);
         Point2D out = new Point2D(0,0);
-        intersectsLine( pts, p0, p1, in, out );
+        intersectsLine( array, p0, p1, in, out );
         if ( in.x !=0 && in.y != 0 )
             this.points.add( in );
         if ( out.x != 0 && out.y != 0 )
@@ -151,12 +163,13 @@ public class SplitShape
     void addRightIntersectPoints( Polygon shape )
     {
         Rectangle sb = shape.getBounds();
-        Point2D[] pts = Utils.polygonToPoints( shape );
+        ArrayList<Point> pts = shape.toPoints();
+        Point2D[] array = toPoint2D( pts );
         Point2D p0 = new Point2D(right-1,sb.y);
         Point2D p1 = new Point2D(right-1,sb.y+sb.height);
         Point2D in = new Point2D(0,0);
         Point2D out = new Point2D(0,0);
-        intersectsLine( pts, p0, p1, in, out );
+        intersectsLine( array, p0, p1, in, out );
         if ( in.x !=0 && in.y != 0 )
             this.points.add( in );
         if ( out.x != 0 && out.y != 0 )

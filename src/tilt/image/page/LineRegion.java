@@ -22,6 +22,7 @@ import tilt.image.geometry.Point;
 import tilt.image.geometry.Polygon;
 import tilt.image.geometry.Segment;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 /**
  * Create a region belonging to a line by examining the previous and next line.
@@ -67,7 +68,8 @@ public class LineRegion
                 {
                     float tentativeY = pts[i].y-lineHeight/2;
                     int y = (tentativeY<0)?0:Math.round(tentativeY);
-                    poly.addPoint( Math.round(pts[i].x), y );
+                    int x = Math.round(pts[i].x);
+                    poly.addPoint( x, y );
                 }
             }
             else
@@ -97,8 +99,11 @@ public class LineRegion
                         // straight sides for polygon at ends
                         if (i==0 || i==pts.length-1)
                             x = pts[i].x;
-                        poly.addPoint(Math.round(x),
-                            Math.round(topPts[best].y+pts[i].y)/2);
+                        int intX = Math.round(x);
+                        int intY = Math.round((topPts[best].y+pts[i].y)/2);
+                        if ( intX==193 && intY == 151 )
+                            System.out.println("Bingo!");                        
+                        poly.addPoint(intX,intY );
                         i--;
                         j = best;
                     }
@@ -112,7 +117,11 @@ public class LineRegion
                 {
                     float tentativeY = pts[i].y+lineHeight/2;
                     float y = (tentativeY>maxY)?maxY:tentativeY;
-                    poly.addPoint( Math.round(pts[i].x), Math.round(y) );
+                    int intX = Math.round(pts[i].x);
+                    int intY = Math.round(y);
+                    if ( intX==193 && intY == 151 )
+                            System.out.println("Bingo!");
+                    poly.addPoint( intX, intY );
                 }
             }
             else
@@ -142,8 +151,11 @@ public class LineRegion
                         // straight sides for polygon at ends
                         if ( i==0||i==pts.length-1 )
                             x = pts[i].x;
-                        poly.addPoint(Math.round(x),
-                            Math.round((botPts[best].y+pts[i].y)/2));
+                        int intX = Math.round(x);
+                        int intY = Math.round((botPts[best].y+pts[i].y)/2);
+                        if ( intX==193 && intY == 151 )
+                            System.out.println("Bingo!");
+                        poly.addPoint(intX,intY);
                         i++;
                         j = best;
                     }
@@ -165,30 +177,36 @@ public class LineRegion
     {
         Point bot = new Point(p0.x,src.getHeight()-1);
         Point top = new Point(p0.x,0);
-        Segment S = new Segment(top,bot);
-        Segment IS = new Segment(top,bot);
-        if ( poly == null )
-            this.getPoly();
-        //Polygon.printPolygonPoints( poly );
-        System.out.println("line:["+S.p0.x+','+S.p0.y+"]["+S.p1.x+","+S.p1.y+"]");
-        if ( this.poly.intersectsLine( S, IS ) )
+        Segment vert = new Segment( top, bot );
+        if ( this.poly == null )
+            calculate();
+        // now find the line regions horizontal segment that intersects
+        ArrayList<Point> pts = this.poly.toPoints();
+        //System.out.println(this.poly.toString());
+        for ( int i=1;i<pts.size();i++ )
         {
-            System.out.println("intersects: ["+IS.p0.x+','+IS.p0.y+"]["+IS.p1.x+","+IS.p1.y+"]");
-            if ( above )
+            Point curr = pts.get(i);
+            Point last = pts.get(i-1);
+            if ( (curr.x >= p0.x && last.x <= p0.x)
+                ||(last.x >= p0.x && curr.x <= p0.x) )
             {
-                Point p = (IS.p0.y>IS.p1.y)?IS.p1:IS.p0;
-                float y = p.y+(p0.y-p.y)/2;
-                return Math.round(y);
-            }
-            else
-            {
-                Point p = (IS.p0.y>IS.p1.y)?IS.p0:IS.p1;
-                float y = p0.y+(p.y-p0.y)/2;
-                return Math.round(y);
+                if ( (above && curr.y < p0.y)||(!above && curr.y > p0.y) )
+                {
+                    Segment seg = new Segment( last, curr ); 
+                    Segment intersect = vert.getIntersection( seg );
+                    Point chosen = intersect.p0;
+                    if ( !intersect.p0.equals(intersect.p1) )
+                    {
+                        if ( above && intersect.p1.y<intersect.p0.y )
+                            chosen = intersect.p1;
+                        else if ( !above && intersect.p1.y > intersect.p0.y )
+                            chosen = intersect.p1;
+                    }
+                    return Math.round((chosen.y+p0.y)/2);
+                }
             }
         }
-        else
-            return Math.round(p0.y);
+        return Math.round(p0.y);
     }
     /**
      * Get the sub-region of the LineRegion closest to the line

@@ -142,7 +142,7 @@ public class Segment
      * @param c the point off the line
      * @return the distance in fractional pixels
      */
-    public int distFromLine( Point c ) 
+    public double distFromLine( Point c ) 
     {
         Point a = this.p0;
         Point b = this.p1;
@@ -175,7 +175,7 @@ public class Segment
                 distanceSegment = Math.sqrt(dist2);
             }
         }
-        return (int)Math.round(distanceSegment);
+        return distanceSegment;
     }
     private void swapEnds()
     {
@@ -199,7 +199,7 @@ public class Segment
      * @param seg the other segment
      * @return the Point in p0 or intersecting line segment
      */
-    Segment getIntersection( Segment seg ) 
+    public Segment getIntersection( Segment seg ) 
     {
         Segment a = (Segment)this.clone();
         Segment b = (Segment)seg.clone();

@@ -451,11 +451,18 @@ public class Blob
                 Point p = hull.get(i);
                 points[i] = new Point2D( p.x, p.y );
             }
-            GrahamScan gc = new GrahamScan( points );
-            Iterable<Point2D> pts = gc.hull();
-            return Utils.pointsToPolygon(pts);
+            GrahamScan gs = new GrahamScan( points );
+            return gs.toPolygon();
         }
         else
             return null;
+    }
+    /**
+     * Does this blob have a hull or is it just a dot?
+     * @return true if it has a valid hull
+     */
+    public boolean hasHull()
+    {
+        return this.hull != null && this.hull.size()>0;
     }
 }

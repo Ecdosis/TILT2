@@ -7,6 +7,8 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/ReconstructedImage.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Preflight.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/RemoveNoise.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/Test.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/PointType.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/matchup/Matrix.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Background.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/test/Texts.java</file>
@@ -24,6 +26,7 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/LineRegion.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/Point.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/BlurImage.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/QuadTree.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltGetHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>

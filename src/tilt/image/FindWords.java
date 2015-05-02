@@ -107,41 +107,52 @@ public class FindWords
         // if the last pixel was black it must be part of the same blob/polygon
         boolean lastPixelWasBlack = false;
         // per pixel row within r
+        Point q = new Point(0,0);
         for ( int y=r.y;y<endY;y++ )
         {
+            q.y = y;
             wr.getPixels( r.x, y, r.width, 1, iArray );
             // for each pixel in each row...
             for ( int i=0;i<r.width;i++ )
             {
                 int x = i+r.x;
+                q.x = x;
                 if ( iArray[i] == 0 )
                 {
-                    if ( !lastPixelWasBlack )
+                    // ignore black pixels not in polgonal core
+                    if ( core.contains(q) )
                     {
-                        lastPixelWasBlack = true;
-                        Point q = new Point(x,y);
-                        // ignore black pixels not in polgonal core
-                        if ( core.contains(q) )
+                        if ( !lastPixelWasBlack )
                         {
+                            lastPixelWasBlack = true;
                             Polygon shape = page.shapeForPoint(q);
                             if ( shape == null )
                             {
                                 // shape not already defined
                                 Blob b = new Blob(wr,opts,null);
                                 b.save(dirty, wr, q.toAwt());
-                                shape = b.toPolygon();
-                                // if shape exceeds the current line region:
-                                if ( !lr.getPoly().contains(shape) )
+                                if ( b.hasHull() )
                                 {
-                                    if ( nextLR != null 
-                                        && nextLR.getPoly().intersects(shape) )
-                                        shape = shape.getIntersection(lr.getPoly());
-                                    else    // let it all hang out...
-                                        lr.setPoly(lr.getPoly().getUnion(shape));
-                                    // the previous line is already dealt with
+                                    shape = b.toPolygon();
+                                    // if shape exceeds the current line region:
+                                    if ( !lr.getPoly().contains(shape) )
+                                    {
+                                        if ( nextLR != null 
+                                            && nextLR.getPoly().intersects(shape) )
+                                            shape = shape.getIntersection(lr.getPoly());
+                                        else    // let it all hang out...
+                                        {
+                                            Polygon poly = lr.getPoly();
+                                            lr.setPoly(lr.getPoly().getUnion(shape));
+                                        // the previous line is already dealt with
+                                        }
+                                    }
+                                    shape.setLine(curr);
+                                    shape.toPoints();
+                                    page.addShape(shape);// registers line also
                                 }
-                                shape.setLine(curr);
-                                page.addShape(shape);// registers line also
+                                else
+                                    lastPixelWasBlack = false;
                             }
                         } 
                     }   
