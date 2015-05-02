@@ -34,7 +34,6 @@ public class Polygon extends java.awt.Polygon
     static int MOD_ADLER = 65521;
     static float SMALL_NUM = 0.0000000001f;
     public Point[] points;
-    int depth;
     /** line we are attached to */
     Line line;
     Rect bounds;
@@ -433,16 +432,20 @@ public class Polygon extends java.awt.Polygon
      * Weave two lists of polygon-points into an intersection
      * @param list1 the first list
      * @param pos the next read-position in list1
+     * @param rea1 number of items of list1 read
      * @param list2 the second list
+     * @param read2 number of items of list2 read
      * @param intersection the polygon to build as the intersection
      * @throws Exception 
      */
-    private void weaveIntersection( ArrayList<Point> list1, int pos, 
-        ArrayList<Point> list2, Polygon intersection ) throws TiltException
+    private void weaveIntersection( ArrayList<Point> list1, int pos, int read1,
+        ArrayList<Point> list2, int read2, Polygon intersection ) 
+        throws TiltException
     {
-        while ( !intersection.finished() )
+        while ( !intersection.finished() && read1 <= list1.size() )
         {
             Point p = list1.get(pos);
+            read1++;
             pos = (pos+1)%list1.size();
             if ( p.getType()==PointType.inner )
                 intersection.addPoint( Math.round(p.x), Math.round(p.y) );
@@ -456,11 +459,13 @@ public class Polygon extends java.awt.Polygon
                     if ( loc != -1 )
                     {
                         int next = (loc+1)%list2.size();
-                        weaveIntersection( list2, next, list1, intersection );
+                        weaveIntersection( list2, next, read2+1, list1, read1, 
+                            intersection );
                         break;
                     }
                     else
-                        throw new TiltException("point "+p+" not found in list"+printList(list2));
+                        throw new TiltException("point "+p
+                            +" not found in list"+printList(list2));
                 }
             }
         }   
@@ -502,7 +507,7 @@ public class Polygon extends java.awt.Polygon
             ArrayList<Point> list2 = pg.toCCList( this, false );
 //            System.out.println(printList(list1));
 //            System.out.println(printList(list2));
-            weaveIntersection( list1, 0, list2, intersection );
+            weaveIntersection( list1, 0, 0, list2, 0, intersection );
             return intersection;
         }
     }
@@ -526,24 +531,20 @@ public class Polygon extends java.awt.Polygon
      * Weave the lists of points form two polygons with join-points into a union
      * @param list1 the first list of polygon points, counter-clockwise
      * @param pos the read position in list1
+     * @param read1 number of items of list1 read
      * @param list2 the other list
+     * @param read2 number of items in list2 read
      * @param union the polygon we are building
      * @throws TiltException 
      */
-    private void weaveUnion( ArrayList<Point> list1, int pos, 
-        ArrayList<Point> list2, Polygon union ) throws TiltException
+    private void weaveUnion( ArrayList<Point> list1, int pos, int read1,
+        ArrayList<Point> list2, int read2, Polygon union ) throws TiltException
     {
-        this.depth++;
-        if ( depth > 10 )
-        {
-            System.out.println("Probably out of control!");
-            System.out.println(printList(list1));
-            System.out.println(printList(list2));
-        }
-        while ( !union.finished() )
+        while ( !union.finished() && read1<=list1.size() )
         {
             Point p = list1.get(pos);
             pos = (pos+1)%list1.size();
+            read1++;
             if ( p.getType()==PointType.outer )
                 union.addPoint( Math.round(p.x), Math.round(p.y) );
             else if ( p.getType()==PointType.join )
@@ -553,7 +554,7 @@ public class Polygon extends java.awt.Polygon
                 if ( loc != -1 )
                 {
                     int next = (loc+1)%list2.size();
-                    weaveUnion( list2, next, list1, union );
+                    weaveUnion( list2, next, read2+1, list1, read1, union );
                     break;
                 }
                 else
@@ -575,10 +576,11 @@ public class Polygon extends java.awt.Polygon
         else
         {
             Polygon union = new Polygon();
-            this.depth = 0;
             ArrayList<Point> list1 = this.toCCList( pg, true );
             ArrayList<Point> list2 = pg.toCCList( this, false );
-            weaveUnion( list1, 0, list2, union );
+//            System.out.println(printList(list1));
+//            System.out.println(printList(list2));
+            weaveUnion( list1, 0, 0, list2, 0, union );
             return union;
         }
     }

@@ -71,7 +71,7 @@ public class Point extends java.awt.geom.Point2D.Float
     }
     public String toString() 
     {
-        return "["+this.typeLetter()+this.x+","+this.y+"]";
+        return "["+this.typeLetter()+":"+this.x+","+this.y+"]";
     }
     public java.awt.Point toAwt()
     {

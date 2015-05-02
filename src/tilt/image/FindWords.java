@@ -75,7 +75,8 @@ public class FindWords
                 next = null;
             LineRegion lr = new LineRegion( src, curr, prev, next, lineHt);
             Line future = (i<lines.size()-2)?lines.get(i+2):null;
-            LineRegion nextLR = new LineRegion(src,next,curr,future, lineHt);
+            LineRegion nextLR = (next==null)?null
+                :new LineRegion(src,next,curr,future,lineHt);
             Point[] points = curr.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
@@ -143,7 +144,7 @@ public class FindWords
                                         else    // let it all hang out...
                                         {
                                             Polygon poly = lr.getPoly();
-                                            lr.setPoly(lr.getPoly().getUnion(shape));
+                                            lr.setPoly(poly.getUnion(shape));
                                         // the previous line is already dealt with
                                         }
                                     }

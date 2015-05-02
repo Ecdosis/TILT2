@@ -58,6 +58,8 @@ public class LineRegion
     private void calculate()
     {
         Polygon poly = new Polygon();
+        if ( current==null )
+            System.out.println("current is null");
         Point[] pts = current.getPoints();
         if ( pts.length > 0 )
         {
