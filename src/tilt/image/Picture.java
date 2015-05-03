@@ -62,7 +62,6 @@ public class Picture {
     File twotone;
     File cleaned;
     File baselines;
-    File reduced;
     File blurred;
     File reconstructed;
     File words;
@@ -258,13 +257,13 @@ public class Picture {
     }
     /**
      * Apply initial transformations
-     * @throws Exception 
+     * @throws ImageException 
      */
     public void convertToPreflight() throws ImageException 
     {
         try
         {
-            if ( orig == null )
+            if ( orig == null || !orig.exists() )
                 load();
             BufferedImage src = ImageIO.read(orig);
             Preflight pf = new Preflight( src, options );
@@ -286,7 +285,7 @@ public class Picture {
     {
         try
         {
-            if ( preflighted == null )
+            if ( preflighted == null || !preflighted.exists() )
                 convertToPreflight();
             BufferedImage png = ImageIO.read(preflighted);
             BufferedImage grey = new BufferedImage(png.getWidth(), 
@@ -345,7 +344,7 @@ public class Picture {
         {
             int MAXVAL = 256;
             double k = 0.34;
-            if ( greyscale == null )
+            if ( greyscale == null || !greyscale.exists() )
                 convertToGreyscale();
             BufferedImage grey = ImageIO.read(greyscale);
             WritableRaster grey_image = grey.getRaster();
@@ -482,7 +481,7 @@ public class Picture {
     {
         try
         {
-            if ( twotone == null )
+            if ( twotone == null || !twotone.exists() )
                 convertToTwoTone();
             BufferedImage tt = ImageIO.read(twotone);
             cropRect = getCropRect();
@@ -505,7 +504,7 @@ public class Picture {
     {
         try
         {
-            if ( cleaned == null )
+            if ( cleaned == null || !cleaned.exists() )
                 convertToCleaned();
             BufferedImage ci = ImageIO.read(cleaned);
             BufferedImage tt = ImageIO.read(twotone);
@@ -530,7 +529,7 @@ public class Picture {
     {
         try
         {
-            if ( reconstructed == null )
+            if ( reconstructed == null || !reconstructed.exists() )
                 convertToReconstructed();
             BufferedImage withLines = ImageIO.read(reconstructed);
             FindLinesBlurred fl = new FindLinesBlurred( withLines, 
@@ -554,33 +553,6 @@ public class Picture {
         }
     }
     /**
-     * Convert to reduced lines from baselines
-     * @throws ImageException 
-     */
-    public void convertToReduced() throws ImageException
-    {
-        try
-        {
-            if ( baselines == null )
-                convertToBaselines();
-            BufferedImage reducedLines = ImageIO.read(reconstructed);
-            ReduceLines rl = new ReduceLines( reducedLines, page, options );
-            reduced = File.createTempFile(PictureRegistry.PREFIX,
-                PictureRegistry.SUFFIX);
-            int lsize = page.getLines().size();
-            for ( int i=0;i<lsize;i++ )
-            {
-                Line l = page.getLines().get(i);
-            }
-            ImageIO.write( reducedLines, "png", reduced );
-        }
-        catch ( Exception e )
-        {
-            throw new ImageException(e);
-        }
-        
-    }
-    /**
      * Convert to show identified words
      * @throws ImageException 
      */
@@ -588,7 +560,7 @@ public class Picture {
     {
         try
         {
-            if ( baselines == null )
+            if ( baselines == null || !baselines.exists() )
                 convertToBaselines();
             BufferedImage bandw = ImageIO.read(reconstructed);
             BufferedImage originalImage = ImageIO.read(preflighted);
@@ -615,7 +587,7 @@ public class Picture {
             page.resetShapes();
             words = null;
         }
-        if ( words == null )
+        if ( words == null || !words.exists() )
             convertToWords();
         float ppc = page.pixelsPerChar( text.numChars() );
         int[] shapeWidths = page.getShapeWidths();
@@ -637,7 +609,7 @@ public class Picture {
     }
     /**
      * Retrieve the data of a picture file
-     * @return a byte array
+     * @return a byte array or null if the file not found
      * @throws ImageException 
      */
     private byte[] getPicData( File src ) throws ImageException
@@ -645,13 +617,18 @@ public class Picture {
         byte[] data = new byte[(int)src.length()];
         try
         {
-            FileInputStream fis = new FileInputStream(src);
-            fis.read( data );
-            return data;
+            if ( src.exists() )
+            {
+                FileInputStream fis = new FileInputStream(src);
+                fis.read( data );
+                return data;
+            }
+            else
+                return null;
         }
         catch ( Exception e )
         {
-            throw new ImageException( e );
+            throw new ImageException(e);
         }
     }
     /**
@@ -659,6 +636,12 @@ public class Picture {
      * @return the image as a byte array
      */
     public byte[] getOrigData() throws ImageException
+    {
+        if ( orig == null )
+            load();
+        return getPicData( orig );
+    }
+     public byte[] getPreflightData() throws ImageException
     {
         if ( preflighted == null )
             convertToPreflight();
@@ -670,7 +653,7 @@ public class Picture {
             convertToReconstructed();
         return getPicData( reconstructed );
     }
-    /**
+   /**
      * Read the cleaned image 
      * @return the image as a byte array
      */
@@ -712,17 +695,6 @@ public class Picture {
         if ( baselines == null )
             convertToBaselines();
         return getPicData( baselines );
-    }
-    /**
-     * Get a reduced baselines representation of the original
-     * @return a byte array (at 256 bpp)
-     * @throws ImageException 
-     */
-    public byte[] getReducedData() throws ImageException
-    {
-        if ( reduced == null )
-            convertToReduced();
-        return getPicData( reduced );
     }
     /**
      * Get a baselines representation of the original

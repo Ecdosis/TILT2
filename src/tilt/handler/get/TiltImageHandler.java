@@ -83,9 +83,6 @@ public class TiltImageHandler extends TiltGetHandler
                     case baselines:
                         pic = p.getBaselinesData();
                         break;
-                    case reduced:
-                        pic = p.getReducedData();
-                        break;
                     case words:
                         pic = p.getWordsData();
                         break;

@@ -146,10 +146,6 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     p.convertToWords();
                     picType = ImageType.words;
                     break;
-                case reduced:
-                    p.convertToReduced();
-                    picType = ImageType.reduced;
-                    break;
                 case words:
                     p.convertToLinks();
                     picType = ImageType.link;

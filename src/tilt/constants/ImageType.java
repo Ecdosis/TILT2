@@ -40,8 +40,6 @@ public enum ImageType
     reconstructed,
     /** cleaned image with lines draw over the top */
     baselines,
-    /** reduced lines */
-    reduced,
     /** original image with word shapes in alternating colours */
     words,
     /** original image and key to requesting linkage to text */
@@ -70,6 +68,8 @@ public enum ImageType
         {
             case load:
                 return "loading image";
+            case preflight:
+                return "applying preflight conversions";
             case original:
                 return "converting to greyscale";
             case greyscale:
@@ -82,8 +82,6 @@ public enum ImageType
                 return "identifying baselines";
             case baselines:
                 return "removing duplicate baselines";
-            case reduced:
-                return "finding words";
             case words:
                 return "linking word shapes to text";
             case link: default:

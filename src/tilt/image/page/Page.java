@@ -343,7 +343,7 @@ public class Page
             Arrays.sort( hArray );
             int runningTotal= 0;
             int targetGaps = (numWords-(lines.size()-1))-1;
-            System.out.println("target gaps="+targetGaps+" numWords="+numWords);
+            //System.out.println("target gaps="+targetGaps+" numWords="+numWords);
             for ( int i=hArray.length-1;i>=0;i-- )
             {
                 runningTotal += hGaps.get(hArray[i]).intValue();
@@ -376,7 +376,7 @@ public class Page
             l.mergeWords( minWordGap );
             nWords += l.countShapes();
         }
-        System.out.println("recognised"+nWords+" words");
+        //System.out.println("recognised"+nWords+" words");
     }
     /**
      * Join up broken lines BEFORE any shapes have been recognised
