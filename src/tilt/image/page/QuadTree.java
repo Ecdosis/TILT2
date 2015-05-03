@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * shapes for quick lookup.
  * @author desmond
  */
-class QuadTree
+public class QuadTree
 {
     Rect boundary;
     /** points inside the quadrant */
@@ -53,7 +53,7 @@ class QuadTree
      * @param width the <em>fraction</em> of width of area covered
      * @param height the <em>fraction</em> of height of area covered
      */
-    QuadTree( int x, int y, int width, int height )
+    public QuadTree( int x, int y, int width, int height )
     {
         this.boundary = new Rect(x,y,width,height);
         this.width = width;
@@ -315,7 +315,7 @@ class QuadTree
      * Add a polygon to this quadtree (or quadrant)
      * @param pg the polygon
      */
-    void addPolygon( Polygon pg ) 
+    public void addPolygon( Polygon pg ) 
     {
         // add the points
         Point[] pts = pg.points;
@@ -377,7 +377,7 @@ class QuadTree
      * @param pt the point to test
      * @return the polygon it is inside or null
      */
-    Polygon pointInPolygon( Point pt ) 
+    public Polygon pointInPolygon( Point pt ) 
     {
         if ( points != null && points.size() > 0 )
         {

@@ -19,6 +19,7 @@
 package tilt.image.page;
 import tilt.image.geometry.Polygon;
 import tilt.image.geometry.Point;
+import tilt.image.geometry.Segment;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.awt.Graphics;
@@ -29,9 +30,7 @@ import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import org.json.simple.*;
 import java.awt.geom.Area;
-import tilt.Utils;
 import tilt.exception.AlignException;
-import tilt.image.convexhull.Point2D;
 /**
  * Represent a discovered line in an image
  * @author desmond
@@ -579,6 +578,24 @@ public class Line implements Comparable<Line>
     {
         return index < shapes.size();
     }
+    public int[] getShapeIDs()
+    {
+        int[] ids = new int[shapes.size()];
+        int i = 0;
+        for ( Polygon pg : this.shapes )
+            ids[i++] = pg.ID;
+        return ids;
+    }
+    public boolean hasShapeByID( int ID )
+    {
+        for ( int i=this.shapes.size();i>=0;i-- )
+        {
+            Polygon pg = this.shapes.get( i );
+            if ( pg.ID == ID )
+                return true;
+        }   
+        return false;
+    }
     /**
      * Set the word offset of the indexed shape
      * @param index the index of the shape in shapes
@@ -637,6 +654,21 @@ public class Line implements Comparable<Line>
             shapes.remove( index );
         }
     }
+    public void removeShapeByID( int ID )
+    {
+        int index = -1;
+        for ( int i=0;i<shapes.size();i++ )
+        {
+            Polygon pg = shapes.get(i);
+            if ( pg.ID == ID )
+            {
+                index = i;
+                break;
+            }
+        }
+        if ( index != -1 )
+            shapes.remove( index );
+    }
     /**
      * Add a shape to the line
      * @param index the index at which to add (or ==shapes.size() to add)
@@ -673,5 +705,85 @@ public class Line implements Comparable<Line>
     {
         points.addAll(other.points);
         sortPoints();
-    }       
+    }
+    /**
+     * Find the smallest distance to the line's segments
+     * @param pt the point to measure towards
+     * @return the minimum distance
+     */
+    public float closestDistTo( Point pt )
+    {
+        float minDist = Float.MAX_VALUE;
+        for ( int i=1;i<points.size();i++ )
+        {
+            Point last = points.get(i-1);
+            Point curr = points.get(i);
+            Segment seg = new Segment( last, curr );
+            float dist = (float)seg.distFromLine(pt);
+            if ( dist < minDist )
+                minDist = dist;
+        }
+        return minDist;
+    }
+    /**
+     * Trim the line to the left-boundary of the first shape on the line
+     */
+    public void trimLeft()
+    {
+        if ( shapes.size()>0 )
+        {
+            Polygon shape = shapes.get(0);
+            Rectangle bounds = shape.getBounds();
+            while ( points.size()>1 && points.get(1).x < bounds.x )
+                points.remove( 0 );
+            if ( points.size()> 0 )
+                points.get(0).x = bounds.x;
+        }
+    }
+    /**
+     * Trim the line the the last shape on the line
+     */
+    public void trimRight()
+    {
+        if ( shapes.size()>0 )
+        {
+            Polygon shape = shapes.get(shapes.size()-1);
+            Rectangle bounds = shape.getBounds();
+            while ( points.size()>1 
+                && points.get(points.size()-2).x > bounds.x+bounds.width )
+                points.remove( points.size()-1 );
+            if ( points.size()> 0 )
+                points.get(points.size()-1).x = bounds.x;
+        }
+    }
+    /**
+     * Get the centroid of a set of shapes on this line
+     * @param shapeIDs an array of the shape IDs or just 1
+     * @return a Point being the average x,y values of the shape's points
+     */
+    public Point getCentroid( int[] shapeIDs )
+    {
+        Polygon[] chosen = new Polygon[shapeIDs.length];
+        int i = 0;
+        for ( Polygon s : shapes )
+        {
+            for ( int id : shapeIDs )
+                if ( id == s.ID )
+                    chosen[i++] = s;
+        }
+        int totalX = 0;
+        int totalY = 0;
+        int N = 0;
+        for ( Polygon p : chosen )
+        {
+            ArrayList<Point> pts = p.toPoints();
+            for ( Point pt : pts )
+            {
+                totalX += pt.x;
+                totalY += pt.y;
+                N++;
+            }
+        }
+        return new Point( totalX/N, totalY/N );
+    }
 }

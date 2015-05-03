@@ -37,6 +37,7 @@ public class Polygon extends java.awt.Polygon
     /** line we are attached to */
     Line line;
     Rect bounds;
+    public int ID;
     /**
      * Convert a polygon to its constituent points
      * @return a list of points
@@ -78,6 +79,10 @@ public class Polygon extends java.awt.Polygon
                 System.out.println("Added polygon points during listification");
             return list;
         }
+    }
+    public void setID( int id )
+    {
+        this.ID = id;
     }
     /**
      * Recompute the bounds

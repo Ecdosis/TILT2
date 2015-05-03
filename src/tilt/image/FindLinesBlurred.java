@@ -24,6 +24,12 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import tilt.image.page.Page;
 import tilt.handler.post.Options;
+import tilt.image.geometry.Point;
+import tilt.image.page.Line;
+import tilt.image.geometry.Polygon;
+import tilt.image.page.QuadTree;
+import tilt.image.page.diff.Diff;
+import tilt.image.page.diff.Matrix;
 
 /**
  * Find the lines based on a Gaussian-blurred image
@@ -34,6 +40,8 @@ public class FindLinesBlurred
     int LIGHT_SHADE = 128;
     int smoothN;
     BufferedImage src;
+    WritableRaster  wr;
+    int shapeID;
     /** average image pixel density*/
     float average;
     /** width of image in hscale units */
@@ -55,12 +63,13 @@ public class FindLinesBlurred
         int numWords, Options options ) throws Exception
     {
         this.opts = options;
+        this.shapeID = 1;
         // first blur the image appropriately
         int blur = Math.round(options.getFloat(Options.Keys.blurForLines)
             *cropRect.height);
         BlurImage bi = new BlurImage(src,blur);
         BufferedImage blurred = bi.blur();
-        WritableRaster wr = blurred.getRaster();
+        this.wr = blurred.getRaster();
         hScale = Math.round(wr.getWidth()
             *options.getFloat(Options.Keys.verticalSliceSize));
         width = (wr.getWidth()+hScale-1)/hScale;
@@ -76,6 +85,7 @@ public class FindLinesBlurred
         page.refineRight( wr, hScale, 1, LIGHT_SHADE );
         page.refineLeft( wr, hScale, 1, LIGHT_SHADE );
         page.finalise( wr );
+        prune(cropRect);
         if ( options.getBoolean(Options.Keys.test) )
             page.draw( src.getGraphics() );
     }
@@ -176,5 +186,106 @@ public class FindLinesBlurred
     float getPPAverage()
     {
         return average;
+    }
+    int newShapeID()
+    {
+        return this.shapeID++;
+    }
+    /**
+     * Ensure that each blob belongs primarily to one line only. Remove 
+     * lines that don't have any assigned blobs.
+     */
+    public void prune( Rectangle r )
+    {
+        QuadTree qt = new QuadTree(r.x, r.y, r.width, r.height );
+        ArrayList<Line> lines = page.getLines();
+        int[] dArray = new int[1];
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line line = lines.get(i);
+            Point[] points = line.getPoints();
+            boolean lastWasBlack=false;
+            for ( int j=1;j<points.length-1;j++ )
+            {
+                Point last = points[i-1];
+                Point curr = points[i];
+                float yDiff = curr.y-last.y;
+                float xDiff = curr.x-last.x;
+                for ( int x=Math.round(last.x);x<curr.x;x++ )
+                {
+                    int y = Math.round(last.y)
+                        +Math.round(((x-last.x)/xDiff)*yDiff);
+                    wr.getPixel( x, y, dArray);
+                    if ( dArray[0]==0 && !lastWasBlack )
+                    {
+                        Polygon shape = qt.pointInPolygon( new Point(x,y) );
+                        if ( shape != null )
+                        {
+                            if ( !line.hasShapeByID(shape.ID) )
+                                line.add( shape );
+                        }
+                        else
+                        {
+                            qt.addPolygon( shape );
+                            line.add( shape );
+                            shape.setID( newShapeID() );
+                        }
+                        lastWasBlack = true;
+                    }
+                    if ( dArray[0]!= 0 )
+                        lastWasBlack = false;
+                }
+            }
+        }
+        // now we have all the identifiable shapes on the page in qt and they 
+        // are assigned to lines, maybe more than one lie to each shape now 
+        // we have to identify runs of shapes in each line that are also on 
+        // the next line - and decide to which line they should belong
+        for ( int i=1;i<lines.size();i++ )
+        {
+            Line prev = lines.get(i-1);
+            Line curr = lines.get(i);
+            int[] prevIDs = prev.getShapeIDs();
+            int[] currIDs = curr.getShapeIDs();
+            Diff[] diffs = Matrix.computeRuns( prevIDs, currIDs );
+            for ( int j=0;j<diffs.length;j++ )
+            {
+                int[] aligned = new int[diffs[i].oldLen];
+                int kEnd = diffs[i].oldOffset+diffs[i].oldLen;
+                for ( int m=0,k=diffs[i].oldOffset;k<kEnd;k++ )
+                    aligned[m++] = prevIDs[k];
+                Point centroid = prev.getCentroid( aligned );
+                float distA = prev.closestDistTo( centroid );
+                float distB = curr.closestDistTo( centroid );
+                if ( distA < distB )
+                {
+                    for ( int k=0;k<aligned.length;k++ )
+                        curr.removeShapeByID(aligned[k]);
+                }
+                else
+                {
+                    for ( int k=0;k<aligned.length;i++ )
+                        prev.removeShapeByID(aligned[k]);
+                }
+            }
+        }
+        int i = 0;
+        while ( i < lines.size() )
+        {
+            Line l = lines.get(i);
+            if ( l.countShapes() == 0 )
+                lines.remove(i);
+            else
+            {
+                l.trimLeft();
+                l.trimRight();
+                if ( l.countPoints()==0 )
+                    lines.remove(i);
+                else
+                    i++;
+            }
+        }
+        for ( Line l : lines )
+            l.resetShapes();
     }
 }

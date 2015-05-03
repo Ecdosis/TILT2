@@ -13,7 +13,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with TILT.  If not, see <http://www.gnu.org/licenses/>.
- *  (c) copyright Desmond Schmidt 2014
+ *  (c) copyright Desmond Schmidt 2015
  */
 
 package tilt.image;

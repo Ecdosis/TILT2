@@ -54,6 +54,8 @@ public class Page
      * @param hScale the scale in the horizontal dimension
      * @param vScale the scale in the vertical dimension 
      * @param numWords number of words on page
+     * @param options options for this project
+     * @param cropRect limits of image
      * @throws Exception
      */
     public Page( ArrayList[] cols, int hScale, int vScale, int numWords,
@@ -249,7 +251,7 @@ public class Page
      * Print the word shapes over the top of the original image
      * @param original the original raster to write to
      */
-	public void print( BufferedImage original )
+    public void print( BufferedImage original )
     {
         Graphics g = original.getGraphics();
         for ( int i=0;i<lines.size();i++ )
