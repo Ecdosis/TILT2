@@ -68,6 +68,9 @@ public class TiltImageHandler extends TiltGetHandler
                     case original: case link:
                         pic = p.getOrigData();
                         break;
+                    case preflight: 
+                        pic = p.getPreflightData();
+                        break;
                     case greyscale:
                         pic = p.getGreyscaleData();
                         break;

@@ -322,7 +322,8 @@ public class QuadTree
         for ( int i=0;i<pts.length;i++ )
         {
             if ( !this.addPt(pts[i]) )
-                System.out.println("failed to add point "+pts[i].x+","+pts[i].y);
+                System.out.println("failed to add point "+pts[i].x
+                    +","+pts[i].y);
         }
         // now add the polygon to the quadrant's list
         this.addPolygonToQuadrant(pg);

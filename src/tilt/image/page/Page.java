@@ -199,37 +199,7 @@ public class Page
             lines.add( line );
         }
     }
-    /**
-     * Trim all the line starts right to the first black pixel on the image
-     * @param wr the raster
-     * @param hScale the size of a rectangular sample
-     * @param vScale the vertical scale
-     * @param black the value of a "black" pixel
-     */
-    public void refineLeft( WritableRaster wr, int hScale, int vScale, int black )
-    {
-        for ( int i=0;i<lines.size();i++ )
-        {
-            Line l = lines.get(i);
-            l.refineLeft( wr, hScale, 10, black );
-        }
-    }
-    /**
-     * Trim all the line ends right to the last black pixel in the row
-     * @param wr the raster
-     * @param hScale the size of a rectangular sample
-     * @param vScale the vertical scale
-     * @param black the value of a "black" pixel
-     */
-    public void refineRight( WritableRaster wr, int hScale, int vScale, int black )
-    {
-        for ( int i=0;i<lines.size();i++ )
-        {
-            Line l = lines.get(i);
-            l.refineRight( wr, hScale, 10, black );
-        }
-    }
-    /**
+   /**
      * Get the lines array of this page
      * @return an array of line objects
      */

@@ -147,7 +147,8 @@ public class Texts
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     //"\t\"url\": \"http://ecdosis.net/images/V2-69.jpg\"\n\t}\n}\n"},
-    +"\t\"url\": \"http://localhost/images/V2-69.jpg\"\n\t}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/V2-69.jpg\",\"blueGreenF"
+    +"ilter\": true, \"reconstructBlurRadius\": 0.0025\n\t}\n}\n"},
     {"DEROBERTO_1920", "De Roberto 1920 edition",
     "<p align=\"center\">– 8 –</p>\n<p>che passo, non distinguendo"
     +" nulla pel buio; ma la voce\ndella principessa Margherita li"
@@ -184,8 +185,7 @@ public class Texts
     +"ygon\",\n\t\"coordinates\": [\n\t[ [0.0, 0.0], [100.0, 0.0],"
     +" [100.0, 100.0], [0.0, 100.0] ]\n\t]\n},\n\"properties\": {\n"
     //"\t\"url\": \"http://ecdosis.net/images/DR_1920_008.jpg\"\n\t"
-    +"\t\"url\": \"http://localhost/images/DR_1920_008.jpg\"\n\t"
-    +"}\n}\n"},
+    +"\t\"url\": \"http://localhost/images/DR_1920_008.jpg\"\n\t}\n}\n"},
     {"LONDON_LIVES", "London Lives",
     "<pre>Thomas Lawrence of Grosvenor Mews Coachman\non his Oath "
     +"saith That on Saturday last (Decr. 31.)\nDept. went to Skait"

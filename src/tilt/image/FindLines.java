@@ -35,12 +35,13 @@ import tilt.image.page.diff.Matrix;
  * Find the lines based on a Gaussian-blurred image
  * @author desmond
  */
-public class FindLinesBlurred 
+public class FindLines 
 {
     int LIGHT_SHADE = 128;
     int smoothN;
     BufferedImage src;
     WritableRaster  wr;
+    WritableRaster wrOrig;
     int shapeID;
     /** average image pixel density*/
     float average;
@@ -59,17 +60,19 @@ public class FindLinesBlurred
      * @param numWords the number of words on the page (needed by page object)
      * @throws Exception 
      */
-    public FindLinesBlurred( BufferedImage src, Rectangle cropRect, 
+    public FindLines( BufferedImage src, Rectangle cropRect, 
         int numWords, Options options ) throws Exception
     {
         this.opts = options;
         this.shapeID = 1;
+        this.src = src;
         // first blur the image appropriately
         int blur = Math.round(options.getFloat(Options.Keys.blurForLines)
             *cropRect.height);
         BlurImage bi = new BlurImage(src,blur);
         BufferedImage blurred = bi.blur();
         this.wr = blurred.getRaster();
+        this.wrOrig = src.getRaster();
         hScale = Math.round(wr.getWidth()
             *options.getFloat(Options.Keys.verticalSliceSize));
         width = (wr.getWidth()+hScale-1)/hScale;
@@ -82,10 +85,8 @@ public class FindLinesBlurred
             lightenImage( wr );
         // now draw the lines
         page = new Page( peaks, hScale, 1, numWords, options, cropRect );
-        page.refineRight( wr, hScale, 1, LIGHT_SHADE );
-        page.refineLeft( wr, hScale, 1, LIGHT_SHADE );
-        page.finalise( wr );
         prune(cropRect);
+        page.finalise( wr );
         if ( options.getBoolean(Options.Keys.test) )
             page.draw( src.getGraphics() );
     }
@@ -198,8 +199,10 @@ public class FindLinesBlurred
     public void prune( Rectangle r )
     {
         QuadTree qt = new QuadTree(r.x, r.y, r.width, r.height );
+        WritableRaster dirty = src.copyData(null);
         ArrayList<Line> lines = page.getLines();
         int[] dArray = new int[1];
+        Blob.setToWhite(dirty);
         for ( int i=0;i<lines.size();i++ )
         {
             Line line = lines.get(i);
@@ -207,18 +210,19 @@ public class FindLinesBlurred
             boolean lastWasBlack=false;
             for ( int j=1;j<points.length-1;j++ )
             {
-                Point last = points[i-1];
-                Point curr = points[i];
+                Point last = points[j-1];
+                Point curr = points[j];
                 float yDiff = curr.y-last.y;
                 float xDiff = curr.x-last.x;
                 for ( int x=Math.round(last.x);x<curr.x;x++ )
                 {
                     int y = Math.round(last.y)
                         +Math.round(((x-last.x)/xDiff)*yDiff);
-                    wr.getPixel( x, y, dArray);
+                    wrOrig.getPixel( x, y, dArray);
                     if ( dArray[0]==0 && !lastWasBlack )
                     {
-                        Polygon shape = qt.pointInPolygon( new Point(x,y) );
+                        Point q = new Point(x,y);
+                        Polygon shape = qt.pointInPolygon( q );
                         if ( shape != null )
                         {
                             if ( !line.hasShapeByID(shape.ID) )
@@ -226,9 +230,16 @@ public class FindLinesBlurred
                         }
                         else
                         {
-                            qt.addPolygon( shape );
-                            line.add( shape );
-                            shape.setID( newShapeID() );
+                            Blob b = new Blob(wrOrig,opts,null);
+                            b.save(dirty, wrOrig, q.toAwt());
+                            if ( b.hasHull() )
+                            {
+                                shape = b.toPolygon();
+                                shape.toPoints();
+                                qt.addPolygon( shape );
+                                line.add( shape );
+                                shape.setID( newShapeID() );
+                            }
                         }
                         lastWasBlack = true;
                     }
@@ -250,9 +261,9 @@ public class FindLinesBlurred
             Diff[] diffs = Matrix.computeRuns( prevIDs, currIDs );
             for ( int j=0;j<diffs.length;j++ )
             {
-                int[] aligned = new int[diffs[i].oldLen];
-                int kEnd = diffs[i].oldOffset+diffs[i].oldLen;
-                for ( int m=0,k=diffs[i].oldOffset;k<kEnd;k++ )
+                int[] aligned = new int[diffs[j].oldLen];
+                int kEnd = diffs[j].oldOffset+diffs[j].oldLen;
+                for ( int m=0,k=diffs[j].oldOffset;k<kEnd;k++ )
                     aligned[m++] = prevIDs[k];
                 Point centroid = prev.getCentroid( aligned );
                 float distA = prev.closestDistTo( centroid );
@@ -277,8 +288,8 @@ public class FindLinesBlurred
                 lines.remove(i);
             else
             {
-                l.trimLeft();
-                l.trimRight();
+                l.refineRight( wrOrig, hScale, 1, 0 );
+                l.refineLeft( wrOrig, hScale, 1, 0 );
                 if ( l.countPoints()==0 )
                     lines.remove(i);
                 else

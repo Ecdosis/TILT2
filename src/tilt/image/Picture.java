@@ -532,7 +532,7 @@ public class Picture {
             if ( reconstructed == null || !reconstructed.exists() )
                 convertToReconstructed();
             BufferedImage withLines = ImageIO.read(reconstructed);
-            FindLinesBlurred fl = new FindLinesBlurred( withLines, 
+            FindLines fl = new FindLines( withLines, 
                 cropRect, text.numWords(), options );
             page = fl.getPage();
             int lsize = page.getLines().size();
@@ -641,7 +641,7 @@ public class Picture {
             load();
         return getPicData( orig );
     }
-     public byte[] getPreflightData() throws ImageException
+    public byte[] getPreflightData() throws ImageException
     {
         if ( preflighted == null )
             convertToPreflight();

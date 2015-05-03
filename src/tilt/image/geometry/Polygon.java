@@ -80,6 +80,10 @@ public class Polygon extends java.awt.Polygon
             return list;
         }
     }
+    /**
+     * Set this polygon's ID for later IDentification
+     * @param id the ID
+     */
     public void setID( int id )
     {
         this.ID = id;

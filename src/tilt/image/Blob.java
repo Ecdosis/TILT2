@@ -463,6 +463,6 @@ public class Blob
      */
     public boolean hasHull()
     {
-        return this.hull != null && this.hull.size()>0;
+        return this.hull != null && this.hull.size()>1;
     }
 }

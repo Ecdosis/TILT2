@@ -176,7 +176,7 @@ public class Line implements Comparable<Line>
             int nPixels = 0;
             for ( int x=left;x<right;x++ )
             {
-                for ( int y=top;y<bottom;y++ )
+                for ( int y=top;y<=bottom;y++ )
                 {
                     wr.getPixel( x,y, iArray );
                     if ( iArray[0] <= black )
@@ -205,9 +205,10 @@ public class Line implements Comparable<Line>
      */
     public void refineRight( WritableRaster wr, int hScale, int vScale, int black )
     {
-        if ( points.size()>0 )
+        boolean boundary = false;
+        int[] iArray = new int[1];
+        while ( !boundary && points.size()>0 )
         {
-            int[] iArray = new int[1];
             java.awt.Point rightMost= points.get(points.size()-1).toAwt();
             int top = rightMost.y-(vScale/2);
             int bottom = top+(vScale/2);
@@ -217,7 +218,7 @@ public class Line implements Comparable<Line>
             for ( int x=right;x>=left;x-- )
             {
                 int y;
-                for ( y=top;y<bottom;y++ )
+                for ( y=top;y<=bottom;y++ )
                 {
                     wr.getPixel( x,y, iArray );
                     if ( iArray[0] <= black )
@@ -226,6 +227,7 @@ public class Line implements Comparable<Line>
                         if ( nPixels >= 2 )
                         {
                             rightMost.x = x;
+                            boundary = true;
                             break;
                         }
                     }
@@ -233,9 +235,15 @@ public class Line implements Comparable<Line>
                 if ( nPixels >= 2 )
                     break;
             }
-            Point endP = points.get(points.size()-1);
-            endP.x = rightMost.x;
-            endP.y = rightMost.y;
+            if ( boundary )
+            {
+                Point endP = points.get(points.size()-1);
+                endP.x = rightMost.x;
+            }
+            else
+            {
+                points.remove(points.size()-1);
+            }
         }
     }
     /**
@@ -588,7 +596,7 @@ public class Line implements Comparable<Line>
     }
     public boolean hasShapeByID( int ID )
     {
-        for ( int i=this.shapes.size();i>=0;i-- )
+        for ( int i=this.shapes.size()-1;i>=0;i-- )
         {
             Polygon pg = this.shapes.get( i );
             if ( pg.ID == ID )
