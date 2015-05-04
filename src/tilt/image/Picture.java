@@ -566,7 +566,7 @@ public class Picture {
             BufferedImage originalImage = ImageIO.read(preflighted);
             FindWords fw = new FindWords( bandw, page, options );
             fw.find();
-            page.print( originalImage );
+            page.drawShapes( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);
             ImageIO.write( originalImage, "png", words );

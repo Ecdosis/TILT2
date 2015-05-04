@@ -81,14 +81,15 @@ public class FindLines
         average = computeAverage( wr );
         for ( int i=0;i<width;i++)
             peaks[i] = findPeaks(wr,i);
-        if ( options.getBoolean(Options.Keys.test) )
-            lightenImage( wr );
         // now draw the lines
         page = new Page( peaks, hScale, 1, numWords, options, cropRect );
+        page.sortLines();
         prune(cropRect);
+        if ( options.getBoolean(Options.Keys.test) )
+            lightenImage( wrOrig );
         page.finalise( wr );
         if ( options.getBoolean(Options.Keys.test) )
-            page.draw( src.getGraphics() );
+            page.drawLines( src.getGraphics() );
     }
     /**
      * Lighten an image in preparation for drawing on top of it
@@ -249,8 +250,8 @@ public class FindLines
             }
         }
         // now we have all the identifiable shapes on the page in qt and they 
-        // are assigned to lines, maybe more than one lie to each shape now 
-        // we have to identify runs of shapes in each line that are also on 
+        // are assigned to lines, maybe more than one line to each shape. Now 
+        // we have to identify RUNS of shapes in each line that are also on 
         // the next line - and decide to which line they should belong
         for ( int i=1;i<lines.size();i++ )
         {
@@ -261,10 +262,14 @@ public class FindLines
             Diff[] diffs = Matrix.computeRuns( prevIDs, currIDs );
             for ( int j=0;j<diffs.length;j++ )
             {
-                int[] aligned = new int[diffs[j].oldLen];
-                int kEnd = diffs[j].oldOffset+diffs[j].oldLen;
-                for ( int m=0,k=diffs[j].oldOffset;k<kEnd;k++ )
+                int[] aligned = new int[diffs[j].newLen];
+                int kEnd = diffs[j].newOffset+diffs[j].newLen;
+                for ( int m=0,k=diffs[j].newOffset;k<kEnd;k++ )
+                {
+                    if ( m >= aligned.length || k>= prevIDs.length )
+                        System.out.println("overflow!");
                     aligned[m++] = prevIDs[k];
+                }
                 Point centroid = prev.getCentroid( aligned );
                 float distA = prev.closestDistTo( centroid );
                 float distB = curr.closestDistTo( centroid );
@@ -275,7 +280,7 @@ public class FindLines
                 }
                 else
                 {
-                    for ( int k=0;k<aligned.length;i++ )
+                    for ( int k=0;k<aligned.length;k++ )
                         prev.removeShapeByID(aligned[k]);
                 }
             }

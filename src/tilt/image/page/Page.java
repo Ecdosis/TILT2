@@ -124,20 +124,6 @@ public class Page
         }
     }
     /**
-     * Draw the lines on the page
-     * @param g the graphics environment
-     */
-    public void draw( Graphics g )
-    {
-        g.setColor(Color.BLACK);
-        for ( int i=0;i<lines.size();i++ )
-        {
-            Line l = lines.get(i);
-            l.draw( g );
-        }
-        //System.out.println("drew "+lines.size()+" lines");
-    }
-    /**
      * Align a new point to an existing line, or create one
      * @param loc the new location in true coordinates
      * @param oldEnd the previous end of the line 
@@ -221,7 +207,7 @@ public class Page
      * Print the word shapes over the top of the original image
      * @param original the original raster to write to
      */
-    public void print( BufferedImage original )
+    public void drawShapes( BufferedImage original )
     {
         Graphics g = original.getGraphics();
         for ( int i=0;i<lines.size();i++ )
@@ -229,6 +215,20 @@ public class Page
             Line l = lines.get( i );
             l.print( g, original.getRaster(), i+1 );
         }
+    }
+    /**
+     * Draw the lines on the page
+     * @param g the graphics environment
+     */
+    public void drawLines( Graphics g )
+    {
+        g.setColor(Color.BLACK);
+        for ( int i=0;i<lines.size();i++ )
+        {
+            Line l = lines.get(i);
+            l.draw( g, i+1 );
+        }
+        //System.out.println("drew "+lines.size()+" lines");
     }
     /**
      * Sort all lines based on their medianY position

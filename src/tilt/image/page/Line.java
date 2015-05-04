@@ -130,8 +130,9 @@ public class Line implements Comparable<Line>
     /**
      * Draw the line on the image for debugging
      * @param g the graphics environment to draw in
+     * @param n the number of the line
      */
-    public void draw( Graphics g )
+    public void draw( Graphics g, int n )
     {
         Point p1,p2=null;
         for ( int i=0;i<points.size();i++ )
@@ -142,6 +143,10 @@ public class Line implements Comparable<Line>
                 g.drawLine(Math.round(p1.x),Math.round(p1.y),
                     Math.round(p2.x),Math.round(p2.y));
         }
+        Rectangle bounds = getPointsBounds();
+        String num = Integer.toString(n);
+        g.drawString( num, bounds.x-30, 
+            (bounds.y*2+bounds.height)/2 );
     }
     /**
      * This line is not matched in the next column. Terminate it!
@@ -288,7 +293,8 @@ public class Line implements Comparable<Line>
         {
             Rectangle bounds = shapes.get(0).getBounds();
             g.setColor( Color.black );
-            g.drawString( Integer.toString(n), bounds.x-20, bounds.y-10 );
+            g.drawString( Integer.toString(n), bounds.x-20, 
+                (bounds.y*2+bounds.height)/2 );
         }
         for ( int i=0;i<shapes.size();i++ )
         {
@@ -467,10 +473,10 @@ public class Line implements Comparable<Line>
         }
     }
     /**
-     * Get the overall bounding box of this line
+     * Get the overall bounding box of this line based on its shapes
      * @return a rectangle
      */
-    public Rectangle getBounds()
+    public Rectangle getShapesBounds()
     {
         Area region = new Area();
         for ( int i=0;i<shapes.size();i++ )
@@ -479,6 +485,31 @@ public class Line implements Comparable<Line>
             region.add(new Area(shape) );
         }
         return region.getBounds();
+    }
+    /**
+     * Get the overall bounding box of this line based on its points
+     * @return a rectangle
+     */
+    public Rectangle getPointsBounds()
+    {
+        Area region = new Area();
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        int maxX = 0;
+        int maxY = 0;
+        for ( int i=0;i<points.size();i++ )
+        {
+            Point pt = points.get(i);
+            if ( pt.x < minX )
+                minX = Math.round(pt.x);
+            if ( pt.y < minY )
+                minY = Math.round(pt.y);
+            if ( pt.y > maxY )
+                maxY = Math.round(pt.y);
+            if ( pt.x < maxX )
+                maxX = Math.round(pt.x);
+        }
+        return new Rectangle( minX, minY, maxX-minX, maxY-minY );
     }
     /**
      * Convert the line to a GeoJSON object for export
@@ -491,7 +522,7 @@ public class Line implements Comparable<Line>
         JSONObject collection = new JSONObject();
         collection.put("type","FeatureCollection");
         collection.put("name","Line");
-        Rectangle bounds = getBounds();
+        Rectangle bounds = getShapesBounds();
         JSONArray bbox = new JSONArray();
         bbox.add(bounds.x);
         bbox.add(bounds.y);

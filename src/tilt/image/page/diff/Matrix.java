@@ -32,8 +32,8 @@ public class Matrix
     Diagonal diagonals;
     boolean reachedEnd;
     /** test data */
-    static int[] A_INT = {12,34,45,67,89,21,43,65,87,98};
-    static int[] B_INT = {23,34,45,67,98,87,65,43,21};
+    static int[] A_INT = {34,12,45,67,89,21,43,65,87,98};
+    static int[] B_INT = {33,12,44,66,98,87,64,43,21};
         
     /**
      * Set up the matrix
@@ -73,6 +73,28 @@ public class Matrix
         Matrix m = new Matrix( newtext, base );
         m.compute();
         return m.getDiffs( false );
+    }
+    /**
+     * Compute only the runs of matching ints
+     * @return an array of Diffs containing only 
+     */
+    public static Diff[] computeRuns( int[] text1, int[] text2 )
+    {
+        Diff[] diffs = computeDetailedDiffs( text1, text2 );
+        int last1 = 0;
+        int last2 = 0;
+        ArrayList<Diff> alignments = new ArrayList<>();
+        for ( Diff d : diffs )
+        {
+            if ( d.newOffset > last1 && d.oldOffset > last2 )
+                alignments.add(new Diff(last2, last1, 
+                    d.oldOffset-last2, d.newOffset-last1, DiffKind.ALIGNED));
+            last1 = d.newOffset+d.newLen;
+            last2 = d.oldOffset+d.oldLen;
+        }
+        Diff[] array = new Diff[alignments.size()];
+        alignments.toArray( array );
+        return array;
     }
     /**
      * Compute the matrix by finding the optimal path from source to sink.
@@ -119,28 +141,6 @@ public class Matrix
         if ( best.p != null )
             diffs = best.p.print( B.length, A.length, basic );
         return diffs;
-    }
-    /**
-     * Compute only the runs of matching ints
-     * @return an array of Diffs containing only 
-     */
-    public static Diff[] computeRuns( int[] text1, int[] text2 )
-    {
-        Diff[] diffs = computeDetailedDiffs( text1, text2 );
-        int last1 = 0;
-        int last2 = 0;
-        ArrayList<Diff> alignments = new ArrayList<>();
-        for ( Diff d : diffs )
-        {
-            if ( d.newOffset > last1 && d.oldOffset > last2 )
-                alignments.add(new Diff(last2, last1, 
-                    d.oldOffset-last2, d.newOffset-last1, DiffKind.ALIGNED));
-            last1 = d.newOffset+d.oldLen;
-            last2 = d.oldOffset+d.oldLen;
-        }
-        Diff[] array = new Diff[alignments.size()];
-        alignments.toArray( array );
-        return array;
     }
     /**
      * Check if we can move to the requested position.
