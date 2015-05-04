@@ -88,6 +88,11 @@ public class FindWords
         page.getWordGap(); 
         page.joinWords();
     }
+    void printBounds( Polygon pg )
+    {
+        Rectangle r = pg.getBounds();
+        System.out.println("["+r.x+","+r.y+","+r.width+","+r.height+"]");
+    }
     /**
      * Find part of a word. All blobs near the line will be added.
      * @param curr the current line
@@ -103,6 +108,8 @@ public class FindWords
         Polygon core = lr.getLineBase( p0, p1 );
         // look only inside the core bounds for black pixels
         Rectangle r = core.getBounds();
+        Polygon poly = lr.getPoly();
+        Rectangle lrBounds = poly.getBounds();
         int endY = r.y+r.height;
         int[] iArray = new int[r.width];
         // if the last pixel was black it must be part of the same blob/polygon
@@ -135,17 +142,19 @@ public class FindWords
                                 if ( b.hasHull() )
                                 {
                                     shape = b.toPolygon();
+                                    poly = lr.getPoly();
                                     // if shape exceeds the current line region:
-                                    if ( !lr.getPoly().contains(shape) )
+                                    if ( !poly.contains(shape) )
                                     {
                                         if ( nextLR != null 
                                             && nextLR.getPoly().intersects(shape) )
+                                        {
                                             shape = shape.getIntersection(lr.getPoly());
+                                        }
                                         else    // let it all hang out...
                                         {
-                                            Polygon poly = lr.getPoly();
                                             lr.setPoly(poly.getUnion(shape));
-                                        // the previous line is already dealt with
+                                            // the previous line is already dealt with
                                         }
                                     }
                                     shape.setLine(curr);
@@ -164,5 +173,6 @@ public class FindWords
             // reset at line-end
             lastPixelWasBlack = false;
         }
+        Blob.setToWhite( dirty, lrBounds );
     }
 }

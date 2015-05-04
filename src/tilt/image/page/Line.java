@@ -53,6 +53,7 @@ public class Line implements Comparable<Line>
     /** median y-value */
     int medianY;
     int averageY;
+    static float MIN_X_DIFF = 2.0f;
     static float SHARED_RATIO= 0.75f;
     public static final int NO_OFFSET = -1;
     public Line()
@@ -202,6 +203,26 @@ public class Line implements Comparable<Line>
         }
     }
     /**
+     * Check that the given point is at least a bit different 
+     * @param pos the position to check at the end or the start
+     */
+    private void checkPoint( int pos )
+    {
+        Point p = points.get(pos);
+        if ( pos > 0 && points.size()> pos-1 )
+        {
+            Point q = points.get(pos-1);
+            if ( Math.abs(p.x-q.x) < MIN_X_DIFF )
+                points.remove( pos );
+        }
+        else if ( pos == 0 && points.size()>1 )
+        {
+            Point q = points.get(pos+1);
+            if ( Math.abs(p.x-q.x) < MIN_X_DIFF )
+                points.remove( pos );
+        }
+    }
+    /**
      * Move the rightmost x position inwards to the first pixel that is black
      * @param wr the raster of the image
      * @param hScale the width of a rectangle or slice
@@ -244,6 +265,7 @@ public class Line implements Comparable<Line>
             {
                 Point endP = points.get(points.size()-1);
                 endP.x = rightMost.x;
+                checkPoint( points.size()-1 );
             }
             else
             {
@@ -332,6 +354,22 @@ public class Line implements Comparable<Line>
             }
         }
         return medianY;
+    }
+    public int getAverageXStep()
+    {
+        int totalSteps = 0;
+        int nSteps = 0;
+        Point last = null;
+        for ( Point p : points )
+        {
+            if ( last != null )
+            {
+                nSteps++;
+                totalSteps += Math.abs(p.x-last.x);
+            }
+            last = p;
+        }
+        return totalSteps/nSteps;
     }
     /**
      * Get the average Y value of the line

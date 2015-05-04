@@ -45,24 +45,24 @@ function getGeoJsonUrl()
 function enableAll()
 {
 	$("#original").prop('disabled', false);
+	$("#preflight").prop('disabled',false);
 	$("#greyscale").prop('disabled', false);
 	$("#twotone").prop('disabled', false);
 	$("#cleaned").prop('disabled', false);
 	$("#reconstructed").prop('disabled', false);
-        $("#reduced").prop('disabled', false);
-	$("#baselines").prop('disabled', false);
+    $("#baselines").prop('disabled', false);
 	$("#words").prop('disabled', false); 
     $("#link").prop('disabled', false); 
 }
 function disableAll()
 {
 	$("#original").prop('disabled', true);
+    $("#preflight").prop('disabled',true);
 	$("#greyscale").prop('disabled', true);
 	$("#twotone").prop('disabled', true);
 	$("#cleaned").prop('disabled', true);
 	$("#reconstructed").prop('disabled', true);
-        $("#reduced").prop('disabled', true);
-	$("#baselines").prop('disabled', true);
+    $("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
 }
@@ -377,8 +377,7 @@ $(document).ready(function() {
 disableAll();
 $("#upload").click(function(e){
 	var localurl = $("#main").attr("action");
-    console.log(localurl);
-	$.post( localurl, $("#main").serialize(), function( data ) {
+    $.post( localurl, $("#main").serialize(), function( data ) {
 	$("#container").empty();
 	$("#container").html(data);
     appendCanvas();
@@ -392,6 +391,11 @@ $("#original").click(function(){
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getUrlFromLoc("original")+'">');
     appendCanvas()
+});
+$("#preflight").click(function(){
+	$("#container").empty();
+	$("#container").html('<img width="500" src="'+getUrlFromLoc("preflight")+'">');
+    appendCanvas();
 });
 $("#greyscale").click(function(){
 	$("#container").empty();
@@ -414,12 +418,6 @@ $("#reconstructed").click(function(){
 	var url = escapeUrl(getUrlFromLoc("reconstructed"));
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getUrlFromLoc("reconstructed")+'">');
-    appendCanvas();
-});
-$("#reduced").click(function(){
-	var url = escapeUrl(getUrlFromLoc("reduced"));
-	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("reduced")+'">');
     appendCanvas();
 });
 $("#baselines").click(function(){

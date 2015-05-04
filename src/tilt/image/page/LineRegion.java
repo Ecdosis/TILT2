@@ -51,28 +51,41 @@ public class LineRegion
         this.lineHeight = lineHeight;
         this.src = src;
     }
+    private void addDefaultTopPoint( Polygon poly, Point linePt )
+    {
+        float tentativeY = linePt.y-lineHeight/2;
+        int y = (tentativeY<0)?0:Math.round(tentativeY);
+        int x = Math.round(linePt.x);
+        if ( poly.npoints == 0 || poly.xpoints[poly.npoints-1] != x ) 
+            poly.addPoint( x, y );
+    }
+    private void addDefaultBotPoint( Polygon poly, Point linePt, int maxY )
+    {
+        float tentativeY = linePt.y+lineHeight/2;
+        float y = (tentativeY>maxY)?maxY:tentativeY;
+        int intX = Math.round(linePt.x);
+        int intY = Math.round(y);
+        if ( poly.npoints == 0 || poly.xpoints[poly.npoints-1] != intX ) 
+            poly.addPoint( intX, intY );
+    }
     /**
+     * 
      * Compute the region of the line within which all word-shapes must lie.
      * @return a non-convex polygon
      */
     private void calculate()
     {
         Polygon poly = new Polygon();
-        if ( current==null )
-            System.out.println("current is null");
         Point[] pts = current.getPoints();
+        int averageXStep = current.getAverageXStep();
         if ( pts.length > 0 )
         {
+            int maxY = src.getHeight()-1;
             if ( prev == null )
             {
                 // first line
                 for ( int i=pts.length-1;i>=0;i-- )
-                {
-                    float tentativeY = pts[i].y-lineHeight/2;
-                    int y = (tentativeY<0)?0:Math.round(tentativeY);
-                    int x = Math.round(pts[i].x);
-                    poly.addPoint( x, y );
-                }
+                    addDefaultTopPoint( poly, pts[i] );
             }
             else
             {
@@ -80,51 +93,58 @@ public class LineRegion
                 Point[] topPts = prev.getPoints();
                 int i = pts.length-1;
                 int j = topPts.length-1;
-                float dist = Integer.MAX_VALUE;
+                float dist = Float.MAX_VALUE;
                 int best = 0;
+                // roughly align top point with line point
+                while ( j>0 && topPts[j].x-pts[i].x > averageXStep*2 )
+                    j--;
                 // NB check first and last points for perpendicularity
                 while ( i >= 0 )
                 {
-                    Point p = pts[i];
-                    Point q = topPts[j];
-                    float newDist = p.distance(q);
-                    if ( newDist < dist )
+                    // is the next top point too far off?
+                    if ( dist==Float.MAX_VALUE
+                        && Math.abs(pts[i].x-topPts[j].x)>averageXStep*2 )
                     {
-                        best = j;
-                        if ( j > 0 )
+                        addDefaultTopPoint(poly,pts[i]);
+                        i--;
+                        // update j
+                        while ( j>0 && i >=0
+                            && topPts[j].x-pts[i].x>averageXStep*2 )
                             j--;
-                        dist = newDist;
                     }
                     else
                     {
-                        float x = (topPts[best].x+pts[i].x)/2;
-                        // straight sides for polygon at ends
-                        if (i==0 || i==pts.length-1)
-                            x = pts[i].x;
-                        int intX = Math.round(x);
-                        int intY = Math.round((topPts[best].y+pts[i].y)/2);
-                        if ( intX==193 && intY == 151 )
-                            System.out.println("Bingo!");                        
-                        poly.addPoint(intX,intY );
-                        i--;
-                        j = best;
+                        Point p = pts[i];
+                        Point q = topPts[j];
+                        float newDist = p.distance(q);
+                        if ( newDist < dist )
+                        {
+                            best = j;
+                            if ( j > 0 )
+                                j--;
+                            dist = newDist;
+                        }
+                        else
+                        {
+                            float x = (topPts[best].x+pts[i].x)/2;
+                            // straight sides for polygon at ends
+                            if (i==0 || i==pts.length-1)
+                                x = pts[i].x;
+                            int intX = Math.round(x);
+                            int intY = Math.round((topPts[best].y+pts[i].y)/2);
+                            poly.addPoint(intX,intY );
+                            dist = Float.MAX_VALUE;
+                            i--;
+                            j = best;
+                        }
                     }
                 }
             }
             if ( next == null )
             {
                 // last line
-                int maxY = src.getHeight()-1;
                 for ( int i=0;i<pts.length;i++ )
-                {
-                    float tentativeY = pts[i].y+lineHeight/2;
-                    float y = (tentativeY>maxY)?maxY:tentativeY;
-                    int intX = Math.round(pts[i].x);
-                    int intY = Math.round(y);
-                    if ( intX==193 && intY == 151 )
-                            System.out.println("Bingo!");
-                    poly.addPoint( intX, intY );
-                }
+                    addDefaultBotPoint( poly, pts[i], maxY );
             }
             else
             {
@@ -132,34 +152,46 @@ public class LineRegion
                 Point[] botPts = next.getPoints();
                 int i = 0;
                 int j = 0;
-                float dist = Integer.MAX_VALUE;
+                float dist = Float.MAX_VALUE;
                 int best = 0;
-                // NB check first and last points for perpendicularity
                 while ( i < pts.length )
                 {
-                    Point p = pts[i];
-                    Point q = botPts[j];
-                    float newDist = p.distance(q);
-                    if ( newDist < dist )
+                    // are we too far away from the next lines j point?
+                    if ( dist == Float.MAX_VALUE 
+                        && Math.abs(pts[i].x-botPts[j].x)>averageXStep*2 )
                     {
-                        best = j;
-                        if ( j < botPts.length-1 )
+                        addDefaultBotPoint(poly,pts[i],maxY);
+                        i++;
+                        // update j
+                        while ( j<botPts.length-1  && i < pts.length
+                            && pts[i].x-botPts[j].x>averageXStep*2 )
                             j++;
-                        dist = newDist;
                     }
                     else
                     {
-                        float x = (botPts[best].x+pts[i].x)/2;
-                        // straight sides for polygon at ends
-                        if ( i==0||i==pts.length-1 )
-                            x = pts[i].x;
-                        int intX = Math.round(x);
-                        int intY = Math.round((botPts[best].y+pts[i].y)/2);
-                        if ( intX==193 && intY == 151 )
-                            System.out.println("Bingo!");
-                        poly.addPoint(intX,intY);
-                        i++;
-                        j = best;
+                        Point p = pts[i];
+                        Point q = botPts[j];
+                        float newDist = p.distance(q);
+                        if ( newDist < dist )
+                        {
+                            best = j;
+                            if ( j < botPts.length-1 )
+                                j++;
+                            dist = newDist;
+                        }
+                        else
+                        {
+                            float x = (botPts[best].x+pts[i].x)/2;
+                            // straight sides for polygon at ends
+                            if ( i==0||i==pts.length-1 )
+                                x = pts[i].x;
+                            int intX = Math.round(x);
+                            int intY = Math.round((botPts[best].y+pts[i].y)/2);
+                            poly.addPoint(intX,intY);
+                            i++;
+                            j = best;
+                            dist = Float.MAX_VALUE;
+                        }
                     }
                 }
             }
@@ -182,6 +214,7 @@ public class LineRegion
         Segment vert = new Segment( top, bot );
         if ( this.poly == null )
             calculate();
+        //System.out.println(poly.toString());
         // now find the line regions horizontal segment that intersects
         ArrayList<Point> pts = this.poly.toPoints();
         //System.out.println(this.poly.toString());

@@ -380,6 +380,7 @@ public class Polygon extends java.awt.Polygon
         Point last;
         Point curr = pts.get(0);
         curr.classify(other);
+        list.add( curr );
         for ( int i=1;i<pts.size();i++ )
         {
             last = curr;
@@ -479,7 +480,7 @@ public class Polygon extends java.awt.Polygon
             }
         }   
     }
-    private String printList( ArrayList<Point> list )
+    public String printList( ArrayList<Point> list )
     {
         StringBuilder sb = new StringBuilder();
         for ( Point p : list )
@@ -587,8 +588,11 @@ public class Polygon extends java.awt.Polygon
             Polygon union = new Polygon();
             ArrayList<Point> list1 = this.toCCList( pg, true );
             ArrayList<Point> list2 = pg.toCCList( this, false );
-//            System.out.println(printList(list1));
-//            System.out.println(printList(list2));
+//            if ( list1.size()==55 && list2.size()==12 )
+//            {
+//                System.out.println(printList(list1));
+//                System.out.println(printList(list2));
+//            }
             weaveUnion( list1, 0, 0, list2, 0, union );
             return union;
         }

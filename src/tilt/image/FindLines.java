@@ -266,19 +266,17 @@ public class FindLines
                 int kEnd = diffs[j].newOffset+diffs[j].newLen;
                 for ( int m=0,k=diffs[j].newOffset;k<kEnd;k++ )
                 {
-                    if ( m >= aligned.length || k>= prevIDs.length )
-                        System.out.println("overflow!");
                     aligned[m++] = prevIDs[k];
                 }
                 Point centroid = prev.getCentroid( aligned );
                 float distA = prev.closestDistTo( centroid );
                 float distB = curr.closestDistTo( centroid );
-                if ( distA < distB )
+                if ( distA < distB && prev.countShapes() > aligned.length )
                 {
                     for ( int k=0;k<aligned.length;k++ )
                         curr.removeShapeByID(aligned[k]);
                 }
-                else
+                else 
                 {
                     for ( int k=0;k<aligned.length;k++ )
                         prev.removeShapeByID(aligned[k]);
