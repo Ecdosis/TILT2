@@ -65,22 +65,26 @@ public class FindWords
         int lineHt = page.getLineHeight();
         // look along each line segment for word-shapes
         // and assign them to lines
+        LineRegion prevLR = null;
+        LineRegion lr=null;
+        LineRegion nextLR=null;
         for ( int i=0;i<lines.size();i++ )
         {
             prev = curr;
             curr = lines.get(i);
-            if ( i < lines.size()-1 )
-                next = lines.get(i+1);
+            next = ( i < lines.size()-1)?lines.get(i+1):null;
+            prevLR = lr;
+            if ( nextLR != null )
+                lr = nextLR;
             else
-                next = null;
-            LineRegion lr = new LineRegion( src, curr, prev, next, lineHt);
+                lr = new LineRegion( src, curr, prev, next, lineHt);
             Line future = (i<lines.size()-2)?lines.get(i+2):null;
-            LineRegion nextLR = (next==null)?null
+            nextLR = (next==null)?null
                 :new LineRegion(src,next,curr,future,lineHt);
             Point[] points = curr.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
-                findPartWords( curr, lr, nextLR, points[j], points[j+1] );
+                findPartWords( curr, lr, prevLR, nextLR, points[j], points[j+1] );
             }
         }
 //        page.pruneShortLines();
@@ -97,12 +101,13 @@ public class FindWords
      * Find part of a word. All blobs near the line will be added.
      * @param curr the current line
      * @param lr the region on the page belonging exclusively to this line
+     * @param prevLR the line region of the previous line
      * @param nextLR the line-region of the next line
      * @param p0 the start of the baseline segment
      * @param p1 the end of this baseline segment
      */
-    private void findPartWords( Line curr, LineRegion lr, LineRegion nextLR,
-        Point p0, Point p1 ) throws TiltException
+    private void findPartWords( Line curr, LineRegion lr, LineRegion prevLR, 
+        LineRegion nextLR, Point p0, Point p1 ) throws TiltException
     {
         // compute polygon in which to look for blobs
         Polygon core = lr.getLineBase( p0, p1 );
@@ -112,6 +117,7 @@ public class FindWords
         Rectangle lrBounds = poly.getBounds();
         int endY = r.y+r.height;
         int[] iArray = new int[r.width];
+        int[] dArray = new int[1];
         // if the last pixel was black it must be part of the same blob/polygon
         boolean lastPixelWasBlack = false;
         // per pixel row within r
@@ -133,36 +139,51 @@ public class FindWords
                         if ( !lastPixelWasBlack )
                         {
                             lastPixelWasBlack = true;
-                            Polygon shape = page.shapeForPoint(q);
-                            if ( shape == null )
+                            // have we already scanned this pixel?
+                            dirty.getPixel(x, y, dArray);
+                            if ( dArray[0] != 0 )
                             {
-                                // shape not already defined
-                                Blob b = new Blob(wr,opts,null);
-                                b.save(dirty, wr, q.toAwt());
-                                if ( b.hasHull() )
+                                Polygon shape = page.shapeForPoint(q);
+                                if ( shape == null )
                                 {
-                                    shape = b.toPolygon();
-                                    poly = lr.getPoly();
-                                    // if shape exceeds the current line region:
-                                    if ( !poly.contains(shape) )
+                                    // shape not already defined
+                                    Blob b = new Blob(wr,opts,null);
+                                    b.save(dirty, wr, q.toAwt());
+                                    if ( b.hasHull() )
                                     {
-                                        if ( nextLR != null 
-                                            && nextLR.getPoly().intersects(shape) )
+                                        shape = b.toPolygon();
+                                        // compute bounds, precise pts
+                                        shape.toPoints();
+                                        poly = lr.getPoly();
+                                        // if shape exceeds the current line region:
+                                        if ( !poly.contains(shape) )
                                         {
-                                            shape = shape.getIntersection(lr.getPoly());
+                                            boolean overlapsTop = true;
+                                            boolean overlapsBot = true;
+                                            if ( nextLR != null 
+                                                && nextLR.getPoly().intersects(shape) )
+                                            {
+                                                shape = shape.getIntersection(poly);
+                                                overlapsBot = false;
+                                            }
+                                            if ( prevLR != null 
+                                                && prevLR.getPoly().intersects(shape) )
+                                            {
+                                                shape = shape.getIntersection(poly);
+                                                overlapsTop = false;
+                                            }
+//                                            if ( overlapsTop || overlapsBot )
+//                                            {
+//                                                lr.setPoly(poly.getUnion(shape));
+//                                            }
                                         }
-                                        else    // let it all hang out...
-                                        {
-                                            lr.setPoly(poly.getUnion(shape));
-                                            // the previous line is already dealt with
-                                        }
+                                        shape.setLine(curr);
+                                        shape.toPoints();
+                                        page.addShape(shape);// registers line also
                                     }
-                                    shape.setLine(curr);
-                                    shape.toPoints();
-                                    page.addShape(shape);// registers line also
+                                    else
+                                        lastPixelWasBlack = false;
                                 }
-                                else
-                                    lastPixelWasBlack = false;
                             }
                         } 
                     }   

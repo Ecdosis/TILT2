@@ -518,6 +518,7 @@ public class Polygon extends java.awt.Polygon
 //            System.out.println(printList(list1));
 //            System.out.println(printList(list2));
             weaveIntersection( list1, 0, 0, list2, 0, intersection );
+            intersection.toPoints();
             return intersection;
         }
     }
@@ -594,6 +595,7 @@ public class Polygon extends java.awt.Polygon
 //                System.out.println(printList(list2));
 //            }
             weaveUnion( list1, 0, 0, list2, 0, union );
+            union.toPoints();
             return union;
         }
     }

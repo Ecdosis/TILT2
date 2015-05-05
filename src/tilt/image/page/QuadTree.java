@@ -23,7 +23,7 @@ import tilt.image.geometry.Polygon;
 import java.util.ArrayList;
 
 /**
- * A quadrtree is a 2D binary tree. We use it to store points and 
+ * A quadtree is a 2D binary tree. We use it to store points and 
  * shapes for quick lookup.
  * @author desmond
  */
@@ -42,10 +42,10 @@ public class QuadTree
     QuadTree se;
     QuadTree sw;
     /** dimensions */
-    int width;
-    int height;
-    int x;
-    int y;
+    float width;
+    float height;
+    float x;
+    float y;
     /**
      * A 2-D binary tree
      * @param x the top-left x-position
@@ -53,7 +53,7 @@ public class QuadTree
      * @param width the <em>fraction</em> of width of area covered
      * @param height the <em>fraction</em> of height of area covered
      */
-    public QuadTree( int x, int y, int width, int height )
+    public QuadTree( float x, float y, float width, float height )
     {
         this.boundary = new Rect(x,y,width,height);
         this.width = width;
@@ -72,12 +72,16 @@ public class QuadTree
         {
             return false;
         }
-        else 
+        else
         {
             if ( points != null )
             {
                 if ( points.size() < NUM_POINTS )
                 {
+                    // don't add copies of points already present
+                    for ( Point q : points )
+                        if ( q.equals(pt) )
+                            return true;
                     points.add( pt );
                     return true;
                 }
@@ -178,21 +182,18 @@ public class QuadTree
     void subdivide() 
     {
         // precompute x,y of se quadrant
-        int xSplit = this.boundary.width/2+this.boundary.x;
-        int ySplit = this.boundary.height/2+this.boundary.y;
+        float xSplit = this.boundary.width/2.0f+this.boundary.x;
+        float ySplit = this.boundary.height/2.0f+this.boundary.y;
+        float botHeight = (this.boundary.y+this.boundary.height)-ySplit;
+        float rightWidth = (this.boundary.x+this.boundary.width)-xSplit;
+        float leftWidth = xSplit-this.boundary.x;
+        float topHeight = ySplit-this.boundary.y;
         // create the four sub-trees
         this.nw = new QuadTree(this.boundary.x,this.boundary.y,
-            xSplit-this.boundary.x,
-            ySplit-this.boundary.y);
-        this.sw = new QuadTree(this.boundary.x,ySplit,
-            xSplit-this.boundary.x,
-            (this.boundary.y+this.boundary.height)-ySplit);
-        this.ne = new QuadTree(xSplit,this.boundary.y,
-            (this.boundary.x+this.boundary.width)-xSplit,
-            ySplit-this.boundary.y);
-        this.se = new QuadTree(xSplit,ySplit,
-            (this.boundary.x+this.boundary.width)-xSplit,
-            (this.boundary.y+this.boundary.height)-ySplit);
+            leftWidth,topHeight);
+        this.sw = new QuadTree(this.boundary.x,ySplit,leftWidth,botHeight);
+        this.ne = new QuadTree(xSplit,this.boundary.y, rightWidth, topHeight);
+        this.se = new QuadTree(xSplit,ySplit, rightWidth, botHeight);
         // now send the points to their respective quadrants
         for ( int i=0;i<points.size();i++ )
         {
@@ -321,6 +322,7 @@ public class QuadTree
         Point[] pts = pg.points;
         for ( int i=0;i<pts.length;i++ )
         {
+            Point pt = pts[i];
             if ( !this.addPt(pts[i]) )
                 System.out.println("failed to add point "+pts[i].x
                     +","+pts[i].y);
@@ -430,11 +432,11 @@ public class QuadTree
         this.removePt(pt);
         this.addPt( pt );
     }
-    int width() 
+    float width() 
     {
         return boundary.width-this.boundary.x;
     }
-    int height() 
+    float height() 
     {
         return this.boundary.height-this.boundary.y;
     } 

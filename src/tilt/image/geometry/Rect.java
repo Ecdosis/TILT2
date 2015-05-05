@@ -16,8 +16,9 @@
  *  (c) copyright Desmond Schmidt 2015
  */       
 package tilt.image.geometry;
+import java.awt.geom.Rectangle2D;
 
-public class Rect extends java.awt.Rectangle
+public class Rect extends Rectangle2D.Float
 {
     /**
     * A simple rectangle class
@@ -26,7 +27,7 @@ public class Rect extends java.awt.Rectangle
     * @param width the width of the rect
     * @param height the height of the rect
     */
-    public Rect( int x, int y, int width, int height )
+    public Rect( float x, float y, float width, float height )
     {
         super(x,y,width,height);
     }
@@ -37,12 +38,10 @@ public class Rect extends java.awt.Rectangle
      */
     public boolean contains( Point p ) 
     {
-        if ( p.x >= this.x && p.x < this.x+this.width )
-        {
-            if ( p.y >= this.y  && p.y < this.y+this.height )
-                return true;
-        }
-        return false;
+        if ( p.x==540.0f && p.y==1048.0f && this.x == 540.0 && this.y==1048.0f )
+            System.out.println("why?");
+        return p.x >= this.x && p.x < this.x+this.width 
+            && p.y >= this.y && p.y < this.y+this.height;
     }
     /**
      * Convert this rectangle to a string for debugging

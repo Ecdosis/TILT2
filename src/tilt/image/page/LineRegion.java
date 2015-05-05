@@ -275,6 +275,8 @@ public class LineRegion
             calculate();
         if ( this.poly.points == null )
             this.poly.toPoints();
+        if ( this.poly==null )
+            System.out.println("null");
         return this.poly;
     }
     /**

@@ -23,6 +23,7 @@ package tilt.image.geometry;
 public class Point extends java.awt.geom.Point2D.Float
 {
     static int MOD_ADLER = 65521;
+    static float TOLERANCE = 0.01f;
     PointType type;
     /**
      * @param x the-coordinate
@@ -92,6 +93,10 @@ public class Point extends java.awt.geom.Point2D.Float
         }
         else
             return false;
+    }
+    public boolean nearlyEquals( Point p )
+    {
+        return Math.abs(this.x-p.x)<TOLERANCE && Math.abs(this.y-p.y)<TOLERANCE;
     }
     public Point minus( Point other )
     {

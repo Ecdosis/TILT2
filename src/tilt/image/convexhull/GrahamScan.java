@@ -56,6 +56,8 @@ public class GrahamScan {
 
         // sort by polar angle with respect to base point points[0],
         // breaking ties by distance to points[0]
+        if ( points.length == 0 )
+            System.out.println("0");
         Arrays.sort(points, 1, N, points[0].POLAR_ORDER);
 
         hull.push(points[0]);       // p[0] is first extreme point
