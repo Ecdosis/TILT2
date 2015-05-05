@@ -343,7 +343,7 @@ public class Picture {
         try
         {
             int MAXVAL = 256;
-            double k = 0.34;
+            double k = 0.28;//0.34;
             if ( greyscale == null || !greyscale.exists() )
                 convertToGreyscale();
             BufferedImage grey = ImageIO.read(greyscale);
