@@ -103,6 +103,12 @@ public class Line implements Comparable<Line>
         points.toArray(line);
         return line;
     }
+    public Polygon[] getShapes()
+    {
+        Polygon[] polys = new Polygon[shapes.size()];
+        shapes.toArray(polys);
+        return polys;
+    }
     /**
      * Add gaps between shapes to the map
      * @param map a map of shape gaps to frequency of that gap
@@ -768,6 +774,10 @@ public class Line implements Comparable<Line>
     public void resetShapes()
     {
         shapes.clear();
+    }
+    public void setShapes( ArrayList<Polygon> shapes )
+    {
+        this.shapes = shapes;
     }
     /**
      * Remove some points from the line. Must be before we recognise words

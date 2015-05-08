@@ -332,7 +332,7 @@ public class Picture {
     }
     /**
      * Convert from greyscale to twotone (black and white)
-     * Adapted from OCRopus
+     * Adapted from OCRopus C++ to Java by desmond
      * Copyright 2006-2008 Deutsches Forschungszentrum fuer Kuenstliche 
      * Intelligenz or its licensors, as applicable.
      * http://ocropus.googlecode.com/svn/trunk/ocr-binarize/ocr-binarize-sauvola.cc
@@ -343,7 +343,7 @@ public class Picture {
         try
         {
             int MAXVAL = 256;
-            double k = 0.28;//0.34;
+            double k = options.getFloat(Options.Keys.binariseThreshold);
             if ( greyscale == null || !greyscale.exists() )
                 convertToGreyscale();
             BufferedImage grey = ImageIO.read(greyscale);
@@ -565,7 +565,7 @@ public class Picture {
             BufferedImage bandw = ImageIO.read(reconstructed);
             BufferedImage originalImage = ImageIO.read(preflighted);
             FindWords fw = new FindWords( bandw, page, options );
-            fw.find();
+            fw.find( this.text );
             page.drawShapes( originalImage );
             words = File.createTempFile(PictureRegistry.PREFIX,
                 PictureRegistry.SUFFIX);

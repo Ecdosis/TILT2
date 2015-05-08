@@ -26,6 +26,7 @@ import tilt.image.geometry.Point;
 import tilt.image.geometry.Polygon;
 import java.awt.Rectangle;
 import tilt.handler.post.Options;
+import tilt.handler.post.TextIndex;
 import tilt.exception.TiltException;
 /**
  * Using the lines lists search for words
@@ -38,6 +39,9 @@ public class FindWords
     WritableRaster wr;
     WritableRaster dirty;
     Options opts;
+    int shapeID = 1;
+    int shapeNo;
+    boolean onLine2;
     /**
      * Create a word-finder
      * @param src the src image in pure black and white
@@ -55,8 +59,9 @@ public class FindWords
     }
     /**
      * Actually find the word-shapes
+     * @param text the text to find on the page
      */
-    public void find() throws TiltException
+    public void find( TextIndex text ) throws TiltException
     {
         Line prev;
         Line next;
@@ -78,24 +83,28 @@ public class FindWords
                 lr = nextLR;
             else
                 lr = new LineRegion( src, curr, prev, next, lineHt);
+            onLine2 = i == 1;
             Line future = (i<lines.size()-2)?lines.get(i+2):null;
             nextLR = (next==null)?null
                 :new LineRegion(src,next,curr,future,lineHt);
             Point[] points = curr.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
+                shapeNo=0;
                 findPartWords( curr, lr, prevLR, nextLR, points[j], points[j+1] );
             }
         }
-//        page.pruneShortLines();
-//        // now merge the word-shapes into real words
-        page.getWordGap(); 
-        page.joinWords();
+        WordShapes ws = new WordShapes( text, lines, opts );
+        ws.makeWords();
     }
     void printBounds( Polygon pg )
     {
         Rectangle r = pg.getBounds();
         System.out.println("["+r.x+","+r.y+","+r.width+","+r.height+"]");
+    }
+    int newShapeID()
+    {
+        return this.shapeID++;
     }
     /**
      * Find part of a word. All blobs near the line will be added.
@@ -133,7 +142,7 @@ public class FindWords
                 q.x = x;
                 if ( iArray[i] == 0 )
                 {
-                    // ignore black pixels not in polgonal core
+                    // ignore black pixels not in polgonal core of line
                     if ( core.contains(q) )
                     {
                         if ( !lastPixelWasBlack )
@@ -151,34 +160,40 @@ public class FindWords
                                     b.save(dirty, wr, q.toAwt());
                                     if ( b.hasHull() )
                                     {
+                                        shapeNo++;
+//                                        if ( shapeNo==2&&onLine2 )
+//                                            System.out.println("Oh");
                                         shape = b.toPolygon();
-                                        // compute bounds, precise pts
-                                        shape.toPoints();
+//                                      // compute bounds, precise pts
+                                        ArrayList<Point> list = shape.toPoints();
+//                                        if ( onLine2 && shapeNo==2 )
+//                                        {
+//                                            System.out.println("Before:"+shape.printList(list) );
+//                                            System.out.println(shape.getBounds().toString());
+//                                        }
                                         poly = lr.getPoly();
-                                        // if shape exceeds the current line region:
+                                        // clip shape to next and prev line regions
                                         if ( !poly.contains(shape) )
                                         {
-                                            boolean overlapsTop = true;
-                                            boolean overlapsBot = true;
                                             if ( nextLR != null 
                                                 && nextLR.getPoly().intersects(shape) )
                                             {
                                                 shape = shape.getIntersection(poly);
-                                                overlapsBot = false;
                                             }
                                             if ( prevLR != null 
                                                 && prevLR.getPoly().intersects(shape) )
                                             {
                                                 shape = shape.getIntersection(poly);
-                                                overlapsTop = false;
                                             }
-//                                            if ( overlapsTop || overlapsBot )
-//                                            {
-//                                                lr.setPoly(poly.getUnion(shape));
-//                                            }
                                         }
+//                                        if ( onLine2 && shapeNo==2 )
+//                                        {
+//                                            System.out.println("After:"+shape.printList(list) );
+//                                            System.out.println(shape.getBounds().toString());
+//                                        }
                                         shape.setLine(curr);
                                         shape.toPoints();
+                                        shape.setID(newShapeID());
                                         page.addShape(shape);// registers line also
                                     }
                                     else

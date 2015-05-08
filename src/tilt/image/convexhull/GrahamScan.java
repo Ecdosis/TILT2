@@ -18,9 +18,9 @@
 
 package tilt.image.convexhull;
 import tilt.image.geometry.Point;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.ArrayList;
 
 /*************************************************************************
  *  Compilation:  javac GrahamaScan.java
@@ -85,7 +85,12 @@ public class GrahamScan {
         }
         //assert isConvex();
     }
-
+    int comp( Point2D a, Point2D b, Point2D centroid )
+    {
+        double res1 = Math.atan2(a.y-centroid.y,a.x-centroid.x);
+        double res2 = Math.atan2(b.y-centroid.y,b.x-centroid.x);
+        return (res1<res2)?-1:(res1==res2)?0:1;
+    }
     /**
      * Return convex hull in counterclockwise order as an Iterable
      * (author's original routine didn't return a CCW list - modified)
@@ -93,9 +98,46 @@ public class GrahamScan {
      */
     public Iterable<Point2D> hull() {
         ArrayList<Point2D> s = new ArrayList<>();
-        for ( int i=hull.size()-1;i>=0;i-- )
-            s.add(hull.get(i));
+        double totalX = 0.0;
+        double totalY = 0.0;
+        for ( int i=0;i<hull.size();i++ )
+        {
+            Point2D pt = hull.get(i);
+            totalX += pt.x;
+            totalY += pt.y;
+            s.add(pt);
+        }
+        Point2D centroid = new Point2D( totalX/s.size(), totalY/s.size());
+        // shell-sort points ccw
+        int h = s.size()/2;
+	while (h > 0) 
+        {
+            for (int i = h; i < s.size(); i++) 
+            {
+                int j = i;
+                Point2D temp = s.get(i);
+                while ( j >= h && comp(s.get(j-h),temp,centroid) > 0 ) 
+                {
+                    s.set(j, s.get(j-h));
+                    j = j - h;
+                }
+                s.set(j,temp);
+            }
+            if (h == 2) 
+                h = 1;
+            else 
+                h *= (5.0 / 11);
+	}
         return s;
+    }
+    boolean isCounterClockwise( Polygon pg )
+    {
+        int total = 0;
+        for ( int i=1;i<pg.npoints;i++ )
+        {
+            total += (pg.xpoints[i]-pg.xpoints[i-1])*(pg.ypoints[i]+pg.ypoints[i-1]); 
+        }
+        return total < 0;
     }
     /**
      * Convert the hull to a polygon with CCW points and closed at the end
@@ -115,6 +157,8 @@ public class GrahamScan {
         Point last = pg.lastPoint();
         if ( pg.npoints > 1 && !first.equals(last) )
             pg.addPoint(Math.round(first.x),Math.round(first.y));
+//        if ( !isCounterClockwise(pg) && pg.npoints > 3 )
+//            System.out.println("not counter-clockwise!");
         return pg;
     }
     // check that boundary of hull is strictly convex

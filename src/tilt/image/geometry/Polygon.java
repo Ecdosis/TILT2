@@ -23,6 +23,8 @@ import tilt.exception.TiltException;
 import tilt.image.page.Line;
 import tilt.image.convexhull.GrahamScan;
 import tilt.image.convexhull.Point2D;
+import com.seisw.util.geom.PolyDefault;
+import com.seisw.util.geom.Poly;
 
 /**
  * Override the awt Polygon class so we can store them as keys in a HashMap
@@ -33,11 +35,40 @@ public class Polygon extends java.awt.Polygon
 {
     static int MOD_ADLER = 65521;
     static float SMALL_NUM = 0.0000000001f;
+    double computedArea;
     public Point[] points;
     /** line we are attached to */
     Line line;
     Rect bounds;
     public int ID;
+    public Polygon()
+    {
+        computedArea = -1.0;
+    }
+    /**
+     * Create from a GPCJ polygon
+     * @param ps 
+     */
+    Polygon( PolyDefault ps )
+    {
+        for ( int i=0;i<ps.getNumPoints();i++ )
+        {
+            this.addPoint( new Point((float)ps.getX(i),(float)ps.getY(i)) );
+        }
+        toPoints();
+        computeBounds();
+        computedArea = -1.0;
+    }
+    public Polygon clone()
+    {
+        Polygon copy = new Polygon();
+        ArrayList<Point> pts = this.toPoints();
+        for ( Point p : pts )
+            copy.addPoint( Math.round(p.x), Math.round(p.y) );
+        computeBounds();
+        copy.toPoints();
+        return copy;
+    }
     /**
      * Convert a polygon to its constituent points
      * @return a list of points
@@ -45,7 +76,7 @@ public class Polygon extends java.awt.Polygon
     public ArrayList<Point> toPoints()
     {
         ArrayList<Point> list = new ArrayList<Point>();
-        if ( this.points != null )
+        if ( this.points != null && this.npoints == this.points.length )
         {
             for ( int i=0;i<points.length;i++ )
                 list.add( points[i]);
@@ -262,26 +293,49 @@ public class Polygon extends java.awt.Polygon
      * Compute the area of a polygon
      * @return the area of the irregular polygon
      */
-    public int area()
+    public double area()
     {
-        ArrayList<Point> points = toPoints();
-        Point start = points.get(0);
-        Point curr = null;
-        Point last = null;
-        int area = 0;
-        for ( int i=0;i<points.size();i++ )
+        if ( computedArea == -1.0 )
         {
-            last = curr;
-            curr = points.get(i);
-            if ( last != null && curr != start )
+            ArrayList<Point> points = toPoints();
+            Point curr = null;
+            Point last = null;
+            double area = 0.0;
+            for ( int i=0;i<points.size();i++ )
             {
-                if ( last.x < curr.x )
-                    area += ((last.y+curr.y)/2) * (curr.x-last.x);
-                else
-                    area -= ((last.y+curr.y)/2) * (last.x-curr.x);
+                last = curr;
+                curr = points.get(i);
+                if ( last != null )
+                {
+                    // counterclockwise version
+                    if ( last.x < curr.x )
+                        area -= ((last.y+curr.y)/2) * (curr.x-last.x);
+                    else
+                        area += ((last.y+curr.y)/2) * (last.x-curr.x);
+                }
+            }
+            computedArea = area;
+            if ( computedArea < 0 )
+                System.out.println(printList(points));
+        }
+        return computedArea;
+    }
+    /**
+     * test if a polygon is counter-clockwise
+     * @return true if it is else false
+     */
+    boolean isCounterClockwise()
+    {
+        Point last=null;
+        float total = 0.0f;
+        for ( Point p : points )
+        {
+            if ( last != null )
+            {
+                total += (p.x-last.x)*(p.y+last.y); 
             }
         }
-        return area;
+        return total < 0.0f;
     }
     /**
      * Does one polygon entirely contain another polygon?
@@ -438,6 +492,14 @@ public class Polygon extends java.awt.Polygon
         return this.npoints>1
             && this.firstPoint().equals(this.lastPoint());
     }
+    private void addPoint( Point p )
+    {
+        Point last = lastPoint();
+        int px = Math.round(p.x);
+        int py = Math.round(p.y);
+        if ( last == null || (px != last.x && py != last.y) )
+            addPoint( px, py );
+    }
     /**
      * Weave two lists of polygon-points into an intersection
      * @param list1 the first list
@@ -458,10 +520,10 @@ public class Polygon extends java.awt.Polygon
             read1++;
             pos = (pos+1)%list1.size();
             if ( p.getType()==PointType.inner )
-                intersection.addPoint( Math.round(p.x), Math.round(p.y) );
+                intersection.addPoint( p );
             else if ( p.getType()==PointType.join )
             {
-                intersection.addPoint( Math.round(p.x), Math.round(p.y) );
+                intersection.addPoint( p );
                 Point q = list1.get(pos);
                 if ( q.getType()==PointType.outer )
                 {
@@ -499,29 +561,83 @@ public class Polygon extends java.awt.Polygon
         }
         return sb.toString();
     }
+    PolyDefault toPolyDefault()
+    {
+        PolyDefault ps = new PolyDefault();
+        if ( this.points == null )
+            this.toPoints();
+        for ( Point pt : this.points )
+        {
+            ps.add((double)pt.x,(double)pt.y);
+        }
+        return ps;
+    }
+    
     /**
      * Get a new polygon that is the intersection with this one
      * @param pg the polygon that should be intersected with this
      * @return the new polygon 
      */
-    public Polygon getIntersection( Polygon pg ) throws TiltException
+    public Polygon getIntersection( Polygon pg )
     {
-        if ( this.contains(pg) )
-            return pg;
-        else if ( pg.contains(this) )
-            return this;
-        else
+        PolyDefault ps1 = this.toPolyDefault();
+        PolyDefault ps2 = pg.toPolyDefault();
+        Poly res = ps1.intersection(ps2);
+        Polygon intersection = new Polygon( (PolyDefault)res );
+        if ( !pg.isCounterClockwise() )
         {
-            Polygon intersection = new Polygon();
-            ArrayList<Point> list1 = this.toCCList( pg, true );
-            ArrayList<Point> list2 = pg.toCCList( this, false );
-//            System.out.println(printList(list1));
-//            System.out.println(printList(list2));
-            weaveIntersection( list1, 0, 0, list2, 0, intersection );
+            ArrayList<Point> list = intersection.toPoints();
+            Point2D[] pts = new Point2D[list.size()];
+            for ( int i=0;i<list.size();i++ )
+            {
+                Point p = list.get(i);
+                pts[i] = new Point2D(p.x,p.y);
+            }
+            GrahamScan gs = new GrahamScan(pts);
+            intersection = gs.toPolygon();
             intersection.toPoints();
-            return intersection;
         }
+        return intersection;
     }
+    
+//    public Polygon getIntersection( Polygon pg, boolean debug ) throws TiltException
+//    {
+//        if ( this.contains(pg) )
+//            return pg;
+//        else if ( pg.contains(this) )
+//            return this;
+//        else
+//        {
+//            Polygon intersection = new Polygon();
+//            ArrayList<Point> list1 = this.toCCList( pg, true );
+//            ArrayList<Point> list2 = pg.toCCList( this, false );
+//            if ( debug )
+//            {
+//                System.out.println(printList(list1));
+//                System.out.println(printList(list2));
+//            }
+//            weaveIntersection( list1, 0, 0, list2, 0, intersection );
+//            ArrayList<Point> list = intersection.toPoints();
+//            if ( list.size()> 0 )
+//            {
+//                if ( !intersection.isCounterClockwise() )
+//                {
+//                    Point2D[] pts = new Point2D[list.size()];
+//                    for ( int i=0;i<list.size();i++ )
+//                    {
+//                        Point p = list.get(i);
+//                        pts[i] = new Point2D(p.x,p.y);
+//                    }
+//                    GrahamScan gs = new GrahamScan(pts);
+//                    intersection = gs.toPolygon();
+//                    intersection.toPoints();
+//                }
+//            }
+//            else
+//                System.out.println("empty intersection");
+//            return intersection;
+//        }
+//    }
     /**
      * Fins the location of a point in another list of points
      * @param list the list to search
@@ -750,6 +866,14 @@ public class Polygon extends java.awt.Polygon
     }
     public static void main(String[] args)
     {
-        Test.runTests();
+        //Test.runTests();
+        Polygon pg = new Polygon();
+        pg.addPoint( 2, 4 );
+        pg.addPoint( 0, 2 );
+        pg.addPoint( 2, 0 );
+        pg.addPoint( 2, 2 );
+        pg.addPoint( 2, 4 );
+        double coverage = pg.area();
+        System.out.println("area="+coverage);
     }
 }

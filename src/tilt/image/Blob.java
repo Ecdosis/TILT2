@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import javax.imageio.ImageIO;
 import java.util.Stack;
 import java.util.ArrayList;
-import tilt.Utils;
 import tilt.handler.post.TextIndex;
 import tilt.image.convexhull.*;
 import org.json.simple.*;

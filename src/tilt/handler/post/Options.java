@@ -43,6 +43,8 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.maxRoguePixels,2);
         /** individual blobs bigger than this will be removed */
         this.put(Keys.maxFeatureSize, 0.1);
+        /** k value for Sauvola's binarise threshold */
+        this.put(Keys.binariseThreshold, 0.34);
         /** size of a "speckle" */
         this.put(Keys.speckleSize, 0.008); 
         /** definition of odd shaped blobs to be removed */
@@ -95,6 +97,7 @@ public class Options extends HashMap<Options.Keys,Object>
         outlierStandoff,
         oddShape,
         lineDepthFactor,
+        binariseThreshold,
         speckleSize,
         blueGreenFilter,
         maximumWidth,

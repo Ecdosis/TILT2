@@ -156,7 +156,7 @@ public class TextIndex
      */
     void digestHTML( String html )
     {
-        StringTokenizer st = new StringTokenizer(html,"<> \n\t",true);
+        StringTokenizer st = new StringTokenizer(html,"<> \n\r\t",true);
         int state = 0;
         htmlIndex = 0;
         wordList = new ArrayList<>();
@@ -273,6 +273,14 @@ public class TextIndex
                 Math.round((float)words[i].length()*ppc) );
         }
         return wordArray;
+    }
+    /**
+     * Get the plain words
+     * @return an array of string being the plain text content
+     */
+    public String[] getWords()
+    {
+        return this.words;
     }
     /**
      * Just get the word widths, not the word themselves
