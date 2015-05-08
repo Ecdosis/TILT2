@@ -189,7 +189,7 @@ public class WordShapes
      */
     private void removeRunts( HashSet<Integer> runts, double minArea )
     {
-        int lineNo = 1;
+        //int lineNo = 1;
         for ( Line l : lines )
         {
             ArrayList<Polygon> replacement = new ArrayList<>();
@@ -206,15 +206,15 @@ public class WordShapes
                     else
                     {
                         runts.remove( target );
-                        System.out.println( "removed runt polygon id="+target
-                            +" on line "+lineNo );
+//                        System.out.println( "removed runt polygon id="+target
+//                            +" on line "+lineNo );
                     }
                 }
                 else
                     replacement.add( pg );
             }
             l.setShapes( replacement );
-            lineNo++;
+            //lineNo++;
         }
     }
     /**
@@ -235,7 +235,7 @@ public class WordShapes
                 removeRunts( runts, minArea );
                 copyOfLines = cloneLines();
                 this.bestGap = computeGap();
-                System.out.println("best gap ="+bestGap);
+                // System.out.println("best gap ="+bestGap);
                 mean = meanArea();
                 numCulls++;
             }

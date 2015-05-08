@@ -450,11 +450,13 @@ public class Blob
                 Point p = hull.get(i);
                 points[i] = new Point2D( p.x, p.y );
             }
-            GrahamScan gs = new GrahamScan( points );
-            return gs.toPolygon();
+            if ( points.length > 1 )
+            {
+                GrahamScan gs = new GrahamScan( points );
+                return gs.toPolygon();
+            }
         }
-        else
-            return null;
+        return null;
     }
     /**
      * Does this blob have a hull or is it just a dot?

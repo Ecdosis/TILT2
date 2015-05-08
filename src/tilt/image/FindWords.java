@@ -161,16 +161,16 @@ public class FindWords
                                     if ( b.hasHull() )
                                     {
                                         shapeNo++;
-//                                        if ( shapeNo==2&&onLine2 )
-//                                            System.out.println("Oh");
+                                        if ( shapeNo==2&&onLine2 )
+                                            System.out.println("Oh");
                                         shape = b.toPolygon();
 //                                      // compute bounds, precise pts
                                         ArrayList<Point> list = shape.toPoints();
-//                                        if ( onLine2 && shapeNo==2 )
-//                                        {
-//                                            System.out.println("Before:"+shape.printList(list) );
-//                                            System.out.println(shape.getBounds().toString());
-//                                        }
+                                        if ( onLine2 && shapeNo==2 )
+                                        {
+                                            System.out.println("Before:"+shape.printList(list) );
+                                            System.out.println(shape.getBounds().toString());
+                                        }
                                         poly = lr.getPoly();
                                         // clip shape to next and prev line regions
                                         if ( !poly.contains(shape) )
@@ -186,11 +186,11 @@ public class FindWords
                                                 shape = shape.getIntersection(poly);
                                             }
                                         }
-//                                        if ( onLine2 && shapeNo==2 )
-//                                        {
-//                                            System.out.println("After:"+shape.printList(list) );
-//                                            System.out.println(shape.getBounds().toString());
-//                                        }
+                                        if ( onLine2 && shapeNo==2 )
+                                        {
+                                            System.out.println("After:"+shape.printList(list) );
+                                            System.out.println(shape.getBounds().toString());
+                                        }
                                         shape.setLine(curr);
                                         shape.toPoints();
                                         shape.setID(newShapeID());

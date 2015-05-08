@@ -51,12 +51,20 @@ public class Polygon extends java.awt.Polygon
      */
     Polygon( PolyDefault ps )
     {
-        for ( int i=0;i<ps.getNumPoints();i++ )
+        if ( !ps.isEmpty() )
         {
-            this.addPoint( new Point((float)ps.getX(i),(float)ps.getY(i)) );
+            for ( int i=0;i<ps.getNumPoints();i++ )
+            {
+                this.addPoint( new Point((float)ps.getX(i),(float)ps.getY(i)) );
+            }
+            toPoints();
+            computeBounds();
         }
-        toPoints();
-        computeBounds();
+        else
+        {
+            this.points = new Point[0];
+            this.bounds = new Rect(0.0f,0.0f,0.0f,0.0f);
+        }
         computedArea = -1.0;
     }
     public Polygon clone()
@@ -584,7 +592,7 @@ public class Polygon extends java.awt.Polygon
         PolyDefault ps2 = pg.toPolyDefault();
         Poly res = ps1.intersection(ps2);
         Polygon intersection = new Polygon( (PolyDefault)res );
-        if ( !pg.isCounterClockwise() )
+        if ( intersection.npoints > 1 && !intersection.isCounterClockwise() )
         {
             ArrayList<Point> list = intersection.toPoints();
             Point2D[] pts = new Point2D[list.size()];
