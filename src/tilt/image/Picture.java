@@ -598,7 +598,7 @@ public class Picture {
             int[][][] alignments = m.align();
             int[] shapeOffsets = page.getShapeLineStarts();
             Word[] wordObjs = text.getWords( ppc );
-            BufferedImage clean = ImageIO.read(cleaned);
+            BufferedImage clean = ImageIO.read( reconstructed );
             page.align( alignments, shapeOffsets, wordObjs, clean.getRaster() );
             this.linked = true;
         }

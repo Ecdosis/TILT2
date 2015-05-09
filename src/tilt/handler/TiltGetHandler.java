@@ -70,6 +70,10 @@ public class TiltGetHandler extends TiltHandler {
             {
                 new TiltGeoJsonHandler().handle(request, response, Utils.pop(urn));
             }
+            else if ( service.equals(Service.OPTIONS) )
+            {
+                new TiltOptionsHandler().handle(request, response, Utils.pop(urn));
+            }
             else
                 new TiltFileHandler().handle(request,response,urn);
                 

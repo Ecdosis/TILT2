@@ -73,7 +73,8 @@ public class TiltGeoJsonHandler extends TiltGetHandler
         {
             String docid = request.getParameter(Params.DOCID);
             String pageid = request.getParameter(Params.PAGEID);
-            if ( docid != null && pageid !=null )
+            String url = request.getParameter(Params.URL);
+            if ( (docid != null && pageid !=null)||url!=null )
             {
                 if ( docid.equals("null")||pageid.equals("null") )
                 {

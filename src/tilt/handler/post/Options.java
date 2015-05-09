@@ -67,6 +67,12 @@ public class Options extends HashMap<Options.Keys,Object>
         this.put(Keys.reconstructBlurRadius, 0.0067);
     }
     /**
+     * Blank constructor required by getDefaults
+     */
+    protected Options()
+    {
+    }
+    /**
      * Initialise an options object from a possibly empty set of properties
      * @param opts a RAW JSON object
      */
@@ -89,6 +95,19 @@ public class Options extends HashMap<Options.Keys,Object>
                 // ignore it
             }
         }
+    }
+    public static JSONObject getDefaults()
+    {
+        Options opts = new Options();
+        JSONObject obj = new JSONObject();
+        Set<Keys> keys = opts.keySet();
+        Iterator<Keys> iter = keys.iterator();
+        while ( iter.hasNext() )
+        {
+            Keys key = iter.next();
+            obj.put(key.toString(), opts.get(key) );
+        }
+        return obj;
     }
     public enum Keys
     {

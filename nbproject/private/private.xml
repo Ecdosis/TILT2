@@ -6,13 +6,24 @@
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/diff/Matrix.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/Polygon.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/Rect.java</file>
-            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/LineRegion.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/get/TiltImageHandler.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/geometry/Test.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/WordShapes.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/com/seisw/util/geom/PolyDefault.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Merge.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltGetHandler.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/JettyServer.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Page.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Blob.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/com/seisw/util/geom/Clip.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/SplitShape.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/convexhull/GrahamScan.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindLines.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/Picture.java</file>
             <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/page/Line.java</file>
-            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/image/FindWords.java</file>
+            <file>file:/home/desmond/NetBeansProjects/TILT2/src/tilt/handler/TiltHandler.java</file>
         </group>
     </open-files>
 </project-private>

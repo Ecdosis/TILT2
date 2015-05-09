@@ -39,7 +39,7 @@ function getUrlFromLoc( pictype )
 function getGeoJsonUrl()
 {
 	var gjurl = getUrl($("#geojson").val());
-	var url = "/tilt/geojson/?docid="+escapeUrl(gjurl);
+	var url = "/tilt/geojson/?url="+escapeUrl(gjurl);
 	return url;
 }
 function enableAll()

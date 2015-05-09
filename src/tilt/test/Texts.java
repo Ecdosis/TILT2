@@ -191,7 +191,7 @@ public class Texts
     "<pre>Thomas Lawrence of Grosvenor Mews Coachman\non his Oath "
     +"saith That on Saturday last (Decr. 31.)\nDept. went to Skait"
     +"ing upon the Ice in Hyde Park\nSays that a Gentleman told De"
-    +"pt. that he suspected\nhe saw a Woman lying under the Ice in"
+    +"pt. t\"hat he suspected\nhe saw a Woman lying under the Ice in"
     +" a Pond\nthere between the two Bridges, about Seven Yards\nf"
     +"rom the Shore, Says that he saw the Deced under\nthe Ice the"
     +"re and by throwing Stones broke the Ice,\nnear the place whe"

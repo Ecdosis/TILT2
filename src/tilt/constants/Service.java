@@ -36,4 +36,6 @@ public class Service
     public static final String EDITOR = "editor";
     /** recognise the page */
     public static final String RECOGNISE = "recognise";
+    /** options for a tilt document */
+    public static final String OPTIONS = "options";
 }
