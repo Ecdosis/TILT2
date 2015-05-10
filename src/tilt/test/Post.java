@@ -37,8 +37,6 @@ import tilt.Utils;
  */
 public class Post extends Test
 {
-    static int TEXT = 1;
-    static int HTML = 2;
     /**
      * Create a hidden div (of class "hidden")
      * @param id the id of the div
@@ -52,28 +50,6 @@ public class Post extends Test
         div.addAttribute("id", id );
         div.addText( contents );
         return div;
-    }
-    /**
-    * Guess the format of some text (plain text or HTML)
-    * @param text the text to test
-    * @return TextIndex.HTML if 1st non-space is &lt; else TextIndex.TEXT
-    */
-    private int guessFormat( String text )
-    {
-       int format = Post.TEXT;
-       for ( int i=0;i<text.length();i++ )
-       {
-           char token = text.charAt(i);
-           if ( !Character.isWhitespace(token) )
-           {
-               if ( token=='<' )
-                   format = Post.HTML;
-               else
-                   format = Post.TEXT;
-               break;
-           }
-       }
-       return format;
     }
     String toHTML(String text)
     {

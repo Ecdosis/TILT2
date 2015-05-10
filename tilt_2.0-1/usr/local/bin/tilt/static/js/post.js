@@ -46,11 +46,10 @@ function getTextUrl()
 {
 	var docid = $("#docid").val();
     var pageid = $("#pageid").val();
-	return "/tilt/text/?docid="+docid+"&pageid="+pageid;
+	return "/pages/html?docid="+docid+"&pageid="+pageid;
 }
 function enableAll()
 {
-	$("#original").prop('disabled', false);
 	$("#preflight").prop('disabled',false);
 	$("#greyscale").prop('disabled', false);
 	$("#twotone").prop('disabled', false);
@@ -62,8 +61,7 @@ function enableAll()
 }
 function disableAll()
 {
-	$("#original").prop('disabled', true);
-    $("#preflight").prop('disabled',true);
+	$("#preflight").prop('disabled',true);
 	$("#greyscale").prop('disabled', true);
 	$("#twotone").prop('disabled', true);
 	$("#cleaned").prop('disabled', true);
@@ -379,21 +377,28 @@ function bindJsonToImage( json )
         }
     });
 }
-$(document).ready(function() {
-disableAll();
-$("#upload").click(function(e){
-	var localurl = $("#main").attr("action");
-    var serialised = $("#main").serialize();
-    $.post( localurl, serialised, function( data ) {
-	    $("#container").empty();
-	    $("#container").html(data);
+function loadSelection()
+{
+    var value = $("#selections").val();
+    var parts = value.split('#');
+    if ( parts.length == 2 )
+    {
+        $("#docid").val(parts[0]);
+        $("#pageid").val(parts[1]);
+        var imageUrl = getImageUrl( "load" );
+        $("#container").empty();
+        $("#container").html('<img src="'+imageUrl+'" width="500">'); 
         appendCanvas();
         enableAll();
-	},"text").fail(function(xhr, status, error){
-	    alert(status);
-	    disableAll();
-	});
-});
+    }
+    var textUrl = getTextUrl();
+    $.get( textUrl, function( thtml ) {
+        $("#text").val(thtml);
+        $("#content").html(thtml);
+    });
+}
+$(document).ready(function() {
+disableAll();
 $("#original").click(function(){
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getImageUrl("original")+'">');
@@ -449,25 +454,7 @@ $("#link").click(function(){
     });
 });
 $("#selections").change(function(e){
-	var value = $("#selections").val();
-    var parts = value.split('#');
-    if ( parts.length == 2 )
-    {
-        $("#docid").val(parts[0]);
-        $("#pageid").val(parts[1]);
-        var imageUrl = getImageUrl( "load" );
-        $("#container").empty();
-        $("#container").html('<img src="'+imageUrl+'" width="500">'); 
-    }
-    var textUrl = getTextUrl();
-    $.get( textUrl, function( thtml ) {
-        $("#text").val(thtml);
-        $("#content").html(thtml);
-	    disableAll();
-    });
+	loadSelection();
 });
-var textUrl = getTextUrl();
-$.get( textUrl, function( thtml ) {
-    $("#text").val(thtml);
-});
+loadSelection();
 });

@@ -46,7 +46,7 @@ function getTextUrl()
 {
 	var docid = $("#docid").val();
     var pageid = $("#pageid").val();
-	return "/pages/text?docid="+docid+"&pageid="+pageid;
+	return "/pages/html?docid="+docid+"&pageid="+pageid;
 }
 function enableAll()
 {
@@ -58,7 +58,6 @@ function enableAll()
     $("#baselines").prop('disabled', false);
 	$("#words").prop('disabled', false); 
     $("#link").prop('disabled', false); 
-    $("#upload").prop('disabled', true);
 }
 function disableAll()
 {
@@ -70,7 +69,6 @@ function disableAll()
     $("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
-    $("#upload").prop('disabled', false);
 }
 function Point( x, y )
 {
@@ -401,19 +399,6 @@ function loadSelection()
 }
 $(document).ready(function() {
 disableAll();
-$("#upload").click(function(e){
-	var localurl = $("#main").attr("action");
-    var serialised = $("#main").serialize();
-    $.post( localurl, serialised, function( data ) {
-	    $("#container").empty();
-	    $("#container").html(data);
-        appendCanvas();
-        enableAll();
-	},"text").fail(function(xhr, status, error){
-	    alert(status);
-	    disableAll();
-	});
-});
 $("#original").click(function(){
 	$("#container").empty();
 	$("#container").html('<img width="500" src="'+getImageUrl("original")+'">');
