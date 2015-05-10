@@ -104,7 +104,7 @@ public class TiltGeoJsonHandler extends TiltGetHandler
                         response.setContentType("text/plain");
                         response.setCharacterEncoding("UTF-8");
                         response.getWriter().print( empty.toJSONString() );
-                    }   
+                    }
                 }
             }
             else

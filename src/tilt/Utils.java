@@ -252,12 +252,11 @@ public class Utils
         else
             return path+"/";
     }
-    public static String getUrl( String serverName, String docid, 
-        String pageid ) throws MalformedURLException, IOException
+    public static String getFromUrl( String url ) throws MalformedURLException, 
+        IOException
     {
-        URL pages = new URL("http://"+serverName
-            +"/pages/uri_template");
-        URLConnection pagesService = pages.openConnection();
+        URL loc = new URL(url);
+        URLConnection pagesService = loc.openConnection();
         InputStream is = pagesService.getInputStream();
         StringBuilder sb = new StringBuilder();
         while ( is.available() != 0 )
@@ -266,7 +265,14 @@ public class Utils
             is.read( data );
             sb.append( new String(data) );
         }
-        String template = sb.toString();
+        is.close();
+        return sb.toString();
+    }
+    public static String getUrl( String serverName, String docid, 
+        String pageid ) throws MalformedURLException, IOException
+    {
+        String url = "http://"+serverName+"/pages/uri_template";
+        String template = getFromUrl(url);
         if  ( template.contains("{pageid}") )
             template= template.replace("{pageid}",pageid);
         if ( template.contains("{docid}") )

@@ -38,6 +38,7 @@ public class TiltFileHandler extends TiltHandler
      */
     private File getStaticFile( String relPath )
     {
+        System.out.println("Getting file "+relPath);
         File parent1 = new File(System.getProperty("user.dir"));
         String path = TiltGetHandler.class.getProtectionDomain()
             .getCodeSource().getLocation().getPath();
@@ -45,10 +46,11 @@ public class TiltFileHandler extends TiltHandler
         File file = new File(parent1,relPath);
         if ( !file.exists())
             file = new File(parent2,relPath);
-        while( file != null && !file.exists() )
+        File parent3 = parent2.getParentFile();
+        while( parent3 != null && !file.exists() )
         {
-            File parent3 = parent2.getParentFile();
             file = new File(parent3,relPath);
+            parent3 = parent3.getParentFile();
         }
         return file;
     }

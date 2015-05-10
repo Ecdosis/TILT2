@@ -17,10 +17,14 @@
  */     
 
 package tilt.handler.post;
+import tilt.Utils;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import org.json.simple.*;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
+import java.net.URL;
 
 /**
  * Store options for TILT2
@@ -109,6 +113,33 @@ public class Options extends HashMap<Options.Keys,Object>
         }
         return obj;
     }
+    /**
+     * Get the options for a given docid, if any
+     * @param serverName the server where it all resides
+     * @param docid the docid to get the options of
+     * @return the options, default or privately set
+     */
+    public static Options get( String serverName, String docid )
+    {
+        try
+        {
+            String url = "http://"+serverName+"pages/options?docid="+docid;
+            String jstr = Utils.getFromUrl( url );
+            if ( jstr != null )
+            {
+                JSONObject jobj = (JSONObject)JSONValue.parse( jstr );
+                return new Options( jobj );
+            }
+            else
+                return new Options(getDefaults());
+        }
+        catch ( Exception e )
+        {
+            System.out.println(e.getMessage());
+            return new Options(getDefaults());
+        }
+    }
+                
     public enum Keys
     {
         minBlackPC,

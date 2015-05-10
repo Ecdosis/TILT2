@@ -30,21 +30,26 @@ function escapeUrl( url )
     }
     return newUrl;
 }
-function getUrlFromLoc( pictype )
+function getImageUrl( pictype )
 {
-	var gjurl = getUrl($("#geojson").val());
-	var url = "/tilt/image/?url="+escapeUrl(gjurl)+"&pictype="+pictype;
-	return url;
+	var docid = $("#docid").val();
+    var pageid = $("#pageid").val();
+	return "/tilt/image/?docid="+docid+"&pageid="+pageid+"&pictype="+pictype;
 }
 function getGeoJsonUrl()
 {
-	var gjurl = getUrl($("#geojson").val());
-	var url = "/tilt/geojson/?url="+escapeUrl(gjurl);
-	return url;
+	var docid = $("#docid").val();
+    var pageid = $("#pageid").val();
+	return "/tilt/geojson/?docid="+docid+"&pageid="+pageid;
+}
+function getTextUrl()
+{
+	var docid = $("#docid").val();
+    var pageid = $("#pageid").val();
+	return "/pages/text?docid="+docid+"&pageid="+pageid;
 }
 function enableAll()
 {
-	$("#original").prop('disabled', false);
 	$("#preflight").prop('disabled',false);
 	$("#greyscale").prop('disabled', false);
 	$("#twotone").prop('disabled', false);
@@ -53,11 +58,11 @@ function enableAll()
     $("#baselines").prop('disabled', false);
 	$("#words").prop('disabled', false); 
     $("#link").prop('disabled', false); 
+    $("#upload").prop('disabled', true);
 }
 function disableAll()
 {
-	$("#original").prop('disabled', true);
-    $("#preflight").prop('disabled',true);
+	$("#preflight").prop('disabled',true);
 	$("#greyscale").prop('disabled', true);
 	$("#twotone").prop('disabled', true);
 	$("#cleaned").prop('disabled', true);
@@ -65,6 +70,7 @@ function disableAll()
     $("#baselines").prop('disabled', true);
 	$("#words").prop('disabled', true);
     $("#link").prop('disabled', true); 
+    $("#upload").prop('disabled', false);
 }
 function Point( x, y )
 {
@@ -373,15 +379,36 @@ function bindJsonToImage( json )
         }
     });
 }
+function loadSelection()
+{
+    var value = $("#selections").val();
+    var parts = value.split('#');
+    if ( parts.length == 2 )
+    {
+        $("#docid").val(parts[0]);
+        $("#pageid").val(parts[1]);
+        var imageUrl = getImageUrl( "load" );
+        $("#container").empty();
+        $("#container").html('<img src="'+imageUrl+'" width="500">'); 
+        appendCanvas();
+        enableAll();
+    }
+    var textUrl = getTextUrl();
+    $.get( textUrl, function( thtml ) {
+        $("#text").val(thtml);
+        $("#content").html(thtml);
+    });
+}
 $(document).ready(function() {
 disableAll();
 $("#upload").click(function(e){
 	var localurl = $("#main").attr("action");
-    $.post( localurl, $("#main").serialize(), function( data ) {
-	$("#container").empty();
-	$("#container").html(data);
-    appendCanvas();
-    enableAll();
+    var serialised = $("#main").serialize();
+    $.post( localurl, serialised, function( data ) {
+	    $("#container").empty();
+	    $("#container").html(data);
+        appendCanvas();
+        enableAll();
 	},"text").fail(function(xhr, status, error){
 	    alert(status);
 	    disableAll();
@@ -389,71 +416,60 @@ $("#upload").click(function(e){
 });
 $("#original").click(function(){
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("original")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("original")+'">');
     appendCanvas()
 });
 $("#preflight").click(function(){
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("preflight")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("preflight")+'">');
     appendCanvas();
 });
 $("#greyscale").click(function(){
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("greyscale")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("greyscale")+'">');
     appendCanvas();
 });
 $("#twotone").click(function(){
-	var url = escapeUrl(getUrlFromLoc("twotone"));
+	var url = escapeUrl(getImageUrl("twotone"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("twotone")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("twotone")+'">');
     appendCanvas();
 });
 $("#cleaned").click(function(){
-	var url = escapeUrl(getUrlFromLoc("cleaned"));
+	var url = escapeUrl(getImageUrl("cleaned"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("cleaned")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("cleaned")+'">');
     appendCanvas();
 });
 $("#reconstructed").click(function(){
-	var url = escapeUrl(getUrlFromLoc("reconstructed"));
+	var url = escapeUrl(getImageUrl("reconstructed"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("reconstructed")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("reconstructed")+'">');
     appendCanvas();
 });
 $("#baselines").click(function(){
-	var url = escapeUrl(getUrlFromLoc("baselines"));
+	var url = escapeUrl(getImageUrl("baselines"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("baselines")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("baselines")+'">');
     appendCanvas();
 });
 $("#words").click(function(){
-	var url = escapeUrl(getUrlFromLoc("words"));
+	var url = escapeUrl(getImageUrl("words"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("words")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("words")+'">');
     appendCanvas();
 });
 $("#link").click(function(){
-	var url = escapeUrl(getUrlFromLoc("link"));
+	var url = escapeUrl(getImageUrl("link"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getUrlFromLoc("link")+'">');
+	$("#container").html('<img width="500" src="'+getImageUrl("link")+'">');
     var gjurl = getGeoJsonUrl();
     $.get( gjurl, function( data ) {
     bindJsonToImage(data);
     });
 });
 $("#selections").change(function(e){
-	var base_id = $("#selections").val();
-    var thtml = $("#"+base_id+"_TEXT").html();
-	$("#geojson").val($("#"+base_id+"_JSON").text());
-	$("#content").html(thtml);
-	$("#text").val(thtml);
-	disableAll();
+	loadSelection();
 });
-$("#content").width($("#geojson").width());
-var htext = $("#HARPUR_JSON").text();
-$("#geojson").val(htext);
-var hhtml = $("#HARPUR_TEXT").html();
-$("#content").html(hhtml);
-$("#text").val(hhtml);
-$("#selections").val("HARPUR");
+loadSelection();
 });

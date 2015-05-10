@@ -60,7 +60,23 @@ public class TiltImageHandler extends TiltGetHandler
                 if ( url == null || url.length()==0 )
                     url = Utils.getUrl(request.getServerName(),docid,pageid);
                 Picture p = PictureRegistry.get(url);
-                byte[]pic = null;
+                if ( p == null )
+                {
+                    TextIndex text=null;
+                    PictureRegistry.prune();
+                    Double[][] coords = getCropRect( request.getServerName(),
+                        docid, pageid );
+                    Options opts = Options.get(request.getServerName(),docid);
+                    String imageUrl = Utils.getUrl(request.getServerName(),
+                        docid,pageid);
+                    String url = composeTextUrl(request,docid,pageid);
+                    String textParam = Utils.getFromUrl(url);
+                    if ( textParam != null )
+                        text = new TextIndex( textParam, "en_GB" );
+                    InetAddress poster = getIPAddress(request);
+                    p = new Picture( opts, imageUrl, text, coords, poster );
+                }
+                byte[] pic = null;
                 switch (imageType) 
                 {
                     case load:

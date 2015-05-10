@@ -39,6 +39,8 @@ import tilt.constants.Service;
  */
 public class TiltTestHandler extends TiltPostHandler
 {
+    String docid;
+    String pageid;
     String geoJSON;
     TextIndex text;
     ImageType picType;
@@ -70,11 +72,7 @@ public class TiltTestHandler extends TiltPostHandler
                     String fieldName = item.getFieldName();
                     if ( fieldName != null )
                     {
-                        if ( fieldName.equals(Params.GEOJSON) )
-                        {
-                            geoJSON = item.getString();
-                        }
-                        else if ( fieldName.equals(Params.ENCODING) )
+                        if ( fieldName.equals(Params.ENCODING) )
                         {
                             encoding = item.getString();
                         }
@@ -117,62 +115,39 @@ public class TiltTestHandler extends TiltPostHandler
     /**
      * Create a HTML IMG element referring to the image we need
      * @param request the http request
-     * @param json the GeoJSON text
+     * @param picType the image type
      * @return a HTML IMG element
      * @throws TiltException 
      */
-    private String composeResponse( HttpServletRequest request, String json, 
-        ImageType picType ) throws TiltException
+    private String composeResponse( HttpServletRequest request, 
+        String docid, String pageid, ImageType picType ) throws TiltException
     {
         try
         {
             StringBuilder sb = new StringBuilder();
-            Object obj=JSONValue.parse(json);
-            if ( obj instanceof JSONObject )
+            sb.append("<img width=\"500\" src=\"");
+            sb.append("http://");
+            sb.append(request.getServerName());
+            if ( request.getServerPort()!= 80 )
             {
-                JSONObject g = (JSONObject)obj;
-                JSONObject props = (JSONObject)g.get("properties");
-                String url = (String)props.get("url");
-                Options opts = new Options(props);
-                opts.setBoolean(Options.Keys.test,true);
-                JSONObject geometry = (JSONObject)g.get("geometry");
-                if ( geometry != null && geometry.get("coordinates") 
-                    instanceof JSONArray )
-                {
-                    JSONArray cc = (JSONArray)geometry.get("coordinates");
-                    if ( cc.size()!=1 )
-                        throw new Exception("Missing coordinates");
-                    // create the picture and store it in the picture registry
-                    Picture p = new Picture( opts, url, text, 
-                        coordsToArray((JSONArray)cc.get(0)), poster );
-                    PictureRegistry.update( url, p );
-                    // it will be identified later by its docid during GET
-                }
-                sb.append("<img width=\"500\" src=\"");
-                sb.append("http://");
-                sb.append(request.getServerName());
-                if ( request.getServerPort()!= 80 )
-                {
-                    sb.append(":");
-                    sb.append(request.getServerPort());
-                }
-                sb.append("/tilt/");
-                sb.append(Service.IMAGE);
-                sb.append("/?");
-                if ( url != null )
-                {
-                    sb.append(Params.URL);
-                    sb.append("=");
-                    sb.append(Utils.escape(url));
-                }
-                sb.append("&pictype=");
-                sb.append(picType.toString());
-                sb.append("\">");
+                sb.append(":");
+                sb.append(request.getServerPort());
             }
-            else
-                sb.append("<p>JSON file not geoJSON</p>");
+            sb.append("/tilt/");
+            sb.append(Service.IMAGE);
+            sb.append("?");
+            String imageUrl = Utils.getUrl(request.getServerName(),docid,pageid);
+            if ( imageUrl != null )
+            {
+                sb.append(Params.URL);
+                sb.append("=");
+                sb.append(Utils.escape(imageUrl));
+            }
+            sb.append("&pictype=");
+            sb.append(picType.toString());
+            sb.append("\">");
             return sb.toString();
-        }
+    }
         catch( Exception e )
         {
             throw new TiltException(e);
@@ -196,15 +171,27 @@ public class TiltTestHandler extends TiltPostHandler
             else
             {
                 picType = ImageType.read(request.getParameter(Params.PICTYPE));
-                geoJSON = request.getParameter(Params.GEOJSON );
-                String textParam = request.getParameter( Params.TEXT );
+                docid = request.getParameter(Params.DOCID );
+                pageid = request.getParameter(Params.PAGEID);
+            }
+            if ( docid != null && pageid != null )
+            {
+                String url = composeTextUrl(request,docid,pageid);
+                String textParam = Utils.getFromUrl(url);
+                Picture p;
                 if ( textParam != null )
                     text = new TextIndex( textParam, "en_GB" );
-            }
-            if ( geoJSON != null )
-            {
-                PictureRegistry.prune();
-                String resp = composeResponse( request, geoJSON, picType );
+                if ( picType == ImageType.load )
+                {
+                    PictureRegistry.prune();
+                    Double[][] coords = getCropRect( request.getServerName(),
+                        docid, pageid );
+                    Options opts = Options.get(request.getServerName(),docid);
+                    String imageUrl = Utils.getUrl(request.getServerName(),
+                        docid,pageid);
+                    p = new Picture( opts, imageUrl, text, coords, poster);
+                }
+                String resp = composeResponse( request, docid, pageid, picType );
                 response.setContentType("text/plain;charset=UTF-8");
                 response.getWriter().println(resp);
             }

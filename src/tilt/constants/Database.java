@@ -26,5 +26,6 @@ public class Database
 {
     /** options for controlling documents */
     public static String OPTIONS = "options";
-       
+    /** bhl documents database for testing only */
+    public static String DOCUMENTS = "documents";
 }

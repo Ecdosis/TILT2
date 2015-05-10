@@ -31,21 +31,6 @@ import org.json.simple.JSONArray;
  */
 public class TiltPostHandler extends TiltHandler
 {
-    /**
-     * Get the sender's IP-address (prevent DoS via too many uploads)
-     * @param request raw request
-     * @return the server'sIP as a string
-     */
-    protected InetAddress getIPAddress( HttpServletRequest request ) 
-        throws Exception
-    {
-        String ipAddress = request.getHeader("HTTP_X_FORWARDED_FOR");
-        if (ipAddress == null) {
-            ipAddress = request.getRemoteAddr();
-        }
-        InetAddress addr = InetAddress.getByName(ipAddress);
-        return addr;
-    }
     public void handle( HttpServletRequest request, 
         HttpServletResponse response, String urn ) throws TiltException
     {

@@ -18,12 +18,18 @@
 
 package tilt.test;
 
+import calliope.core.database.Connection;
+import calliope.core.database.Connector;
+import calliope.core.constants.JSONKeys;
 import html.*;
+import org.json.simple.*;
 import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import java.util.HashMap;
+import tilt.constants.Database;
+import tilt.Utils;
 
 /**
  * Test the POST command
@@ -96,6 +102,21 @@ public class Post extends Test
         return sb.toString();
     }
     /**
+     * Add a hidden element that will get submitted to the server
+     * @param form the form to add it to
+     * @param name the parameter name
+     * @param value its initial value
+     */
+    private void addHiddenElement( Element form, String name, String value )
+    {
+        Element textHidden = new Element("input");
+        textHidden.addAttribute("type","hidden");
+        textHidden.addAttribute("id", name);
+        textHidden.addAttribute("name",name);
+        textHidden.addAttribute("value",value);
+        form.addElement( textHidden );  
+    }
+    /**
      * Display the test GUI
      * @param request the request to read from
      * @param urn the original URN
@@ -108,29 +129,41 @@ public class Post extends Test
         {
             // create the doc and install the scripts etc
             doc = new HTML();
-            doc.getHead().addEncoding("text/html; charset=UTF-8");
+            doc.getHead().addEncoding("UTF-8");
             doc.getHead().addScriptFile( "/tilt/static/js/jquery-1.11.1.js" );
             doc.getHead().addScriptFile( "/tilt/static/js/jquery.highlight.js" );
             doc.getHead().addScriptFile( "/tilt/static/js/post.js" );
             doc.getHead().addCssFile("/tilt/static/css/post.css");
+            Connection conn = Connector.getConnection();
+            String[] docids = conn.listCollection(Database.OPTIONS);
             HashMap<String,String> selections = new HashMap<>();
-            for ( int i=0;i<Texts.samples.length;i++ )
+            String first = null;
+            String defaultDocId = (docids.length>0)?docids[0]:"";
+            String defaultPageId = "";
+            for ( int i=0;i<docids.length;i++ )
             {
-                String id = Texts.samples[i][0];
-                String name = Texts.samples[i][1];
-                String text = Texts.samples[i][2];
-                if ( guessFormat(text) == TEXT )
-                    text = toHTML( text );
-                String json = Texts.samples[i][3];
-                selections.put(name,id);
-                doc.addElement( hiddenDiv(id+"_TEXT",text) );
-                doc.addElement( hiddenDiv(id+"_JSON",json) );
+                String jstr = conn.getFromDb(Database.OPTIONS, docids[i]);
+                JSONObject jobj = (JSONObject)JSONValue.parse(jstr);
+                String title;
+                if ( jobj.containsKey(JSONKeys.TITLE) )
+                    title = (String)jobj.get(JSONKeys.TITLE);
+                else
+                    title = docids[i];  // default
+                Number pageNum = (Number)jobj.get("test_page");
+                String pageId = new Integer(pageNum.intValue()).toString();
+                if ( first == null )
+                {
+                    defaultDocId = docids[i];
+                    // we'll get a double with exponent notation otherwise
+                    defaultPageId = pageId;
+                    first = title;
+                }
+                selections.put(title, docids[i]+"#"+pageId);
             }
             Form f = new Form( "POST", "http://"+request.getServerName()
                 +"/tilt/test/","multipart/form-data" );
             f.addAttribute("id","main");
-            Select s = new Select( selections, "selections", 
-                Texts.samples[0][1] );
+            Select s = new Select( selections, "selections", first );
             Element p = new Element("p");
             Element span = new Element("span");
             span.addAttribute("id","title");
@@ -138,15 +171,7 @@ public class Post extends Test
             p.addElement(span);
             p.addElement(s);
             f.addElement( p );
-            Element textarea = new Element("textarea");
-            textarea.addAttribute("name","geojson");
-            textarea.addAttribute("id","geojson");
-            textarea.addAttribute("rows","8");
-            textarea.addAttribute("cols","80");
-            textarea.addText(Texts.samples[0][3]);
-            f.addElement( textarea );
             p = new Element("p");
-            p.addElement( new Input("upload","button","upload",true) );
             p.addElement( new Input("preflight","button","preflight",false) );
             p.addElement( new Input("greyscale","button","greyscale",false) );
             p.addElement( new Input("twotone","button","two tone",false) );
@@ -156,13 +181,10 @@ public class Post extends Test
             p.addElement( new Input("words","button","words",false) );
             p.addElement( new Input("link","button","link",false) );
             f.addElement( p );
-            Element textHidden = new Element("input");
-            textHidden.addAttribute("type","hidden");
-            textHidden.addAttribute("id","text");
-            textHidden.addAttribute("name","text");
-            f.addElement( textHidden );
+            addHiddenElement(f,"docid",defaultDocId);
+            addHiddenElement(f,"pageid",defaultPageId);
+            addHiddenElement(f,"text","");
             doc.addElement( f );
-            // now add the two sides
             Element lhs = new Element("div");
             lhs.addAttribute("id","left");
             Element container = new Element("div");
