@@ -45,6 +45,8 @@ public class Page
     ArrayList<Line> lines;
     QuadTree qt;
     int medianLineDepth;
+    public int averageLineWidth;
+    public int averageLineDepth;
     int minWordGap;
     int numWords;
     Options options;
@@ -107,7 +109,7 @@ public class Page
      * Convert an ArrayList of Integers to an int array
      * @param col the ArrayList of Integers
      * @param list the target int array
-     * @throws Exception 
+     * @throws Exception medianLineWidth
      */
     private void listToIntArray( ArrayList col, int[] list ) throws Exception
     {
@@ -263,17 +265,22 @@ public class Page
     {
          // compute median line depth
         HashSet<Integer> vGaps = new HashSet<>();
+        int totalWidth = (lines.size()>0)?lines.get(0).getWidth():0;
+        int totalLineDepth = 0;
         for ( int i=0;i<lines.size()-1;i++ )
         {
             Line l1 = lines.get( i );
             Line l2 = lines.get( i+1 );
             vGaps.add( Math.abs(l2.getAverageY()-l1.getAverageY()) );
+            totalWidth += l2.getWidth();
+            totalLineDepth += l2.getMedianY()-l1.getMedianY();
         }
         Integer[] vArray = new Integer[vGaps.size()];
         vGaps.toArray( vArray );
         Arrays.sort( vArray );
         medianLineDepth = (vArray.length<=1)?0:vArray[vArray.length/2].intValue();
-        //sortLines();
+        averageLineWidth = totalWidth / lines.size();
+        averageLineDepth = totalLineDepth/(lines.size()-1);
         joinBrokenLines();
     }
     /**
@@ -294,6 +301,19 @@ public class Page
         }
         for ( int i=0;i<delenda.size();i++ )
             this.lines.remove( delenda.get(i) );
+    }
+    public void removeBlankLines()
+    {
+        ArrayList<Line> removals = new ArrayList<Line>();
+        for ( Line l : lines )
+        {
+            if ( l.countShapes()==0 )
+               removals.add(l);
+        }
+        for ( Line rem : removals )
+        {
+            lines.remove( rem );
+        }
     }
     /**
      * Retrieve the minimum gap between words in pixels

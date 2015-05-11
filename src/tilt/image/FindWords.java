@@ -41,7 +41,7 @@ public class FindWords
     Options opts;
     int shapeID = 1;
     int shapeNo;
-    boolean onLine2;
+    int lineNo;
     /**
      * Create a word-finder
      * @param src the src image in pure black and white
@@ -68,6 +68,7 @@ public class FindWords
         Line curr = null;
         ArrayList<Line> lines = page.getLines();
         int lineHt = page.getLineHeight();
+        findRogues();
         // look along each line segment for word-shapes
         // and assign them to lines
         LineRegion prevLR = null;
@@ -83,17 +84,18 @@ public class FindWords
                 lr = nextLR;
             else
                 lr = new LineRegion( src, curr, prev, next, lineHt);
-            onLine2 = i == 1;
+            lineNo = i;
+            shapeNo = 0;
             Line future = (i<lines.size()-2)?lines.get(i+2):null;
             nextLR = (next==null)?null
                 :new LineRegion(src,next,curr,future,lineHt);
             Point[] points = curr.getPoints();
             for ( int j=0;j<points.length-1;j++ )
             {
-                shapeNo=0;
                 findPartWords( curr, lr, prevLR, nextLR, points[j], points[j+1] );
             }
         }
+        page.removeBlankLines();
         WordShapes ws = new WordShapes( text, lines, opts );
         ws.makeWords();
     }
@@ -161,38 +163,37 @@ public class FindWords
                                     if ( b.hasHull() )
                                     {
                                         shapeNo++;
-                                        shape = b.toPolygon();
+                                        Polygon pg = shape = b.toPolygon();
 //                                      // compute bounds, precise pts
-                                        ArrayList<Point> list = shape.toPoints();
-//                                        if ( onLine2 && shapeNo==2 )
-//                                        {
-//                                            System.out.println("Before:"+shape.printList(list) );
-//                                            System.out.println(shape.getBounds().toString());
-//                                        }
+                                        shape.toPoints();
                                         poly = lr.getPoly();
-                                        // clip shape to next and prev line regions
+                                        double originalArea = pg.area();
+                                        // clip shape to its line-region
                                         if ( !poly.contains(shape) )
                                         {
-                                            if ( nextLR != null 
-                                                && nextLR.getPoly().intersects(shape) )
-                                            {
-                                                shape = shape.getIntersection(poly);
-                                            }
-                                            if ( prevLR != null 
-                                                && prevLR.getPoly().intersects(shape) )
+                                            if ( !lr.getPoly().contains(shape) )
                                             {
                                                 shape = shape.getIntersection(poly);
                                             }
                                         }
-//                                        if ( onLine2 && shapeNo==2 )
-//                                        {
-//                                            System.out.println("After:"+shape.printList(list) );
-//                                            System.out.println(shape.getBounds().toString());
-//                                        }
-                                        shape.setLine(curr);
-                                        shape.toPoints();
-                                        shape.setID(newShapeID());
-                                        page.addShape(shape);// registers line also
+                                        if ( curr.isRogue() )
+                                        {
+                                            Polygon reduced = pg;
+                                            if ( prevLR != null && prevLR.getPoly().intersects(pg) )
+                                                reduced = reduced.getIntersection(prevLR.getPoly());
+                                            if ( nextLR != null && nextLR.getPoly().intersects(pg) )
+                                                reduced = reduced.getIntersection(nextLR.getPoly());
+                                            double afterArea = reduced.area();
+                                            if ( afterArea*2 < originalArea )
+                                                shape = null;
+                                        }
+                                        if ( shape != null )
+                                        {
+                                            shape.setLine(curr);
+                                            shape.toPoints();
+                                            shape.setID(newShapeID());
+                                            page.addShape(shape);// registers line also
+                                        }
                                     }
                                     else
                                         lastPixelWasBlack = false;
@@ -208,5 +209,32 @@ public class FindWords
             lastPixelWasBlack = false;
         }
         Blob.setToWhite( dirty, lrBounds );
+    }
+    /**
+     * Find lines containing only shapes that really belong to other lines
+     */
+    private void findRogues()
+    {
+        // identify rogues
+        // lines that are too close to the next or previous line
+        // and are less than 1/3 of the averge length are "rogues"
+        Line prev = null;
+        int rogueLineDepth = (page.averageLineDepth*6)/10;
+        for ( Line curr : page.getLines() )
+        {
+            if ( prev != null )
+            {
+                int currWidth = curr.getWidth();
+                int prevWidth = prev.getWidth();
+                if ( curr.getMedianY(prev)-prev.getMedianY(curr)<rogueLineDepth )
+                {
+                    if ( currWidth<page.averageLineWidth/3 )
+                        curr.setRogue(true);
+                    else if ( prevWidth<page.averageLineWidth/3 )
+                        prev.setRogue(true);
+                }
+            }
+            prev = curr;
+        }
     }
 }

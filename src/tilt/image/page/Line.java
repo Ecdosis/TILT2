@@ -25,11 +25,14 @@ import java.util.HashMap;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.awt.Rectangle;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import org.json.simple.*;
 import java.awt.geom.Area;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 import tilt.exception.AlignException;
 /**
  * Represent a discovered line in an image
@@ -56,6 +59,8 @@ public class Line implements Comparable<Line>
     static float MIN_X_DIFF = 2.0f;
     static float SHARED_RATIO= 0.75f;
     public static final int NO_OFFSET = -1;
+    /** true if this line is short and between-lines */
+    boolean rogue;
     public Line()
     {
         points = new ArrayList<>();
@@ -82,6 +87,25 @@ public class Line implements Comparable<Line>
     int getEnd()
     {
         return end;
+    }
+    public void setRogue( boolean status )
+    {
+        this.rogue = status;
+    }
+    public boolean isRogue()
+    {
+        return rogue;
+    }
+    public int getWidth()
+    {
+        if ( points.size()>0 )
+        {
+            Point last = points.get(points.size()-1);
+            Point first = points.get(0);
+            return Math.round(last.x-first.x);
+        }
+        else
+            return 0;
     }
     /**
      * Update the line by adding anew point, update end
@@ -147,13 +171,29 @@ public class Line implements Comparable<Line>
             p1 = p2;
             p2 = points.get(i);
             if ( p1 != null )
-                g.drawLine(Math.round(p1.x),Math.round(p1.y),
-                    Math.round(p2.x),Math.round(p2.y));
+            {
+                int x1 = Math.round(p1.x);
+                int y1 = Math.round(p1.y);
+                int x2 = Math.round(p2.x);
+                int y2 = Math.round(p2.y);
+                if ( !rogue )
+                {
+                    g.drawLine(x1,y1,x2,y2);
+                }
+                else
+                {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setStroke(new BasicStroke(3));
+                    g2.draw(new Line2D.Float(x1,y1,x2,y2));
+                    g2.setStroke(new BasicStroke(1));
+                }
+            }
         }
         Rectangle bounds = getPointsBounds();
         String num = Integer.toString(n);
         g.drawString( num, bounds.x-30, 
             (bounds.y*2+bounds.height)/2 );
+        //System.out.println("width of line"+n+": "+bounds.width);
     }
     /**
      * This line is not matched in the next column. Terminate it!
@@ -337,6 +377,65 @@ public class Line implements Comparable<Line>
             }
         }
         g.setColor( old );
+    }
+    Point closestTo( Point other )
+    {
+        float minDist = Float.MAX_VALUE;
+        Point minP = null;
+        for ( Point p : points )
+        {
+            float dist = p.distance(other);
+            if ( dist < minDist )
+            {
+                minDist = dist;
+                minP = p;
+            }
+        }
+        return minP;
+    }
+    /**
+     * Get the median Y value of the line relative to another line
+     * @return an int,being the median yValue of the points in the line
+     */
+    public int getMedianY( Line other )
+    {
+        // we only consider points that are adjacent
+        if ( this.points.size()>0&&other.points.size()>0 )
+        {
+            Point leastFirst,leastLast;
+            Point matchLast,matchFirst;
+            Point thisFirst = this.points.get(0);
+            Point thisLast = this.points.get(this.points.size()-1);
+            Point otherFirst = other.points.get(0);
+            Point otherLast = other.points.get(other.points.size()-1);
+            if ( thisFirst.x > otherFirst.x )
+            {
+                leastFirst = thisFirst;
+                matchFirst = other.closestTo(leastFirst);
+            }
+            else
+            {
+                leastFirst = otherFirst;
+                matchFirst = this.closestTo(leastFirst);
+            }
+            if ( thisLast.x < otherLast.x )
+            {
+                leastLast = thisLast;
+                matchLast = other.closestTo(leastLast);
+            }
+            else
+            {
+                leastLast = otherLast;
+                matchLast = this.closestTo(leastLast);
+            }
+            return Math.round(leastFirst.y+matchFirst.y
+                +leastLast.y+matchLast.y)/4;
+        }
+        else
+        {
+            Rectangle r = getPointsBounds();
+            return r.y+r.height/2;
+        }
     }
     /**
      * Get the median Y value of the line
@@ -536,7 +635,6 @@ public class Line implements Comparable<Line>
      */
     public Rectangle getPointsBounds()
     {
-        Area region = new Area();
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         int maxX = 0;
@@ -550,7 +648,7 @@ public class Line implements Comparable<Line>
                 minY = Math.round(pt.y);
             if ( pt.y > maxY )
                 maxY = Math.round(pt.y);
-            if ( pt.x < maxX )
+            if ( pt.x > maxX )
                 maxX = Math.round(pt.x);
         }
         return new Rectangle( minX, minY, maxX-minX, maxY-minY );

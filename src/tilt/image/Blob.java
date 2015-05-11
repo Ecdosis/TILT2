@@ -55,7 +55,7 @@ public class Blob
     Stack<Point> stack;
     ArrayList<Point> hull;
     Options opts;
-    Blob( WritableRaster parent, Options opts, WritableRaster bli )
+    public Blob( WritableRaster parent, Options opts, WritableRaster bli )
     {
         this.parent = parent;
         this.minY = this.minX = Integer.MAX_VALUE;
