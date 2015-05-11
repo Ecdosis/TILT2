@@ -28,7 +28,6 @@ import tilt.exception.TiltException;
 import tilt.handler.TiltGetHandler;
 import tilt.handler.post.Options;
 import org.json.simple.*;
-import tilt.Utils;
 /**
  * Retrieve options for a given docid+pageid
  * @author desmond

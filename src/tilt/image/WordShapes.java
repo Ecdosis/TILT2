@@ -177,6 +177,9 @@ public class WordShapes
         Arrays.sort( gapArray, new ReverseDoubleComparator() );
         // so now the gaps are in decreasing order
         int numGaps = numWords - lines.size();
+        if ( numGaps < 0 )
+            System.out.println("Ooops: numWords="+numWords
+                +" lines.size()="+lines.size());
         double[] distances = new double[numGaps];
         for ( int i=0;i<numGaps;i++ )
             distances[i] = gapArray[i];

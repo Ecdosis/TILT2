@@ -38,7 +38,7 @@ public class TiltFileHandler extends TiltHandler
      */
     private File getStaticFile( String relPath )
     {
-        System.out.println("Getting file "+relPath);
+        //System.out.println("Getting file "+relPath);
         File parent1 = new File(System.getProperty("user.dir"));
         String path = TiltGetHandler.class.getProtectionDomain()
             .getCodeSource().getLocation().getPath();
@@ -56,7 +56,6 @@ public class TiltFileHandler extends TiltHandler
     }
     public void handle(HttpServletRequest request,
         HttpServletResponse response, String urn) throws TiltException {
-        File f = new File(urn);
         try
         // serve up any other form of data in its native format
         // this is for secondary requests made by this service itself
@@ -85,7 +84,7 @@ public class TiltFileHandler extends TiltHandler
                     response.setContentType("text/plain");
                 else    // else assume binary data
                 {
-                    System.out.println(urn);
+                    //System.out.println(urn);
                     response.setContentType("application/octet-stream");
                 }
                 response.getOutputStream().write(data);

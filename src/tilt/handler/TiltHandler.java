@@ -56,7 +56,7 @@ abstract public class TiltHandler
     protected String composeTextUrl( HttpServletRequest request, String docid, 
         String pageid )
     {
-        return "http://"+request.getServerName()+"/pages/text?docid="
+        return "http://"+request.getServerName()+"/pages/html?docid="
             +docid+"&pageid="+pageid;
     }
     /**

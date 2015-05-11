@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.exception.TiltException;
 import java.util.HashMap;
 import tilt.constants.Database;
-import tilt.Utils;
 
 /**
  * Test the POST command

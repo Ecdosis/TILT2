@@ -177,7 +177,7 @@ public class JettyServer extends AbstractHandler
         }
         catch ( Exception e )
         {
-            System.out.println(e.getMessage());
+            System.out.println("Exception in main:"+e.getMessage());
         }
     }
 }

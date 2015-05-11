@@ -16,7 +16,6 @@
  *  (c) copyright Desmond Schmidt 2014
  */
 package tilt.handler;
-import java.net.InetAddress;
 import tilt.exception.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

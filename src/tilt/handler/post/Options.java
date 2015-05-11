@@ -18,13 +18,10 @@
 
 package tilt.handler.post;
 import tilt.Utils;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import org.json.simple.*;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Iterator;
-import java.net.URL;
 
 /**
  * Store options for TILT2
@@ -123,19 +120,30 @@ public class Options extends HashMap<Options.Keys,Object>
     {
         try
         {
-            String url = "http://"+serverName+"pages/options?docid="+docid;
+            String url = "http://"+serverName+"/tilt/options?docid="+docid;
             String jstr = Utils.getFromUrl( url );
             if ( jstr != null )
             {
                 JSONObject jobj = (JSONObject)JSONValue.parse( jstr );
+                System.out.println("Custom options:");
+                Set<String> keys = jobj.keySet();
+                Iterator<String> iter = keys.iterator();
+                while ( iter.hasNext() )
+                {
+                    String key = iter.next();
+                    System.out.println(key+":"+jobj.get(key));
+                }
                 return new Options( jobj );
             }
             else
+            {
+                System.out.println("Using default options");
                 return new Options(getDefaults());
+            }
         }
         catch ( Exception e )
         {
-            System.out.println(e.getMessage());
+            //System.out.println("Options get:"+e.getMessage());
             return new Options(getDefaults());
         }
     }
