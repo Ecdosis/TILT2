@@ -277,6 +277,8 @@ function Hash2DTree( json )
     {
         this.shellsort(parray);
         var text = $("#text").val();
+        var lfPos = text.indexOf("\n");
+        console.log(lfPos);
         for ( var i=parray.length-1;i>=0;i-- )
         {
             var poly = parray[i];
@@ -450,7 +452,7 @@ $("#link").click(function(){
 	$("#container").html('<img width="500" src="'+getImageUrl("link")+'">');
     var gjurl = getGeoJsonUrl();
     $.get( gjurl, function( data ) {
-    bindJsonToImage(data);
+        bindJsonToImage(data);
     });
 });
 $("#selections").change(function(e){
