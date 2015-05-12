@@ -147,7 +147,7 @@ public class TiltTestHandler extends TiltPostHandler
             sb.append(picType.toString());
             sb.append("\">");
             return sb.toString();
-    }
+        }
         catch( Exception e )
         {
             throw new TiltException(e);
@@ -180,7 +180,10 @@ public class TiltTestHandler extends TiltPostHandler
                 String textParam = Utils.getFromUrl(url);
                 Picture p;
                 if ( textParam != null )
+                {
                     text = new TextIndex( textParam, "en_GB" );
+                    System.out.println(textParam.indexOf("\n"));
+                }
                 if ( picType == ImageType.load )
                 {
                     PictureRegistry.prune();

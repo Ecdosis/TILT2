@@ -28,4 +28,6 @@ public class Database
     public static String OPTIONS = "options";
     /** bhl documents database for testing only */
     public static String DOCUMENTS = "documents";
+    /** collection for storing geojson */
+    public static String TILT = "tilt";
 }

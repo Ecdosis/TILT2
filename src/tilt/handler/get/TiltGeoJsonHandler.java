@@ -24,12 +24,14 @@ import tilt.exception.TiltException;
 import calliope.core.database.*;
 import calliope.core.constants.Database;
 import calliope.core.constants.JSONKeys;
+import tilt.image.Picture;
 import tilt.constants.Params;
 import tilt.handler.TiltGetHandler;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 import tilt.Utils;
+import tilt.image.PictureRegistry;
 
 /**
  * Get the GeoJson for an pageid, plus pageid
@@ -73,8 +75,7 @@ public class TiltGeoJsonHandler extends TiltGetHandler
         {
             String docid = request.getParameter(Params.DOCID);
             String pageid = request.getParameter(Params.PAGEID);
-            String url = request.getParameter(Params.URL);
-            if ( (docid != null && pageid !=null)||url!=null )
+            if ( docid != null && pageid !=null )
             {
                 if ( docid.equals("null")||pageid.equals("null") )
                 {
@@ -88,7 +89,7 @@ public class TiltGeoJsonHandler extends TiltGetHandler
                     // first see if it is in the database
                     Connection conn = Connector.getConnection();
                     String doc = conn.getFromDb(Database.TILT, 
-                        Utils.ensureSlash(docid)+pageid);
+                        Utils.ensureSlash(docid)+"/"+pageid);
                     if ( doc != null )
                     {
                         JSONObject jobj = (JSONObject)JSONValue.parse(doc);
@@ -98,12 +99,28 @@ public class TiltGeoJsonHandler extends TiltGetHandler
                         response.setCharacterEncoding("UTF-8");
                         response.getWriter().print( jobj.toJSONString() );
                     }
-                    else // not already there: create an empty GeoJson object
+                    else // not already there: generate the GeoJson object
                     {
-                        JSONObject empty = createEmpty();
-                        response.setContentType("text/plain");
-                        response.setCharacterEncoding("UTF-8");
-                        response.getWriter().print( empty.toJSONString() );
+                        // create url to retrieve Picture object
+                        String url =  Utils.getUrl( request.getServerName(), 
+                            docid, pageid );
+                        Picture p = PictureRegistry.get(url);
+                        if ( p != null )
+                        {
+                            String geoJson = p.getGeoJson();
+                            conn.putToDb(tilt.constants.Database.TILT,
+                                Utils.ensureSlash(docid+"/"+pageid),geoJson);
+                            response.setContentType("text/plain");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().print( geoJson );
+                        }
+                        else    // send an empty geojson text
+                        {
+                            JSONObject empty = createEmpty();
+                            response.setContentType("text/plain");
+                            response.setCharacterEncoding("UTF-8");
+                            response.getWriter().print( empty.toJSONString() );
+                        }
                     }
                 }
             }

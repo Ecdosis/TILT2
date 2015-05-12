@@ -18,6 +18,8 @@
 
 package tilt.handler.get;
 
+import calliope.core.database.Connector;
+import calliope.core.database.Connection;
 import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
 import java.net.URLConnection;
@@ -26,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import tilt.constants.ImageType;
 import tilt.constants.Params;
+import tilt.constants.Database;
 import tilt.exception.TiltException;
 import tilt.exception.ImageException;
 import tilt.image.Picture;
@@ -81,7 +84,7 @@ public class TiltImageHandler extends TiltGetHandler
                 {
                     case load:
                         p.load();
-                    case original: case link:
+                    case original: 
                         pic = p.getOrigData();
                         break;
                     case preflight: 
@@ -104,6 +107,9 @@ public class TiltImageHandler extends TiltGetHandler
                         break;
                     case words:
                         pic = p.getWordsData();
+                        break;
+                    case link:
+                        pic = p.getOrigData();
                         break;
                 }  
                 if ( pic != null )

@@ -40,7 +40,7 @@ function getGeoJsonUrl()
 {
 	var docid = $("#docid").val();
     var pageid = $("#pageid").val();
-	return "/tilt/geojson/?docid="+docid+"&pageid="+pageid;
+	return "/tilt/geojson?docid="+docid+"&pageid="+pageid;
 }
 function getTextUrl()
 {

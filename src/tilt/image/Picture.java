@@ -715,6 +715,8 @@ public class Picture {
     {
         try
         {
+            if ( !this.linked )
+                this.convertToLinks();
             // do this always, because the user will want it redone
             BufferedImage image = ImageIO.read(words);
 //            double hScale = (coords[2][0].doubleValue()-coords[0][0].doubleValue())/100.0;
