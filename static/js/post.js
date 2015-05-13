@@ -273,6 +273,10 @@ function Hash2DTree( json )
         }
         return a;
     }
+    /**
+     * Process the html text into spans with IDs corresponding 
+     * to the offsets int eh polygons
+     */
     this.processPolys = function( parray )
     {
         this.shellsort(parray);
@@ -449,10 +453,12 @@ $("#words").click(function(){
 $("#link").click(function(){
 	var url = escapeUrl(getImageUrl("link"));
 	$("#container").empty();
-	$("#container").html('<img width="500" src="'+getImageUrl("link")+'">');
-    var gjurl = getGeoJsonUrl();
-    $.get( gjurl, function( data ) {
-        bindJsonToImage(data);
+	$("#container").html('<img id="linked-image" width="500" src="'+getImageUrl("link")+'">');
+    $("#linked-image").load(function(){
+        var gjurl = getGeoJsonUrl();
+        $.get( gjurl, function( data ) {
+            bindJsonToImage(data);
+        });
     });
 });
 $("#selections").change(function(e){

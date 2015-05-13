@@ -81,7 +81,7 @@ public enum ImageType
             case reconstructed:
                 return "identifying baselines";
             case baselines:
-                return "removing duplicate baselines";
+                return "identifying words";
             case words:
                 return "linking word shapes to text";
             case link: default:

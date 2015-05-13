@@ -120,10 +120,10 @@ public class TiltRecogniseHandler extends TiltPostHandler
             {
                 case load:
                     p.load();
-                    picType = ImageType.original;
+                    picType = ImageType.preflight;
                     break;
-                case original:
-                    p.convertToGreyscale();
+                case preflight:
+                    p.convertToPreflight();
                     picType = ImageType.greyscale;
                     break;
                 case greyscale:
@@ -191,7 +191,7 @@ public class TiltRecogniseHandler extends TiltPostHandler
                             JSONArray cc = (JSONArray)geometry.get("coordinates");
                             p = new Picture( opts, url, text, coordsToArray(cc), poster);
                             doRecogniseProgress( p, response,
-                                ImageType.load,ImageType.original );
+                                ImageType.load,ImageType.preflight );
                             PictureRegistry.update( url, p );
                             // it will be identified later by its url during GET
                         }
@@ -201,7 +201,7 @@ public class TiltRecogniseHandler extends TiltPostHandler
                     else
                         throw new Exception("Invalid geoJSON");
                 }
-                doRecogniseProgress( p, response,ImageType.original, 
+                doRecogniseProgress( p, response,ImageType.preflight, 
                     ImageType.link );
                 Connection conn = Connector.getConnection();
                 geoJson = p.getGeoJson();

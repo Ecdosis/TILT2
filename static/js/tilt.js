@@ -341,9 +341,15 @@ function Tilt(docid,pageid) {
             {
                 var pages = $("#pages");
                 pages.empty();
-                for ( var i=0;i<data.length;i++ )
+                // temporary hack - nly p18 is usable
+                if ( doc == "Journals187119100Brew"&&data.length>17 )
+                    pages.append("<option value=\""+data[17].id+"\">"+data[17].n+"</option>");
+                else
                 {
-                    pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                    for ( var i=0;i<data.length;i++ )
+                    {
+                        pages.append("<option value=\""+data[i].id+"\">"+data[i].n+"</option>");
+                    }
                 }
             }
         }).fail(function(){

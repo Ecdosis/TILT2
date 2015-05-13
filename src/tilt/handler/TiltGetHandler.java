@@ -74,6 +74,10 @@ public class TiltGetHandler extends TiltHandler {
             {
                 new TiltOptionsHandler().handle(request, response, Utils.pop(urn));
             }
+            else if ( service.equals(Service.BOUNDS) )
+            {
+                new TiltBoundsHandler().handle(request, response, Utils.pop(urn));
+            }
             else
                 new TiltFileHandler().handle(request,response,urn);
                 

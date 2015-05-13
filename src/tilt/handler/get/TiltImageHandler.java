@@ -109,7 +109,7 @@ public class TiltImageHandler extends TiltGetHandler
                         pic = p.getWordsData();
                         break;
                     case link:
-                        pic = p.getOrigData();
+                        pic = p.getGreyscaleData();
                         break;
                 }  
                 if ( pic != null )

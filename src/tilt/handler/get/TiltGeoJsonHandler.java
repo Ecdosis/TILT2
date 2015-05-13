@@ -52,7 +52,7 @@ public class TiltGeoJsonHandler extends TiltGetHandler
         JSONArray topRight = new JSONArray();
         topRight.add(100.0);
         topRight.add(0.0);
-        JSONArray botLeft= new JSONArray();
+        JSONArray botLeft = new JSONArray();
         botLeft.add(100.0);
         botLeft.add(100.0);
         JSONArray botRight= new JSONArray();
@@ -68,6 +68,61 @@ public class TiltGeoJsonHandler extends TiltGetHandler
         empty.put("properties",properties ); 
         return empty;
     }
+    /**
+     * Get the GeoJson for the current page
+     * @param serverName the name of the server
+     * @param docid the document id
+     * @param pageid the page id
+     * @return the GeoJson object
+     * @throws DbException 
+     */
+    protected JSONObject getGeoJson( String serverName, String docid, 
+        String pageid ) throws TiltException
+    {
+        try
+        {
+            JSONObject geoJson = null;
+            if ( docid.equals("null")||pageid.equals("null") )
+            {
+                geoJson = createEmpty();
+            }
+            else
+            {
+                // first see if it is in the database
+                Connection conn = Connector.getConnection();
+                String doc = conn.getFromDb(Database.TILT, 
+                    Utils.ensureSlash(docid+"/"+pageid));
+                if ( doc != null )
+                {
+                    geoJson = (JSONObject)JSONValue.parse(doc);
+                    geoJson.remove(JSONKeys._ID);
+                    geoJson.remove(JSONKeys.DOCID);
+                }
+                else // not already there: generate the GeoJson object
+                {
+                    // create url to retrieve Picture object
+                    String url =  Utils.getUrl( serverName, docid, pageid );
+                    Picture p = PictureRegistry.get(url);
+                    if ( p != null )
+                    {
+                        String geoJsonStr = p.getGeoJson();
+                        conn.putToDb(tilt.constants.Database.TILT,
+                            Utils.ensureSlash(docid+"/"+pageid),geoJsonStr);
+                        geoJson = (JSONObject)JSONValue.parse( geoJsonStr );
+                    }
+                    else    // send an empty geojson text
+                    {
+                        geoJson = createEmpty();   
+                    }
+                }
+            }
+            return geoJson;
+        }
+        catch ( Exception e )
+        {
+            throw new TiltException(e);
+        }
+    }
     public void handle(HttpServletRequest request,
         HttpServletResponse response, String urn) throws TiltException 
     {
@@ -77,52 +132,11 @@ public class TiltGeoJsonHandler extends TiltGetHandler
             String pageid = request.getParameter(Params.PAGEID);
             if ( docid != null && pageid !=null )
             {
-                if ( docid.equals("null")||pageid.equals("null") )
-                {
-                    JSONObject empty = createEmpty();
-                    response.setContentType("text/plain");
-                    response.setCharacterEncoding("UTF-8");
-                    response.getWriter().print( empty.toJSONString() );
-                }
-                else
-                {
-                    // first see if it is in the database
-                    Connection conn = Connector.getConnection();
-                    String doc = conn.getFromDb(Database.TILT, 
-                        Utils.ensureSlash(docid)+"/"+pageid);
-                    if ( doc != null )
-                    {
-                        JSONObject jobj = (JSONObject)JSONValue.parse(doc);
-                        jobj.remove(JSONKeys._ID);
-                        jobj.remove(JSONKeys.DOCID);
-                        response.setContentType("text/plain");
-                        response.setCharacterEncoding("UTF-8");
-                        response.getWriter().print( jobj.toJSONString() );
-                    }
-                    else // not already there: generate the GeoJson object
-                    {
-                        // create url to retrieve Picture object
-                        String url =  Utils.getUrl( request.getServerName(), 
-                            docid, pageid );
-                        Picture p = PictureRegistry.get(url);
-                        if ( p != null )
-                        {
-                            String geoJson = p.getGeoJson();
-                            conn.putToDb(tilt.constants.Database.TILT,
-                                Utils.ensureSlash(docid+"/"+pageid),geoJson);
-                            response.setContentType("text/plain");
-                            response.setCharacterEncoding("UTF-8");
-                            response.getWriter().print( geoJson );
-                        }
-                        else    // send an empty geojson text
-                        {
-                            JSONObject empty = createEmpty();
-                            response.setContentType("text/plain");
-                            response.setCharacterEncoding("UTF-8");
-                            response.getWriter().print( empty.toJSONString() );
-                        }
-                    }
-                }
+                JSONObject geoJson = getGeoJson(request.getServerName(),
+                    docid, pageid );
+                response.setContentType("text/plain");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().print( geoJson.toJSONString() );
             }
             else
                 throw new Exception("Missing docid or pageid");
