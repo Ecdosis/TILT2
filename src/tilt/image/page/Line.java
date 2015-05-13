@@ -666,10 +666,10 @@ public class Line implements Comparable<Line>
         collection.put("name","Line");
         Rectangle bounds = getShapesBounds();
         JSONArray bbox = new JSONArray();
-        bbox.add(bounds.x);
-        bbox.add(bounds.y);
-        bbox.add(bounds.x+bounds.width);
-        bbox.add(bounds.y+bounds.height);
+        bbox.add((float)bounds.x/(float)pageWidth);
+        bbox.add((float)bounds.y/(float)pageHeight);
+        bbox.add((float)(bounds.x+bounds.width)/(float)pageWidth);
+        bbox.add((float)(bounds.y+bounds.height)/(float)pageHeight);
         collection.put("bbox",bbox);
         JSONArray features = new JSONArray();
         for ( int i=0;i<shapes.size();i++ )
