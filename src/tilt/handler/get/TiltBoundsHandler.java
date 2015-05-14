@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import tilt.constants.GeoJSON;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
+import tilt.Utils;
 import tilt.constants.Params;
 import tilt.exception.TiltException;
 
@@ -32,6 +33,39 @@ import tilt.exception.TiltException;
  */
 public class TiltBoundsHandler extends TiltGeoJsonHandler
 {
+    String text;
+    private String getWord( String serverName, String docid, String pageid, 
+        int offset )
+    {
+        if ( text == null )
+        {
+            try
+            {
+                String textUrl = "http://"+serverName+"/pages/html?docid="
+                    +docid+"&pageid="+pageid;
+                text = Utils.getFromUrl(textUrl);
+            }
+            catch ( Exception e )
+            {
+                text = null;
+            }
+        }
+        if ( text != null )
+        {
+            StringBuilder sb = new StringBuilder();
+            for ( int i=offset;i<text.length();i++ )
+            {
+                char token = text.charAt(i);
+                if ( !Character.isWhitespace(token)&& token != '<' )
+                    sb.append(token);
+                else
+                    break;
+            }
+            return sb.toString();
+        }
+        else
+            return null;
+    }
     JSONArray polygonFromBBox( JSONArray bbox )
     {
         JSONArray rect = new JSONArray();
@@ -131,8 +165,21 @@ public class TiltBoundsHandler extends TiltGeoJsonHandler
                             JSONObject pg = (JSONObject)polygons.get(j);
                             JSONObject newPg = new JSONObject();
                             rectangles.add( newPg );
-                            newPg.put(GeoJSON.PROPERTIES, pg.get(
-                                GeoJSON.PROPERTIES) );
+                            JSONObject oldProps = (JSONObject)pg.get(
+                                GeoJSON.PROPERTIES);
+                            if ( oldProps != null )
+                            {
+                                JSONObject newProps = new JSONObject();
+                                Long longOffset = (Long)oldProps.get(GeoJSON.OFFSET);
+                                if ( longOffset != null )
+                                {
+                                    String word = getWord(request.getServerName(),
+                                        docid,pageid,longOffset.intValue());
+                                    if ( word != null )
+                                        newProps.put("word", word );
+                                    newPg.put(GeoJSON.PROPERTIES, newProps );
+                                }
+                            }
                             newPg.put(GeoJSON.TYPE, pg.get(GeoJSON.TYPE) );
                             JSONObject gjGeometry = (JSONObject)pg.get(
                                 GeoJSON.GEOMETRY);

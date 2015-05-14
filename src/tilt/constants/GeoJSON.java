@@ -35,4 +35,5 @@ public class GeoJSON
     public static final String LINE = "Line";
     public static final String BBOX = "bbox";
     public static final String NAME = "name";
+    public static final String OFFSET = "offset";
 }

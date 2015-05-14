@@ -182,7 +182,6 @@ public class TiltTestHandler extends TiltPostHandler
                 if ( textParam != null )
                 {
                     text = new TextIndex( textParam, "en_GB" );
-                    System.out.println(textParam.indexOf("\n"));
                 }
                 if ( picType == ImageType.load )
                 {
