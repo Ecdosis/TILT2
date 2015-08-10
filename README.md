@@ -12,8 +12,7 @@ ___________
 TILT requires installation of aspell and libaspell-dev on Ubuntu, or their
 equivalents on other platforms.
 
-You must also install AeseSpeller from 
-https://github.com/schmidda/AeseSpeller.
+You must also install [AeseSpeller](https://github.com/Ecdosis/AeseSpeller).
 
 For local use you will need to install a web-server. If you use Apache 
 and mod-proxy you should add the folllowing line to proxy.conf:
