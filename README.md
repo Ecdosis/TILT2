@@ -1,13 +1,11 @@
-About TILT
-__________
+## About TILT
 
 TILT2 is a revision of TILT1, which was solely a Java applet, by 
 splitting it into two halves. The first half handles all 
 image-processing on the server using Java, and the second half handles 
 the GUI using Javascript, jQuery and HTML5 (and a canvas).
 
-Requirements
-___________
+### Requirements
 
 TILT requires installation of aspell and libaspell-dev on Ubuntu, or their
 equivalents on other platforms.
@@ -27,8 +25,7 @@ running on port 8080, then the proxy line should be altered to:
 ProxyPass /tilt/ http://localhost:8080/tilt/ retry=0
 
 
-Documentation
-____________
+### Documentation
 
 The full documentation is in dist/javadoc, including the simple API.
 
@@ -38,8 +35,7 @@ repository space.
 The TILT editing GUI is currently under development. The interface for 
 this is at http://ecdosis.net/tilt/editor.
 
-Installation
-____________
+### Installation
 
 TILT can run either as a self-contained web-app on Tomcat or a similar 
 container, or as a standalone Jetty based web-service. For the former, 
